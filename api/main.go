@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gin-gonic/gin"
 
 	"api/api"
 	"api/config"
-	"api/db"
 	"api/queue"
 )
 
@@ -29,13 +29,18 @@ func Run(host string, port int) {
 }
 
 func main() {
-	db.Init(config.MONGO_DB_URI)
-	defer db.Deinit()
+	// db.Init(config.MONGO_DB_URI)
+	// defer db.Deinit()
 
-	queue.InitKafka()
-	defer queue.DeinitKafka()
+	// queue.InitKafka()
+	// defer queue.DeinitKafka()
 
-	queue.InitRabbit()
+	err := queue.InitRabbit()
+
+	if err != nil {
+		os.Exit(1)
+	}
+
 	defer queue.DeinitRabbit()
 
 	Run(config.API_HOST, config.API_PORT)

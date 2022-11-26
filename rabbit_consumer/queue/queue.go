@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"log"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -15,34 +16,36 @@ var (
 	Cancel  context.CancelFunc
 )
 
-func Init() {
-	conn, err := amqp.Dial("amqp://guest:guest@192.168.10.23:5672/")
+func Init() error {
+	conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672/")
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
 	ch, err := conn.Channel()
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
-	q, err := ch.QueueDeclare(
-		"hello", // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
-	)
+	q, err := ch.QueueDeclare("hello", false, false, false, false, nil)
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
+	}
+
+	err = ch.Qos(10, 0, true)
+
+	if err != nil {
+		log.Println(err)
+		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 
 	Client = conn
 	Channel = ch
@@ -50,29 +53,21 @@ func Init() {
 	Context = ctx
 	Cancel = cancel
 
-	/*topic := "my-topic"
-	partition := 0
-
-	connection, err := kafka.DialLeader(context.Background(), "tcp", "192.168.0.213:9092", topic, partition)
-
-	if err != nil {
-		panic(err)
-	}
-
-	connection.SetReadDeadline(time.Now().Add(10 * time.Second))
-	connection.SetWriteDeadline(time.Now().Add(10 * time.Second))
-
-	Client = connection*/
+	return nil
 }
 
-func Deinit() {
+func Deinit() error {
 	Cancel()
 
 	if err := Channel.Close(); err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
 	if err := Client.Close(); err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
+
+	return nil
 }

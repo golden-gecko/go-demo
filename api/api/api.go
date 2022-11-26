@@ -3,7 +3,10 @@ package api
 import (
 	"context"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -31,28 +34,42 @@ func WriteToKafka(data []byte) {
 }
 
 func WriteToRabbit(data []byte) {
-	err := queue.Channel.PublishWithContext(
-		queue.Context,
-		"",
-		queue.Queue.Name,
-		false, // mandatory
-		false, // immediate
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        data,
-		},
-	)
+	maxRetries := 3
 
-	if err != nil {
-		panic(err)
+	for i := 0; i < maxRetries; i++ {
+		err := queue.Channel.PublishWithContext(
+			queue.Context,
+			"",
+			queue.Queue.Name,
+			false, // mandatory
+			false, // immediate
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        data,
+			},
+		)
+
+		if err != nil {
+			log.Println("Failed to send message. Waiting 3 seconds...")
+
+			time.Sleep(3 * time.Second)
+
+			queue.InitRabbit()
+		} else {
+			return
+		}
 	}
+
+	log.Println("Failed to send message 3 times. Exiting...")
+
+	os.Exit(1)
 }
 
 func CreateData(c *gin.Context) {
 	data, err := ioutil.ReadAll(c.Request.Body)
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
 	// WriteToKafka(data)

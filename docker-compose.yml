@@ -1,31 +1,44 @@
-version: '3.8'
+version: '3.9'
 
 networks:
 
-  main:
-    ipam:
-      config:
-        - subnet: 192.168.10.0/24
+  simple:
 
 services:
 
-  api:
+  api_1:
     build:
       context: api
     networks:
-      main:
-        ipv4_address: ${API_HOST}
+      - simple
     ports:
       - ${API_PORT}:${API_PORT}
+    restart: unless-stopped
+
+  api_2:
+    build:
+      context: api
+    networks:
+      - simple
+    ports:
+      - 5001:${API_PORT}
+    restart: unless-stopped
+
+  api_3:
+    build:
+      context: api
+    networks:
+      - simple
+    ports:
+      - 5002:${API_PORT}
     restart: unless-stopped
 
   chronograf:
     depends_on:
       - influx
-    image: chronograf:${CHRONOGRAF_VERSION}-alpine
+    image: chronograf:${CHRONOGRAF_VERSION}
     networks:
-      main:
-        ipv4_address: ${CHRONOGRAF_HOST}
+      - simple
     ports:
       - ${CHRONOGRAF_PORT}:${CHRONOGRAF_PORT}
     restart: unless-stopped
@@ -36,40 +49,18 @@ services:
     command: start-single-node --insecure
     image: cockroachdb/cockroach:v${COCKROACH_VERSION}
     networks:
-      main:
-        ipv4_address: ${COCKROACH_HOST}
+      - simple
     ports:
       - ${COCKROACH_PORT}:${COCKROACH_PORT}
     restart: unless-stopped
     volumes:
       - cockroach:/data/db
 
-  elastic:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
-    environment:
-      - discovery.type=single-node
-      - ELASTIC_HOST=${ELASTIC_HOST}
-      - ELASTIC_PORT=${ELASTIC_PORT}
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-      - xpack.security.enabled=false
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://${ELASTIC_HOST}:${ELASTIC_PORT}']
-      interval: 10s
-      timeout: 2s
-      retries: 2
-    networks:
-      main:
-        ipv4_address: ${ELASTIC_HOST}
-    restart: unless-stopped
-    volumes:
-      - elastic:/usr/share/elasticsearch/data
-
   grafana:
     build:
       context: grafana
     networks:
-      main:
-        ipv4_address: ${GRAFANA_HOST}
+      - simple
     ports:
       - ${GRAFANA_PORT}:${GRAFANA_PORT}
     restart: unless-stopped
@@ -77,11 +68,33 @@ services:
       - grafana_etc:/etc/grafana
       - grafana_var_lib:/var/lib/grafana
 
-  influx:
-    image: influxdb:${INFLUX_VERSION}-alpine
+  haproxy:
+    image: haproxy:${HAPROXY_VERSION}
     networks:
-      main:
-        ipv4_address: ${INFLUX_HOST}
+      - simple
+    ports:
+      - ${HAPROXY_PORT}:${HAPROXY_PORT}
+      - 9103:9103
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./haproxy/haproxy.cfg
+        target: /usr/local/etc/haproxy/haproxy.cfg
+
+  influx:
+    environment:
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+      - DOCKER_INFLUXDB_INIT_BUCKET=my-bucket
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_ORG=my-org
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_RETENTION=1w
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USER}
+    image: influxdb:${INFLUX_VERSION}
+    networks:
+      - simple
+    ports:
+      - ${INFLUX_PORT}:${INFLUX_PORT}
     restart: unless-stopped
     volumes:
       - influx:/var/lib/influxdb
@@ -96,6 +109,8 @@ services:
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:${KAFKA_PORT}
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:${ZOOKEEPER_PORT}
     image: bitnami/kafka:${KAFKA_VERSION}
+    networks:
+      - simple
     ports:
       - ${KAFKA_PORT}:${KAFKA_PORT}
     restart: unless-stopped
@@ -107,42 +122,11 @@ services:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=192.168.0.213:${KAFKA_PORT}
     image: provectuslabs/kafka-ui:${KAFKA_UI_VERSION}
+    networks:
+      - simple
     ports:
       - ${KAFKA_UI_PORT}:${KAFKA_UI_PORT}
     restart: unless-stopped
-
-  kibana:
-    depends_on:
-      - elastic
-    image: docker.elastic.co/kibana/kibana:${KIBANA_VERSION}
-    environment:
-      - ELASTICSEARCH_HOSTS=http://${ELASTIC_HOST}:${ELASTIC_PORT}
-    networks:
-      main:
-        ipv4_address: ${KIBANA_HOST}
-    ports:
-      - ${KIBANA_PORT}:${KIBANA_PORT}
-    restart: unless-stopped
-    volumes:
-      - kibana:/usr/share/kibana/config
-
-  logstash:
-    depends_on:
-      - elastic
-    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION}
-    networks:
-      main:
-        ipv4_address: ${LOGSTASH_HOST}
-    restart: unless-stopped
-    volumes:
-      - type: bind
-        source: ./logstash/config/logstash.yml
-        target: /usr/share/logstash/config/logstash.yml
-        read_only: true
-      - type: bind
-        source: ./logstash/pipeline
-        target: /usr/share/logstash/pipeline
-        read_only: true
 
   mongo:
     environment:
@@ -150,8 +134,7 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
     image: mongo:${MONGO_VERSION}
     networks:
-      main:
-        ipv4_address: ${MONGO_HOST}
+      - simple
     ports:
       - ${MONGO_PORT}:${MONGO_PORT}    
     restart: unless-stopped
@@ -165,25 +148,32 @@ services:
       - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/
     image: mongo-express:${MONGO_EXPRESS_VERSION}
     networks:
-      main:
-        ipv4_address: ${MONGO_EXPRESS_HOST}
+      - simple
     ports:
       - ${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:${NGINX_VERSION}
+    networks:
+      - simple
+    ports:
+      - ${NGINX_PORT}:${NGINX_PORT}
     restart: unless-stopped
 
   node_exporter:
     image: prom/node-exporter:v${NODE_EXPORTER_VERSION}
     networks:
-      main:
-        ipv4_address: ${NODE_EXPORTER_HOST}
+      - simple
+    ports: 
+      - ${NODE_EXPORTER_PORT}:${NODE_EXPORTER_PORT}
     restart: unless-stopped
 
   node:
     build:
       context: node
     networks:
-      main:
-        ipv4_address: ${NODE_HOST}
+      - simple
     ports:
       - ${NODE_PORT}:${NODE_PORT}
     restart: unless-stopped
@@ -201,8 +191,7 @@ services:
       timeout: 2s
       retries: 2
     networks:
-      main:
-        ipv4_address: ${POSTGRES_HOST}
+      - simple
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
     restart: unless-stopped
@@ -213,18 +202,18 @@ services:
     build:
       context: producer
     networks:
-      main:
-        ipv4_address: ${PRODUCER_HOST}
+      - simple
     restart: unless-stopped
 
   prometheus:
     depends_on:
+      - haproxy
       - node_exporter
+      - rabbit
       - statsd_exporter
     image: prom/prometheus:v${PROMETHEUS_VERSION}
     networks:
-      main:
-        ipv4_address: ${PROMETHEUS_HOST}
+      - simple
     ports:
       - ${PROMETHEUS_PORT}:${PROMETHEUS_PORT}
     restart: unless-stopped
@@ -238,8 +227,7 @@ services:
     build:
       context: rabbit
     networks:
-      main:
-        ipv4_address: ${RABBIT_HOST}
+      - simple
     ports:
       - ${RABBIT_PORT}:${RABBIT_PORT}
     restart: unless-stopped
@@ -248,15 +236,13 @@ services:
     build:
       context: rabbit_consumer
     networks:
-      main:
-        ipv4_address: ${RABBIT_CONSUMER_HOST}
+      - simple
     restart: unless-stopped
 
   redis:
-    image: redis:${REDIS_VERSION}-alpine
+    image: redis:${REDIS_VERSION}
     networks:
-      main:
-        ipv4_address: ${REDIS_HOST}
+      - simple
     ports:
       - ${REDIS_PORT}:${REDIS_PORT}
     restart: unless-stopped
@@ -268,8 +254,7 @@ services:
       - redis
     image: redislabs/redisinsight:${REDIS_INSIGHT_VERSION}
     networks:
-      main:
-        ipv4_address: ${REDIS_INSIGHT_HOST}
+      - simple
     ports:
       - ${REDIS_INSIGHT_PORT}:${REDIS_INSIGHT_PORT}
     restart: unless-stopped
@@ -279,14 +264,17 @@ services:
   statsd_exporter:
     image: prom/statsd-exporter:v${STATSD_EXPORTER_VERSION}
     networks:
-      main:
-        ipv4_address: ${STATSD_EXPORTER_HOST}
+      - simple
+    ports:
+      - ${STATSD_EXPORTER_PORT}:${STATSD_EXPORTER_PORT}
     restart: unless-stopped
 
   zookeeper:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     image: bitnami/zookeeper:${ZOOKEEPER_VERSION}
+    networks:
+      - simple
     ports:
       - ${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}
     restart: unless-stopped
