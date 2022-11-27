@@ -9,8 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-
-	"api/config"
 )
 
 var (
@@ -22,11 +20,11 @@ var (
 )
 
 func Init(uri string) {
-	Client = Connect(uri)
+	Client = Connect("mongodb://mongo_user:mongo_password@192.168.10.17:27017")
 
-	TransitCollection = CreateCollection(Client, config.MONGO_DB_DATABASE, "transits")
-	UserCollection = CreateCollection(Client, config.MONGO_DB_DATABASE, "users")
-	VehicleCollection = CreateCollection(Client, config.MONGO_DB_DATABASE, "vehicles")
+	TransitCollection = CreateCollection(Client, "traffic", "transits")
+	UserCollection = CreateCollection(Client, "traffic", "users")
+	VehicleCollection = CreateCollection(Client, "traffic", "vehicles")
 }
 
 func Deinit() {

@@ -31,11 +31,22 @@ func Init() error {
 		return err
 	}
 
-	q, err := ch.QueueDeclare("hello", false, false, false, false, nil)
+	queues := []string{"temperatures", "transits"}
 
-	if err != nil {
-		log.Println(err)
-		return err
+	for _, queueName := range queues {
+		_, err := ch.QueueDeclare(
+			queueName, // name
+			false,     // durable
+			false,     // delete when unused
+			false,     // exclusive
+			false,     // no-wait
+			nil,       // arguments
+		)
+
+		if err != nil {
+			log.Println(err)
+			return err
+		}
 	}
 
 	err = ch.Qos(10, 0, true)
@@ -49,7 +60,6 @@ func Init() error {
 
 	Client = conn
 	Channel = ch
-	Queue = q
 	Context = ctx
 	Cancel = cancel
 
