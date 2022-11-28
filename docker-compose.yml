@@ -1,5 +1,11 @@
 version: '3.9'
 
+x-logging:
+  &default-logging
+  driver: "fluentd"
+  options:
+    fluentd-address: localhost:${FLUENT_PORT}
+
 networks:
 
   simple:
@@ -9,6 +15,7 @@ services:
   api_1:
     build:
       context: api
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -18,6 +25,7 @@ services:
   api_2:
     build:
       context: api
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -28,6 +36,7 @@ services:
     depends_on:
       - influx
     image: chronograf:${CHRONOGRAF_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -39,6 +48,7 @@ services:
   cockroach:
     command: start-single-node --insecure
     image: cockroachdb/cockroach:v${COCKROACH_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -50,6 +60,7 @@ services:
   consumer_1:
     build:
       context: consumer
+    logging: *default-logging
     networks:
       - simple
     restart: unless-stopped
@@ -57,13 +68,29 @@ services:
   consumer_2:
     build:
       context: consumer
+    logging: *default-logging
     networks:
       - simple
     restart: unless-stopped
 
+  fluent:
+    build:
+      context: fluent
+    logging: *default-logging
+    networks:
+      - simple
+    ports:
+      - ${FLUENT_PORT}:${FLUENT_PORT}
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./fluent/fluent.conf
+        target: /fluentd/etc/fluent.conf
+
   grafana:
     build:
       context: grafana
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -75,6 +102,7 @@ services:
 
   haproxy:
     image: haproxy:${HAPROXY_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -97,6 +125,7 @@ services:
       - DOCKER_INFLUXDB_INIT_RETENTION=1w
       - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USER}
     image: influxdb:${INFLUX_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -115,6 +144,7 @@ services:
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:${KAFKA_PORT}
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:${ZOOKEEPER_PORT}
     image: bitnami/kafka:${KAFKA_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -128,6 +158,7 @@ services:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=192.168.0.213:${KAFKA_PORT}
     image: provectuslabs/kafka-ui:${KAFKA_UI_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -139,6 +170,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
     image: mongo:${MONGO_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -153,6 +185,7 @@ services:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
       - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/
     image: mongo-express:${MONGO_EXPRESS_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -161,6 +194,7 @@ services:
 
   nginx:
     image: nginx:${NGINX_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -169,6 +203,7 @@ services:
 
   node_exporter:
     image: prom/node-exporter:v${NODE_EXPORTER_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports: 
@@ -178,6 +213,7 @@ services:
   node:
     build:
       context: node
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -196,6 +232,7 @@ services:
       interval: 10s
       timeout: 2s
       retries: 2
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -207,6 +244,7 @@ services:
   producer:
     build:
       context: producer
+    logging: *default-logging
     networks:
       - simple
     restart: unless-stopped
@@ -218,6 +256,7 @@ services:
       - rabbit
       - statsd_exporter
     image: prom/prometheus:v${PROMETHEUS_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -232,6 +271,7 @@ services:
   rabbit:
     build:
       context: rabbit
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -241,6 +281,7 @@ services:
   receiver_1:
     build:
       context: receiver
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -250,6 +291,7 @@ services:
   receiver_2:
     build:
       context: receiver
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -259,6 +301,7 @@ services:
   receiver_3:
     build:
       context: receiver
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -267,6 +310,7 @@ services:
 
   redis:
     image: redis:${REDIS_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -279,6 +323,7 @@ services:
     depends_on:
       - redis
     image: redislabs/redisinsight:${REDIS_INSIGHT_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -289,6 +334,7 @@ services:
 
   statsd_exporter:
     image: prom/statsd-exporter:v${STATSD_EXPORTER_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:
@@ -299,6 +345,7 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     image: bitnami/zookeeper:${ZOOKEEPER_VERSION}
+    logging: *default-logging
     networks:
       - simple
     ports:

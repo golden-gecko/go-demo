@@ -84,6 +84,11 @@ func CreateTransit() Transit {
 }
 
 func main() {
+	url := "http://haproxy:9000/api/v1/data"
+
+	minInterval := 100
+	maxInterval := 500
+
 	for {
 		if true {
 			t1 := CreateTemperature("Room #1")
@@ -96,7 +101,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			Send("http://haproxy:9000/api/v1/data/temperature", data)
+			Send(url+"/temperature", data)
 		}
 
 		if true {
@@ -112,13 +117,13 @@ func main() {
 				os.Exit(1)
 			}
 
-			Send("http://haproxy:9000/api/v1/data/transit", data)
+			Send(url+"/transit", data)
 		}
 
-		sleep := (1 + rand.Intn(5)) * 100
+		sleep := minInterval + rand.Intn(maxInterval-minInterval)
 
 		log.Println("Sleeping for", sleep, "ms")
 
-		time.Sleep(time.Duration((1+rand.Intn(9))*100) * time.Millisecond)
+		time.Sleep(time.Duration(sleep) * time.Millisecond)
 	}
 }
