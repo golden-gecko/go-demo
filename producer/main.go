@@ -27,6 +27,11 @@ type Transit struct {
 	Timestamp string     `bson:"Timestamp"`
 }
 
+type User struct {
+	Name     string `bson:"Name"`
+	Password string `bson:"Password"`
+}
+
 func RandomString(length int, charset string) string {
 	b := make([]byte, length)
 
@@ -44,6 +49,12 @@ func RandomPlate() string {
 	return RandomString(3, characters) + RandomString(6, digits)
 }
 
+func RandomWord(length int) string {
+	const characters = "abcdefghijklmnopqrstuvwxyz"
+
+	return RandomString(length, characters)
+}
+
 func Send(url string, data []byte) error {
 	body := bytes.NewBuffer(data)
 	resp, err := http.Post(url, "application/json", body)
@@ -53,9 +64,20 @@ func Send(url string, data []byte) error {
 		return err
 	}
 
-	log.Println(resp.StatusCode)
+	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 202 {
+		log.Println(resp.StatusCode)
+	}
 
 	return nil
+}
+
+func CreateUser() User {
+	t := User{
+		Name:     RandomWord(10),
+		Password: RandomWord(20),
+	}
+
+	return t
 }
 
 func CreateTemperature(location string) Temperature {
@@ -84,12 +106,25 @@ func CreateTransit() Transit {
 }
 
 func main() {
-	url := "http://haproxy:9000/api/v1/data"
+	apiUrl := "http://192.168.0.213:9010/api/v1"
+	recceiverUrl := "http://haproxy:9000/api/v1/data"
 
 	minInterval := 100
 	maxInterval := 500
 
 	for {
+		if true {
+			u1 := CreateUser()
+
+			data, err := json.Marshal(u1)
+
+			if err != nil {
+				os.Exit(1)
+			}
+
+			Send(apiUrl+"/users", data)
+		}
+
 		if true {
 			t1 := CreateTemperature("Room #1")
 			t2 := CreateTemperature("Room #2")
@@ -101,7 +136,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			Send(url+"/temperature", data)
+			Send(recceiverUrl+"/temperature", data)
 		}
 
 		if true {
@@ -117,7 +152,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			Send(url+"/transit", data)
+			Send(recceiverUrl+"/transit", data)
 		}
 
 		sleep := minInterval + rand.Intn(maxInterval-minInterval)

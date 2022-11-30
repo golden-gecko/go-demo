@@ -7,10 +7,10 @@ import (
 )
 
 func Test_UserToJson(t *testing.T) {
-	user := NewUser("Jack")
+	user := NewUser("Jack", "abc")
 
 	assert := assert.New(t)
-	assert.Equal(string(user.ToJSON()), `{"Name":"Jack"}`)
+	assert.Equal(string(user.ToJSON()), `{"Name":"Jack","Password":"abc"}`)
 }
 
 func Test_VehicleToJson(t *testing.T) {
