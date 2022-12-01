@@ -65,3 +65,45 @@ func CreateUser(user models.User) error {
 
 	return nil
 }
+
+func CreateVehicle(user models.Vehicle) error {
+	err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		_, err := tx.Exec(context.Background(), "INSERT INTO vehicles (id, plate, brand, model, year) VALUES ($1, $2, $3, $4, $5)", uuid.New(), user.Plate, user.Brand, user.Model, user.Year)
+
+		if err != nil {
+			log.Fatalln(err)
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		log.Fatalln(err)
+		return err
+	}
+
+	return nil
+}
+
+func GetUser(userId uuid.UUID) (models.User, error) {
+	var user models.User
+
+	err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		err := tx.QueryRow(context.Background(), "SELECT * FROM users WHERE id = $1", userId).Scan(&user)
+
+		if err != nil {
+			log.Fatalln(err)
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		log.Fatalln(err)
+		return user, err
+	}
+
+	return user, nil
+}

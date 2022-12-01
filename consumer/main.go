@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"os"
 	"time"
 
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
+
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	log "github.com/sirupsen/logrus"
 
 	"consumer/queue"
 )
@@ -36,7 +37,7 @@ func ProcessTemperature(writeAPI api.WriteAPIBlocking, body []byte) error {
 	err := json.Unmarshal(body, &temperature)
 
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return err
 	}
 
@@ -47,7 +48,7 @@ func ProcessTemperature(writeAPI api.WriteAPIBlocking, body []byte) error {
 		SetTime(time.Now())
 
 	if err := writeAPI.WritePoint(context.Background(), p); err != nil {
-		log.Println(err)
+		log.Error(err)
 		return err
 	}
 
@@ -60,7 +61,7 @@ func ProcessTransit(body []byte) error {
 	err := json.Unmarshal(body, &transit)
 
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return err
 	}
 
@@ -71,6 +72,7 @@ func main() {
 	err := queue.Init()
 
 	if err != nil {
+		log.Error(err)
 		os.Exit(1)
 	}
 
@@ -79,6 +81,7 @@ func main() {
 	client := influxdb2.NewClient("http://influx:8086", "my-super-secret-auth-token")
 
 	if _, err := client.Health(context.Background()); err != nil {
+		log.Error(err)
 		os.Exit(1)
 	}
 
@@ -97,7 +100,7 @@ func main() {
 	)
 
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		os.Exit(1)
 	}
 
@@ -112,33 +115,37 @@ func main() {
 	)
 
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		os.Exit(1)
 	}
 
 	for {
 		select {
 		case d := <-msgs1:
-			log.Printf("Received a message: %s", d.Body)
+			log.Debug("Received a message: %s", d.Body)
 
 			if err := ProcessTemperature(writeAPI, d.Body); err != nil {
 				if err := d.Nack(false, true); err != nil {
+					log.Error(err)
 					os.Exit(1)
 				}
 			} else {
 				if err := d.Ack(false); err != nil {
+					log.Error(err)
 					os.Exit(1)
 				}
 			}
 		case d := <-msgs2:
-			log.Printf("Received a message: %s", d.Body)
+			log.Debug("Received a message: %s", d.Body)
 
 			if err := ProcessTransit(d.Body); err != nil {
 				if err := d.Nack(false, true); err != nil {
+					log.Error(err)
 					os.Exit(1)
 				}
 			} else {
 				if err := d.Ack(false); err != nil {
+					log.Error(err)
 					os.Exit(1)
 				}
 			}

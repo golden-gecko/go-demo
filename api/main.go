@@ -6,6 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	log "github.com/sirupsen/logrus"
+
 	"api/api"
 	"api/roach"
 )
@@ -14,13 +16,13 @@ func Run(host string, port int) {
 	router := gin.Default()
 
 	router.GET("/api/v1/users", api.GetUsers)
-	router.GET("/api/v1/users/:userID", api.GetUser)
+	router.GET("/api/v1/users/:userId", api.GetUser)
 
 	router.POST("/api/v1/users", api.CreateUser)
-	router.DELETE("/api/v1/users/:userID", api.DeleteUser)
+	router.DELETE("/api/v1/users/:userId", api.DeleteUser)
 
 	router.GET("/api/v1/vehicles", api.GetVehicles)
-	router.GET("/api/v1/vehicles/:vehicleID", api.GetVehicle)
+	router.GET("/api/v1/vehicles/:vehicleId", api.GetVehicle)
 
 	router.POST("/api/v1/vehicles", api.CreateVehicle)
 	router.POST("/api/v1/vehicles/:plate/transits", api.CreateTransit)
@@ -30,6 +32,7 @@ func Run(host string, port int) {
 
 func main() {
 	if err := roach.Connect(); err != nil {
+		log.Error(err)
 		os.Exit(1)
 	}
 
