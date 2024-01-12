@@ -98,8 +98,8 @@ func CreateTransit() models.Transit {
 }
 
 func main() {
-	apiUrl := "http://192.168.0.213:9010/api/v1"
-	recceiverUrl := "http://haproxy:9000/api/v1/data"
+	apiUrl := "http://192.168.50.10:9020/api/v1"
+	recceiverUrl := "http://192.168.50.10:9050/api/v1/data"
 
 	minInterval := 100
 	maxInterval := 500

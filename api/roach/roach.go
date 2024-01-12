@@ -16,7 +16,7 @@ var (
 )
 
 func Connect() error {
-	config, err := pgx.ParseConfig("postgres://go_user:go_password@192.168.0.213:26257/go_demo")
+	config, err := pgx.ParseConfig("postgres://go_user:go_password@cockroach_1:26257/go_demo")
 
 	if err != nil {
 		log.Fatal(err)

@@ -7,17 +7,18 @@ x-logging:
     fluentd-address: localhost:${FLUENT_PORT}
 
 networks:
-
-  simple:
+  main:
+    ipam:
+      config:
+        - subnet: 192.168.50.0/24
 
 services:
-
   api_1:
     build:
       context: api
-    logging: *default-logging
     networks:
-      - simple
+      main:
+        ipv4_address: 192.168.50.20
     ports:
       - ${API_PORT}:${API_PORT}
     restart: unless-stopped
@@ -25,9 +26,9 @@ services:
   api_2:
     build:
       context: api
-    logging: *default-logging
     networks:
-      - simple
+      main:
+        ipv4_address: 192.168.50.21
     ports:
       - 5001:${API_PORT}
     restart: unless-stopped
@@ -35,9 +36,8 @@ services:
   cockroach_1:
     command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
     image: cockroachdb/cockroach:v${COCKROACH_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${COCKROACH_PORT}:${COCKROACH_PORT}
       - 7681:8080
@@ -48,9 +48,8 @@ services:
   cockroach_2:
     command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
     image: cockroachdb/cockroach:v${COCKROACH_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - 26258:${COCKROACH_PORT}
       - 7682:8080
@@ -61,9 +60,8 @@ services:
   cockroach_3:
     command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
     image: cockroachdb/cockroach:v${COCKROACH_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - 26259:${COCKROACH_PORT}
       - 7683:8080
@@ -74,25 +72,22 @@ services:
   consumer_1:
     build:
       context: consumer
-    logging: *default-logging
     networks:
-      - simple
+      - main
     restart: unless-stopped
 
   consumer_2:
     build:
       context: consumer
-    logging: *default-logging
     networks:
-      - simple
+      - main
     restart: unless-stopped
 
   fluent:
     build:
       context: fluent
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${FLUENT_PORT}:${FLUENT_PORT}
     restart: unless-stopped
@@ -104,9 +99,8 @@ services:
   grafana:
     build:
       context: grafana
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${GRAFANA_PORT}:${GRAFANA_PORT}
     restart: unless-stopped
@@ -116,12 +110,12 @@ services:
 
   haproxy:
     image: haproxy:${HAPROXY_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      main:
+        ipv4_address: 192.168.50.10
     ports:
-      - ${HAPROXY_PORT}:${HAPROXY_PORT}
-      - 9010:9010
+      - 9020:9020
+      - 9050:9050
       - 9103:9103
     restart: unless-stopped
     volumes:
@@ -139,9 +133,8 @@ services:
       - DOCKER_INFLUXDB_INIT_RETENTION=1w
       - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USER}
     image: influxdb:${INFLUX_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${INFLUX_PORT}:${INFLUX_PORT}
     restart: unless-stopped
@@ -153,9 +146,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
     image: mongo:${MONGO_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${MONGO_PORT}:${MONGO_PORT}    
     restart: unless-stopped
@@ -168,18 +160,16 @@ services:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
       - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/
     image: mongo-express:${MONGO_EXPRESS_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}
     restart: unless-stopped
 
   node_exporter:
     image: prom/node-exporter:v${NODE_EXPORTER_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports: 
       - ${NODE_EXPORTER_PORT}:${NODE_EXPORTER_PORT}
     restart: unless-stopped
@@ -187,9 +177,8 @@ services:
   node:
     build:
       context: node
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${NODE_PORT}:${NODE_PORT}
     restart: unless-stopped
@@ -197,9 +186,8 @@ services:
   producer:
     build:
       context: producer
-    logging: *default-logging
     networks:
-      - simple
+      - main
     restart: unless-stopped
 
   prometheus:
@@ -209,9 +197,8 @@ services:
       - rabbit
       - statsd_exporter
     image: prom/prometheus:v${PROMETHEUS_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${PROMETHEUS_PORT}:${PROMETHEUS_PORT}
     restart: unless-stopped
@@ -224,9 +211,8 @@ services:
   rabbit:
     build:
       context: rabbit
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${RABBIT_PORT}:${RABBIT_PORT}
     restart: unless-stopped
@@ -234,9 +220,9 @@ services:
   receiver_1:
     build:
       context: receiver
-    logging: *default-logging
     networks:
-      - simple
+      main:
+        ipv4_address: 192.168.50.30
     ports:
       - ${RECEIVER_PORT}:${RECEIVER_PORT}
     restart: unless-stopped
@@ -244,9 +230,9 @@ services:
   receiver_2:
     build:
       context: receiver
-    logging: *default-logging
     networks:
-      - simple
+      main:
+        ipv4_address: 192.168.50.31
     ports:
       - 7001:${RECEIVER_PORT}
     restart: unless-stopped
@@ -254,18 +240,17 @@ services:
   receiver_3:
     build:
       context: receiver
-    logging: *default-logging
     networks:
-      - simple
+      main:
+        ipv4_address: 192.168.50.32
     ports:
       - 7002:${RECEIVER_PORT}
     restart: unless-stopped
 
   statsd_exporter:
     image: prom/statsd-exporter:v${STATSD_EXPORTER_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${STATSD_EXPORTER_PORT}:${STATSD_EXPORTER_PORT}
     restart: unless-stopped
