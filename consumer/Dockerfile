@@ -1,4 +1,4 @@
-FROM golang:1.19.3-alpine3.16
+FROM golang:1.21.6-bookworm
 
 WORKDIR /go/src/app
 
