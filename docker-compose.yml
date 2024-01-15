@@ -1,72 +1,69 @@
 version: '3.9'
 
-x-logging:
-  &default-logging
-  driver: "fluentd"
-  options:
-    fluentd-address: localhost:${FLUENT_PORT}
-
 networks:
-
-  simple:
+  main:
+    enable_ipv6: false
+    ipam:
+      config:
+        - subnet: 192.168.100.0/24
 
 services:
-
   api_1:
     build:
       context: api
-    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${API_PORT}/api/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
-      - simple
-    ports:
-      - ${API_PORT}:${API_PORT}
+      - main
     restart: unless-stopped
 
   api_2:
     build:
       context: api
-    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${API_PORT}/api/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
-      - simple
-    ports:
-      - 5001:${API_PORT}
+      - main
     restart: unless-stopped
 
   cockroach_1:
-    command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
-    image: cockroachdb/cockroach:v${COCKROACH_VERSION}
-    logging: *default-logging
+    command: start --advertise-addr=cockroach_1:26357 --http-addr=cockroach_1:8080 --listen-addr=cockroach_1:26357 --sql-addr=cockroach_1:26257 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+    image: cockroachdb/cockroach:v23.1.13
     networks:
-      - simple
+      - main
     ports:
-      - ${COCKROACH_PORT}:${COCKROACH_PORT}
-      - 7681:8080
+      - 8080:8080
+      - 26257:26257
     restart: unless-stopped
     volumes:
       - cockroach_1:/data/db
 
   cockroach_2:
-    command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
-    image: cockroachdb/cockroach:v${COCKROACH_VERSION}
-    logging: *default-logging
+    command: start --advertise-addr=cockroach_2:26357 --http-addr=cockroach_2:8081 --listen-addr=cockroach_2:26357 --sql-addr=cockroach_2:26258 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+    image: cockroachdb/cockroach:v23.1.13
     networks:
-      - simple
+      - main
     ports:
-      - 26258:${COCKROACH_PORT}
-      - 7682:8080
+      - 8081:8081
+      - 26258:26258
     restart: unless-stopped
     volumes:
       - cockroach_2:/data/db
 
   cockroach_3:
-    command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
-    image: cockroachdb/cockroach:v${COCKROACH_VERSION}
-    logging: *default-logging
+    command: start --advertise-addr=cockroach_3:26357 --http-addr=cockroach_3:8082 --listen-addr=cockroach_3:26357 --sql-addr=cockroach_3:26259 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+    image: cockroachdb/cockroach:v23.1.13
     networks:
-      - simple
+      - main
     ports:
-      - 26259:${COCKROACH_PORT}
-      - 7683:8080
+      - 8082:8082
+      - 26259:26259
     restart: unless-stopped
     volumes:
       - cockroach_3:/data/db
@@ -74,39 +71,22 @@ services:
   consumer_1:
     build:
       context: consumer
-    logging: *default-logging
     networks:
-      - simple
+      - main
     restart: unless-stopped
 
   consumer_2:
     build:
       context: consumer
-    logging: *default-logging
     networks:
-      - simple
+      - main
     restart: unless-stopped
-
-  fluent:
-    build:
-      context: fluent
-    logging: *default-logging
-    networks:
-      - simple
-    ports:
-      - ${FLUENT_PORT}:${FLUENT_PORT}
-    restart: unless-stopped
-    volumes:
-      - type: bind
-        source: ./fluent/fluent.conf
-        target: /fluentd/etc/fluent.conf
 
   grafana:
     build:
       context: grafana
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${GRAFANA_PORT}:${GRAFANA_PORT}
     restart: unless-stopped
@@ -115,19 +95,14 @@ services:
       - grafana_var_lib:/var/lib/grafana
 
   haproxy:
-    image: haproxy:${HAPROXY_VERSION}
-    logging: *default-logging
+    build:
+      context: haproxy
     networks:
-      - simple
+      - main
     ports:
-      - ${HAPROXY_PORT}:${HAPROXY_PORT}
-      - 9010:9010
-      - 9103:9103
+      - 9020:9020
+      - 9050:9050
     restart: unless-stopped
-    volumes:
-      - type: bind
-        source: ./haproxy/haproxy.cfg
-        target: /usr/local/etc/haproxy/haproxy.cfg
 
   influx:
     environment:
@@ -139,9 +114,8 @@ services:
       - DOCKER_INFLUXDB_INIT_RETENTION=1w
       - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USER}
     image: influxdb:${INFLUX_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${INFLUX_PORT}:${INFLUX_PORT}
     restart: unless-stopped
@@ -153,9 +127,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
     image: mongo:${MONGO_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${MONGO_PORT}:${MONGO_PORT}    
     restart: unless-stopped
@@ -168,18 +141,16 @@ services:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
       - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/
     image: mongo-express:${MONGO_EXPRESS_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
-      - ${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}
+      - 8880:${MONGO_EXPRESS_PORT}
     restart: unless-stopped
 
   node_exporter:
     image: prom/node-exporter:v${NODE_EXPORTER_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports: 
       - ${NODE_EXPORTER_PORT}:${NODE_EXPORTER_PORT}
     restart: unless-stopped
@@ -187,9 +158,8 @@ services:
   node:
     build:
       context: node
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${NODE_PORT}:${NODE_PORT}
     restart: unless-stopped
@@ -197,9 +167,8 @@ services:
   producer:
     build:
       context: producer
-    logging: *default-logging
     networks:
-      - simple
+      - main
     restart: unless-stopped
 
   prometheus:
@@ -209,9 +178,8 @@ services:
       - rabbit
       - statsd_exporter
     image: prom/prometheus:v${PROMETHEUS_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${PROMETHEUS_PORT}:${PROMETHEUS_PORT}
     restart: unless-stopped
@@ -224,48 +192,74 @@ services:
   rabbit:
     build:
       context: rabbit
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
-      - ${RABBIT_PORT}:${RABBIT_PORT}
+      - 15672:15672
     restart: unless-stopped
 
   receiver_1:
     build:
       context: receiver
-    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/api/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
-      - simple
-    ports:
-      - ${RECEIVER_PORT}:${RECEIVER_PORT}
+      - main
     restart: unless-stopped
 
   receiver_2:
     build:
       context: receiver
-    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/api/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
-      - simple
-    ports:
-      - 7001:${RECEIVER_PORT}
+      - main
     restart: unless-stopped
 
   receiver_3:
     build:
       context: receiver
-    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/api/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
-      - simple
-    ports:
-      - 7002:${RECEIVER_PORT}
+      - main
     restart: unless-stopped
+
+  redis:
+    image: redis:7.2.4-alpine3.19
+    networks:
+      - main
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+
+  redis_insight:
+    depends_on:
+      - redis
+    image: redislabs/redisinsight:1.14.0
+    networks:
+      - main
+    ports:
+      - ${REDIS_INSIGHT_PORT}:${REDIS_INSIGHT_PORT}
+    restart: unless-stopped
+    volumes:
+      - redis_insight:/db
 
   statsd_exporter:
     image: prom/statsd-exporter:v${STATSD_EXPORTER_VERSION}
-    logging: *default-logging
     networks:
-      - simple
+      - main
     ports:
       - ${STATSD_EXPORTER_PORT}:${STATSD_EXPORTER_PORT}
     restart: unless-stopped
@@ -275,12 +269,9 @@ volumes:
   cockroach_1:
   cockroach_2:
   cockroach_3:
-  elastic:
   grafana_etc:
   grafana_var_lib:
   influx:
-  kafka:
-  kibana:
   mongo:
   postgres:
   redis:

@@ -1,4 +1,4 @@
-FROM golang:1.19.3
+FROM golang:1.21.6-bookworm
 
 WORKDIR /go/src/app
 
@@ -7,6 +7,6 @@ COPY . .
 RUN go get -d -v ./...
 RUN go install -v ./...
 
-EXPOSE 5000
+EXPOSE 6000
 
-ENTRYPOINT [ "api" ]
+CMD [ "api" ]
