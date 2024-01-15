@@ -2,11 +2,12 @@ package roach
 
 import (
 	"context"
-	"log"
 
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
+
+	log "github.com/sirupsen/logrus"
 
 	"api/models"
 )
@@ -75,7 +76,7 @@ func CreateVehicle(vehicle models.Vehicle) error {
 		_, err := tx.Exec(context.Background(), "INSERT INTO vehicles (plate, brand, model, year, category) VALUES ($1, $2, $3, $4, $5)", vehicle.Plate, vehicle.Brand, vehicle.Model, vehicle.Year, vehicle.Category)
 
 		if err != nil {
-			log.Fatalln(err)
+			log.Error(err)
 			return err
 		}
 
@@ -83,7 +84,7 @@ func CreateVehicle(vehicle models.Vehicle) error {
 	})
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Error(err)
 		return err
 	}
 
