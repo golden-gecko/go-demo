@@ -45,8 +45,10 @@ func Send(url string, data []byte) error {
 		return err
 	}
 
-	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 202 {
+	if resp.StatusCode == 200 || resp.StatusCode == 201 || resp.StatusCode == 202 {
 		log.Println(resp.StatusCode)
+	} else {
+		log.Error(resp.StatusCode)
 	}
 
 	return nil
@@ -98,11 +100,11 @@ func CreateTransit() models.Transit {
 }
 
 func main() {
-	apiUrl := "http://192.168.50.10:9020/api/v1"
-	recceiverUrl := "http://192.168.50.10:9050/api/v1/data"
+	apiUrl := "http://haproxy:9020/api/v1"
+	receiverUrl := "http://haproxy:9050/api/v1/data"
 
-	minInterval := 100
-	maxInterval := 500
+	minInterval := 10
+	maxInterval := 50
 
 	for {
 		if true {
@@ -143,7 +145,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			Send(recceiverUrl+"/temperature", data)
+			Send(receiverUrl+"/temperature", data)
 		}
 
 		if true {
@@ -160,7 +162,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			Send(recceiverUrl+"/transit", data)
+			Send(receiverUrl+"/transit", data)
 		}
 
 		sleep := minInterval + rand.Intn(maxInterval-minInterval)

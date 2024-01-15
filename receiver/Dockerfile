@@ -9,4 +9,4 @@ RUN go install -v ./...
 
 EXPOSE 7000
 
-ENTRYPOINT [ "receiver" ]
+CMD [ "receiver" ]

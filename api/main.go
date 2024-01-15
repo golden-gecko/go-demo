@@ -15,6 +15,8 @@ import (
 func Run(host string, port int) {
 	router := gin.Default()
 
+	router.GET("/api/v1/healthcheck", api.Healthcheck)
+
 	router.GET("/api/v1/users", api.GetUsers)
 	router.GET("/api/v1/users/:userId", api.GetUser)
 
@@ -38,5 +40,5 @@ func main() {
 
 	defer roach.Disconnect()
 
-	Run("0.0.0.0", 5000)
+	Run("0.0.0.0", 6000)
 }

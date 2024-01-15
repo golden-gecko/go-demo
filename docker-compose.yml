@@ -1,70 +1,69 @@
 version: '3.9'
 
-x-logging:
-  &default-logging
-  driver: "fluentd"
-  options:
-    fluentd-address: localhost:${FLUENT_PORT}
-
 networks:
   main:
+    enable_ipv6: false
     ipam:
       config:
-        - subnet: 192.168.50.0/24
+        - subnet: 192.168.100.0/24
 
 services:
   api_1:
     build:
       context: api
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${API_PORT}/api/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
-      main:
-        ipv4_address: 192.168.50.20
-    ports:
-      - ${API_PORT}:${API_PORT}
+      - main
     restart: unless-stopped
 
   api_2:
     build:
       context: api
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${API_PORT}/api/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
-      main:
-        ipv4_address: 192.168.50.21
-    ports:
-      - 5001:${API_PORT}
+      - main
     restart: unless-stopped
 
   cockroach_1:
-    command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
-    image: cockroachdb/cockroach:v${COCKROACH_VERSION}
+    command: start --advertise-addr=cockroach_1:26357 --http-addr=cockroach_1:8080 --listen-addr=cockroach_1:26357 --sql-addr=cockroach_1:26257 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+    image: cockroachdb/cockroach:v23.1.13
     networks:
       - main
     ports:
-      - ${COCKROACH_PORT}:${COCKROACH_PORT}
-      - 7681:8080
+      - 8080:8080
+      - 26257:26257
     restart: unless-stopped
     volumes:
       - cockroach_1:/data/db
 
   cockroach_2:
-    command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
-    image: cockroachdb/cockroach:v${COCKROACH_VERSION}
+    command: start --advertise-addr=cockroach_2:26357 --http-addr=cockroach_2:8081 --listen-addr=cockroach_2:26357 --sql-addr=cockroach_2:26258 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+    image: cockroachdb/cockroach:v23.1.13
     networks:
       - main
     ports:
-      - 26258:${COCKROACH_PORT}
-      - 7682:8080
+      - 8081:8081
+      - 26258:26258
     restart: unless-stopped
     volumes:
       - cockroach_2:/data/db
 
   cockroach_3:
-    command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
-    image: cockroachdb/cockroach:v${COCKROACH_VERSION}
+    command: start --advertise-addr=cockroach_3:26357 --http-addr=cockroach_3:8082 --listen-addr=cockroach_3:26357 --sql-addr=cockroach_3:26259 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+    image: cockroachdb/cockroach:v23.1.13
     networks:
       - main
     ports:
-      - 26259:${COCKROACH_PORT}
-      - 7683:8080
+      - 8082:8082
+      - 26259:26259
     restart: unless-stopped
     volumes:
       - cockroach_3:/data/db
@@ -83,19 +82,6 @@ services:
       - main
     restart: unless-stopped
 
-  fluent:
-    build:
-      context: fluent
-    networks:
-      - main
-    ports:
-      - ${FLUENT_PORT}:${FLUENT_PORT}
-    restart: unless-stopped
-    volumes:
-      - type: bind
-        source: ./fluent/fluent.conf
-        target: /fluentd/etc/fluent.conf
-
   grafana:
     build:
       context: grafana
@@ -109,19 +95,14 @@ services:
       - grafana_var_lib:/var/lib/grafana
 
   haproxy:
-    image: haproxy:${HAPROXY_VERSION}
+    build:
+      context: haproxy
     networks:
-      main:
-        ipv4_address: 192.168.50.10
+      - main
     ports:
       - 9020:9020
       - 9050:9050
-      - 9103:9103
     restart: unless-stopped
-    volumes:
-      - type: bind
-        source: ./haproxy/haproxy.cfg
-        target: /usr/local/etc/haproxy/haproxy.cfg
 
   influx:
     environment:
@@ -163,7 +144,7 @@ services:
     networks:
       - main
     ports:
-      - ${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}
+      - 8880:${MONGO_EXPRESS_PORT}
     restart: unless-stopped
 
   node_exporter:
@@ -214,38 +195,66 @@ services:
     networks:
       - main
     ports:
-      - ${RABBIT_PORT}:${RABBIT_PORT}
+      - 15672:15672
     restart: unless-stopped
 
   receiver_1:
     build:
       context: receiver
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/api/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
-      main:
-        ipv4_address: 192.168.50.30
-    ports:
-      - ${RECEIVER_PORT}:${RECEIVER_PORT}
+      - main
     restart: unless-stopped
 
   receiver_2:
     build:
       context: receiver
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/api/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
-      main:
-        ipv4_address: 192.168.50.31
-    ports:
-      - 7001:${RECEIVER_PORT}
+      - main
     restart: unless-stopped
 
   receiver_3:
     build:
       context: receiver
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/api/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
-      main:
-        ipv4_address: 192.168.50.32
-    ports:
-      - 7002:${RECEIVER_PORT}
+      - main
     restart: unless-stopped
+
+  redis:
+    image: redis:7.2.4-alpine3.19
+    networks:
+      - main
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+
+  redis_insight:
+    depends_on:
+      - redis
+    image: redislabs/redisinsight:1.14.0
+    networks:
+      - main
+    ports:
+      - ${REDIS_INSIGHT_PORT}:${REDIS_INSIGHT_PORT}
+    restart: unless-stopped
+    volumes:
+      - redis_insight:/db
 
   statsd_exporter:
     image: prom/statsd-exporter:v${STATSD_EXPORTER_VERSION}
@@ -260,12 +269,9 @@ volumes:
   cockroach_1:
   cockroach_2:
   cockroach_3:
-  elastic:
   grafana_etc:
   grafana_var_lib:
   influx:
-  kafka:
-  kibana:
   mongo:
   postgres:
   redis:

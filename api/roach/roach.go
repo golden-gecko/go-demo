@@ -16,6 +16,8 @@ var (
 )
 
 func Connect() error {
+	log.Println("Connecting to database...")
+
 	config, err := pgx.ParseConfig("postgres://go_user:go_password@cockroach_1:26257/go_demo")
 
 	if err != nil {
@@ -36,6 +38,8 @@ func Connect() error {
 }
 
 func Disconnect() error {
+	log.Println("Disconnecting to database...")
+
 	err := Connnection.Close(context.Background())
 
 	if err != nil {
