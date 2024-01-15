@@ -70,9 +70,9 @@ func CreateUser(user models.User) error {
 	return nil
 }
 
-func CreateVehicle(user models.Vehicle) error {
+func CreateVehicle(vehicle models.Vehicle) error {
 	err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		_, err := tx.Exec(context.Background(), "INSERT INTO vehicles (id, plate, brand, model, year) VALUES ($1, $2, $3, $4, $5)", uuid.New(), user.Plate, user.Brand, user.Model, user.Year)
+		_, err := tx.Exec(context.Background(), "INSERT INTO vehicles (plate, brand, model, year, category) VALUES ($1, $2, $3, $4, $5)", vehicle.Plate, vehicle.Brand, vehicle.Model, vehicle.Year, vehicle.Category)
 
 		if err != nil {
 			log.Fatalln(err)

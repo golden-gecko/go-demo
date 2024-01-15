@@ -15,9 +15,9 @@ import (
 func Run(host string, port int) {
 	router := gin.Default()
 
-	router.GET("/api/v1/healthcheck", api.Healthcheck)
+	router.GET("/v1/healthcheck", api.Healthcheck)
 
-	router.POST("/api/v1/data/:type", api.CreateData)
+	router.POST("/v1/data/:type", api.CreateData)
 
 	router.Run(fmt.Sprintf("%s:%d", host, port))
 }

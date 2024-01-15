@@ -1,5 +1,20 @@
 package models
 
+// for JSON
+
+type Car struct {
+	Year     int    `bson:"Year"`
+	Brand    string `bson:"Brand"`
+	Model    string `bson:"Model"`
+	Category string `bson:"Category"`
+}
+
+type Cars struct {
+	Cars []Car `json:"cars"`
+}
+
+// for API
+
 type Coordinate struct {
 	Latitude  float32 `bson:"Latitude"`
 	Longitude float32 `bson:"Longitude"`
@@ -23,8 +38,9 @@ type User struct {
 }
 
 type Vehicle struct {
-	Plate string `bson:"Plate"`
-	Brand string `bson:"Brand"`
-	Model string `bson:"Model"`
-	Year  int    `bson:"Year"`
+	Plate    string `bson:"Plate"`
+	Brand    string `bson:"Brand"`
+	Model    string `bson:"Model"`
+	Year     int    `bson:"Year"`
+	Category string `bson:"Category"`
 }

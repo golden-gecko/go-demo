@@ -67,14 +67,15 @@ func (user User) Print() {
 // ---------------------------------------------------------------------------
 
 type Vehicle struct {
-	Plate string `bson:"Plate"`
-	Brand string `bson:"Brand"`
-	Model string `bson:"Model"`
-	Year  int    `bson:"Year"`
+	Plate    string `bson:"Plate"`
+	Brand    string `bson:"Brand"`
+	Model    string `bson:"Model"`
+	Year     int    `bson:"Year"`
+	Category string `bson:"Category"`
 }
 
-func NewVehicle(plate string, brand string, model string, year int) Vehicle {
-	return Vehicle{plate, brand, model, year}
+func NewVehicle(plate string, brand string, model string, year int, category string) Vehicle {
+	return Vehicle{plate, brand, model, year, category}
 }
 
 func (vehicle Vehicle) ToJSON() []byte {

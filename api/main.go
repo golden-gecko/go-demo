@@ -15,19 +15,19 @@ import (
 func Run(host string, port int) {
 	router := gin.Default()
 
-	router.GET("/api/v1/healthcheck", api.Healthcheck)
+	router.GET("/v1/healthcheck", api.Healthcheck)
 
-	router.GET("/api/v1/users", api.GetUsers)
-	router.GET("/api/v1/users/:userId", api.GetUser)
+	router.GET("/v1/users", api.GetUsers)
+	router.GET("/v1/users/:userId", api.GetUser)
 
-	router.POST("/api/v1/users", api.CreateUser)
-	router.DELETE("/api/v1/users/:userId", api.DeleteUser)
+	router.POST("/v1/users", api.CreateUser)
+	router.DELETE("/apv1/users/:userId", api.DeleteUser)
 
-	router.GET("/api/v1/vehicles", api.GetVehicles)
-	router.GET("/api/v1/vehicles/:vehicleId", api.GetVehicle)
+	router.GET("/v1/vehicles", api.GetVehicles)
+	router.GET("/v1/vehicles/:vehicleId", api.GetVehicle)
 
-	router.POST("/api/v1/vehicles", api.CreateVehicle)
-	router.POST("/api/v1/vehicles/:plate/transits", api.CreateTransit)
+	router.POST("/v1/vehicles", api.CreateVehicle)
+	router.POST("/v1/vehicles/:plate/transits", api.CreateTransit)
 
 	router.Run(fmt.Sprintf("%s:%d", host, port))
 }

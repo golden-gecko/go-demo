@@ -1,15 +1,4 @@
-CREATE DATABASE go_demo;
-
-CREATE USER go_user;
-
-GRANT ALL ON DATABASE go_demo TO go_user WITH GRANT OPTION;
-
-CREATE TABLE go_demo.public.users (
-    id UUID NOT NULL,
-    name VARCHAR NOT NULL,
-    password VARCHAR NOT NULL,
-    CONSTRAINT users_pkey PRIMARY KEY (id ASC)
-);
+DROP TABLE go_demo.public.vehicles;
 
 CREATE TABLE go_demo.public.vehicles (
     plate VARCHAR NOT NULL,
