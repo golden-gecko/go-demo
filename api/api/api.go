@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -51,11 +53,13 @@ func CreateUser(c *gin.Context) {
 	if err := c.BindJSON(&user); err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
+		return
 	}
 
 	if err := roach.CreateUser(user); err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
+		return
 	}
 
 	/*_, err := db.UserCollection.InsertOne(context.TODO(), user)
@@ -132,11 +136,20 @@ func CreateVehicle(c *gin.Context) {
 	if err := c.BindJSON(&vehicle); err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
+		return
+	}
+
+	if len(strings.Trim(vehicle.Plate, " ")) <= 0 {
+		err := errors.New("invalid value: no plate")
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+		return
 	}
 
 	if err := roach.CreateVehicle(vehicle); err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
+		return
 	}
 
 	c.JSON(http.StatusCreated, map[string]error{})
