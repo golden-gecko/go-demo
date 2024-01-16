@@ -1,226 +1,226 @@
 package api
 
 import (
-	"context"
-	"errors"
-	"net/http"
-	"strings"
+    "context"
+    "errors"
+    "net/http"
+    "strings"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"go.mongodb.org/mongo-driver/bson"
+    "github.com/gin-gonic/gin"
+    "github.com/google/uuid"
+    "go.mongodb.org/mongo-driver/bson"
 
-	log "github.com/sirupsen/logrus"
+    log "github.com/sirupsen/logrus"
 
-	"api/db"
-	"api/models"
-	"api/roach"
+    "api/db"
+    "api/models"
+    "api/roach"
 )
 
 // ---------------------------------------------------------------------------
 
 func Healthcheck(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, nil)
+    c.IndentedJSON(http.StatusOK, nil)
 }
 
 // ---------------------------------------------------------------------------
 
 func CreateTransit(c *gin.Context) {
-	var transit models.Transit
+    var transit models.Transit
 
-	transit.Plate = c.Param("plate")
+    transit.Plate = c.Param("plate")
 
-	if err := c.BindJSON(&transit); err != nil {
-		log.Error(err)
-		panic(err)
-	}
+    if err := c.BindJSON(&transit); err != nil {
+        log.Error(err)
+        panic(err)
+    }
 
-	_, err := db.TransitCollection.InsertOne(context.TODO(), transit)
+    _, err := db.TransitCollection.InsertOne(context.TODO(), transit)
 
-	if err != nil {
-		log.Error(err)
-		panic(err)
-	}
+    if err != nil {
+        log.Error(err)
+        panic(err)
+    }
 
-	c.IndentedJSON(http.StatusCreated, nil)
+    c.IndentedJSON(http.StatusCreated, nil)
 }
 
 // ---------------------------------------------------------------------------
 
 func CreateUser(c *gin.Context) {
-	var user models.User
+    var user models.User
 
-	if err := c.BindJSON(&user); err != nil {
-		log.Error(err)
-		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
-		return
-	}
+    if err := c.BindJSON(&user); err != nil {
+        log.Error(err)
+        c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
+        return
+    }
 
-	if validate_string(user.Name) == false {
-		err := errors.New("invalid value: no name")
-		log.Error(err)
-		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
-		return
-	}
+    if validate_string(user.Name) == false {
+        err := errors.New("invalid value: no name")
+        log.Error(err)
+        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+        return
+    }
 
-	if validate_string(user.Password) == false {
-		err := errors.New("invalid value: no password")
-		log.Error(err)
-		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
-		return
-	}
+    if validate_string(user.Password) == false {
+        err := errors.New("invalid value: no password")
+        log.Error(err)
+        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+        return
+    }
 
-	if err := roach.CreateUser(user); err != nil {
-		log.Error(err)
-		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
-		return
-	}
+    if err := roach.CreateUser(user); err != nil {
+        log.Error(err)
+        c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
+        return
+    }
 
-	c.JSON(http.StatusCreated, map[string]error{})
+    c.JSON(http.StatusCreated, map[string]error{})
 }
 
 func DeleteUser(c *gin.Context) {
-	c.JSON(http.StatusOK, map[string]error{})
+    c.JSON(http.StatusOK, map[string]error{})
 }
 
 func GetUsers(c *gin.Context) {
-	var users []models.User
+    var users []models.User
 
-	cursor := db.Find(db.UserCollection)
-	defer cursor.Close(context.TODO())
+    cursor := db.Find(db.UserCollection)
+    defer cursor.Close(context.TODO())
 
-	for cursor.Next(context.TODO()) {
-		var user1 bson.D
-		var user3 models.User
+    for cursor.Next(context.TODO()) {
+        var user1 bson.D
+        var user3 models.User
 
-		if err := cursor.Decode(&user1); err != nil {
-			log.Error(err)
-			panic(err)
-		}
+        if err := cursor.Decode(&user1); err != nil {
+            log.Error(err)
+            panic(err)
+        }
 
-		user2, err := bson.Marshal(user1)
+        user2, err := bson.Marshal(user1)
 
-		if err != nil {
-			log.Error(err)
-			panic(err)
-		}
+        if err != nil {
+            log.Error(err)
+            panic(err)
+        }
 
-		if err := bson.Unmarshal(user2, &user3); err != nil {
-			log.Error(err)
-			panic(err)
-		}
+        if err := bson.Unmarshal(user2, &user3); err != nil {
+            log.Error(err)
+            panic(err)
+        }
 
-		users = append(users, user3)
-	}
+        users = append(users, user3)
+    }
 
-	c.IndentedJSON(http.StatusOK, users)
+    c.IndentedJSON(http.StatusOK, users)
 }
 
 func GetUser(c *gin.Context) {
-	userId, err := uuid.Parse(c.Param("userId"))
+    userId, err := uuid.Parse(c.Param("userId"))
 
-	if err != nil {
-		log.Error(err)
-		c.IndentedJSON(http.StatusBadRequest, err)
-		return
-	}
+    if err != nil {
+        log.Error(err)
+        c.IndentedJSON(http.StatusBadRequest, err)
+        return
+    }
 
-	user, err := roach.GetUser(userId)
+    user, err := roach.GetUser(userId)
 
-	if err != nil {
-		log.Error(err)
-		c.IndentedJSON(http.StatusUnprocessableEntity, err)
-		return
-	}
+    if err != nil {
+        log.Error(err)
+        c.IndentedJSON(http.StatusUnprocessableEntity, err)
+        return
+    }
 
-	c.IndentedJSON(http.StatusUnprocessableEntity, user)
+    c.IndentedJSON(http.StatusUnprocessableEntity, user)
 }
 
 // ---------------------------------------------------------------------------
 
 func validate_string(value string) bool {
-	return len(strings.Trim(value, " ")) > 0
+    return len(strings.Trim(value, " ")) > 0
 }
 
 func CreateVehicle(c *gin.Context) {
-	var vehicle models.Vehicle
+    var vehicle models.Vehicle
 
-	if err := c.BindJSON(&vehicle); err != nil {
-		log.Error(err)
-		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
-		return
-	}
+    if err := c.BindJSON(&vehicle); err != nil {
+        log.Error(err)
+        c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
+        return
+    }
 
-	if validate_string(vehicle.Plate) == false {
-		err := errors.New("invalid value: no plate")
-		log.Error(err)
-		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
-		return
-	}
+    if validate_string(vehicle.Plate) == false {
+        err := errors.New("invalid value: no plate")
+        log.Error(err)
+        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+        return
+    }
 
-	if validate_string(vehicle.Brand) == false {
-		err := errors.New("invalid value: no brand")
-		log.Error(err)
-		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
-		return
-	}
+    if validate_string(vehicle.Brand) == false {
+        err := errors.New("invalid value: no brand")
+        log.Error(err)
+        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+        return
+    }
 
-	if validate_string(vehicle.Model) == false {
-		err := errors.New("invalid value: no model")
-		log.Error(err)
-		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
-		return
-	}
+    if validate_string(vehicle.Model) == false {
+        err := errors.New("invalid value: no model")
+        log.Error(err)
+        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+        return
+    }
 
-	if validate_string(vehicle.Category) == false {
-		err := errors.New("invalid value: no category")
-		log.Error(err)
-		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
-		return
-	}
+    if validate_string(vehicle.Category) == false {
+        err := errors.New("invalid value: no category")
+        log.Error(err)
+        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+        return
+    }
 
-	if err := roach.CreateVehicle(vehicle); err != nil {
-		log.Error(err)
-		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
-		return
-	}
+    if err := roach.CreateVehicle(vehicle); err != nil {
+        log.Error(err)
+        c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
+        return
+    }
 
-	c.JSON(http.StatusCreated, map[string]error{})
+    c.JSON(http.StatusCreated, map[string]error{})
 }
 
 func GetVehicles(c *gin.Context) {
-	var vehicles []models.Vehicle
+    var vehicles []models.Vehicle
 
-	cursor := db.Find(db.VehicleCollection)
-	defer cursor.Close(context.TODO())
+    cursor := db.Find(db.VehicleCollection)
+    defer cursor.Close(context.TODO())
 
-	for cursor.Next(context.TODO()) {
-		var vehicle1 bson.D
-		var vehicle3 models.Vehicle
+    for cursor.Next(context.TODO()) {
+        var vehicle1 bson.D
+        var vehicle3 models.Vehicle
 
-		if err := cursor.Decode(&vehicle1); err != nil {
-			log.Error(err)
-			panic(err)
-		}
+        if err := cursor.Decode(&vehicle1); err != nil {
+            log.Error(err)
+            panic(err)
+        }
 
-		vehicle2, err := bson.Marshal(vehicle1)
+        vehicle2, err := bson.Marshal(vehicle1)
 
-		if err != nil {
-			log.Error(err)
-			panic(err)
-		}
+        if err != nil {
+            log.Error(err)
+            panic(err)
+        }
 
-		if err := bson.Unmarshal(vehicle2, &vehicle3); err != nil {
-			log.Error(err)
-			panic(err)
-		}
+        if err := bson.Unmarshal(vehicle2, &vehicle3); err != nil {
+            log.Error(err)
+            panic(err)
+        }
 
-		vehicles = append(vehicles, vehicle3)
-	}
+        vehicles = append(vehicles, vehicle3)
+    }
 
-	c.IndentedJSON(http.StatusOK, vehicles)
+    c.IndentedJSON(http.StatusOK, vehicles)
 }
 
 func GetVehicle(c *gin.Context) {
-	// vehicleID := c.Param("vehicleID")
+    // vehicleID := c.Param("vehicleID")
 }

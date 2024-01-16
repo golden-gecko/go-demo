@@ -1,6 +1,6 @@
 module producer
 
-go 1.19
+go 1.21.6
 
 require github.com/sirupsen/logrus v1.9.0
 

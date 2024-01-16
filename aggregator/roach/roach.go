@@ -3,130 +3,111 @@ package roach
 import (
 	"context"
 
-	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 
 	log "github.com/sirupsen/logrus"
-
-	"api/models"
 )
 
 var (
-	Connnection *pgx.Conn
+    Connnection *pgx.Conn
 )
 
-func Connect() error {
-	log.Println("Connecting to database...")
-
-	config, err := pgx.ParseConfig("postgres://go_user:go_password@cockroach_1:26257/go_demo")
-
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
-	conn, err := pgx.ConnectConfig(context.Background(), config)
-
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
-	Connnection = conn
-
-	return nil
-}
-
-func Disconnect() error {
-	log.Println("Disconnecting to database...")
-
-	err := Connnection.Close(context.Background())
-
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
-	return nil
-}
-
-func CreateUser(user models.User) error {
-	err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		_, err := tx.Exec(context.Background(), "INSERT INTO users (id, name, password) VALUES ($1, $2, $3)", uuid.New(), user.Name, user.Password)
-
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
-	return nil
-}
-
-func CreateVehicle(vehicle models.Vehicle) error {
-	err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		_, err := tx.Exec(context.Background(), "INSERT INTO vehicles (plate, brand, model, year, category) VALUES ($1, $2, $3, $4, $5)", vehicle.Plate, vehicle.Brand, vehicle.Model, vehicle.Year, vehicle.Category)
-
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
-	return nil
-}
-
-func GetUser(userId uuid.UUID) (models.User, error) {
-	var user models.User
-
-	err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		err := tx.QueryRow(context.Background(), "SELECT * FROM users WHERE id = $1", userId).Scan(&user)
-
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		log.Error(err)
-		return user, err
-	}
-
-	return user, nil
+type VehicleCountByModel struct {
+    Brand string `bson:"Brand"`
+    Model string `bson:"Model"`
+    Count int    `bson:"Count"`
 }
 
 type VehicleCountByYear struct {
-	Year  int `bson:"Year"`
-	Count int `bson:"Count"`
+    Year  int `bson:"Year"`
+    Count int `bson:"Count"`
+}
+
+func Connect() error {
+    log.Println("Connecting to database...")
+
+    config, err := pgx.ParseConfig("postgres://go_user:go_password@cockroach_1:26257/go_demo")
+
+    if err != nil {
+        log.Error(err)
+        return err
+    }
+
+    conn, err := pgx.ConnectConfig(context.Background(), config)
+
+    if err != nil {
+        log.Error(err)
+        return err
+    }
+
+    log.Println("Connected to database")
+
+    Connnection = conn
+
+    return nil
+}
+
+func Disconnect() error {
+    log.Println("Disconnecting from database...")
+
+    err := Connnection.Close(context.Background())
+
+    if err != nil {
+        log.Error(err)
+        return err
+    }
+
+    log.Println("Disconnected from database")
+
+    return nil
+}
+
+func GetVehicleCountByModel() ([]VehicleCountByModel, error) {
+    rows, err := Connnection.Query(context.Background(), "SELECT brand, model, COUNT(*) FROM vehicles GROUP BY brand, model")
+
+    if err != nil {
+        log.Error(err)
+        return nil, err
+    }
+
+    defer rows.Close()
+
+    var models []VehicleCountByModel
+
+    for rows.Next() {
+        var model VehicleCountByModel
+
+        if err := rows.Scan(&model.Brand, &model.Model, &model.Count); err != nil {
+            return nil, err
+        }
+
+        models = append(models, model)
+    }
+
+    return models, nil
 }
 
 func GetVehicleCountByYear() ([]VehicleCountByYear, error) {
-	rows, err := Connnection.Query(context.Background(), "SELECT year, COUNT(*) FROM vehicles GROUP BY year")
+    rows, err := Connnection.Query(context.Background(), "SELECT year, COUNT(*) FROM vehicles GROUP BY year")
 
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
+    if err != nil {
+        log.Error(err)
+        return nil, err
+    }
 
-	defer rows.Close()
+    defer rows.Close()
 
-	return years, nil
+    var years []VehicleCountByYear
+
+    for rows.Next() {
+        var year VehicleCountByYear
+
+        if err := rows.Scan(&year.Year, &year.Count); err != nil {
+            return nil, err
+        }
+
+        years = append(years, year)
+    }
+
+    return years, nil
 }
