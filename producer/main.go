@@ -178,7 +178,7 @@ func RandomPlate() string {
 	const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	const digits = "0123456789"
 
-	return RandomString(3, characters) + RandomString(6, digits)
+	return RandomString(2, characters) + RandomString(3, digits)
 }
 
 func RandomWord(length int) string {

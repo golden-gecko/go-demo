@@ -56,17 +56,25 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	if validate_string(user.Name) == false {
+		err := errors.New("invalid value: no name")
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+		return
+	}
+
+	if validate_string(user.Password) == false {
+		err := errors.New("invalid value: no password")
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+		return
+	}
+
 	if err := roach.CreateUser(user); err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
 		return
 	}
-
-	/*_, err := db.UserCollection.InsertOne(context.TODO(), user)
-
-	if err != nil {
-		log.Fatalln(err)
-	}*/
 
 	c.JSON(http.StatusCreated, map[string]error{})
 }
@@ -130,6 +138,10 @@ func GetUser(c *gin.Context) {
 
 // ---------------------------------------------------------------------------
 
+func validate_string(value string) bool {
+	return len(strings.Trim(value, " ")) > 0
+}
+
 func CreateVehicle(c *gin.Context) {
 	var vehicle models.Vehicle
 
@@ -139,8 +151,29 @@ func CreateVehicle(c *gin.Context) {
 		return
 	}
 
-	if len(strings.Trim(vehicle.Plate, " ")) <= 0 {
+	if validate_string(vehicle.Plate) == false {
 		err := errors.New("invalid value: no plate")
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+		return
+	}
+
+	if validate_string(vehicle.Brand) == false {
+		err := errors.New("invalid value: no brand")
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+		return
+	}
+
+	if validate_string(vehicle.Model) == false {
+		err := errors.New("invalid value: no model")
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+		return
+	}
+
+	if validate_string(vehicle.Category) == false {
+		err := errors.New("invalid value: no category")
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, map[string]error{"message": err})
 		return
