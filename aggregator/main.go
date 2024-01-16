@@ -9,12 +9,12 @@ import (
 	"aggregator/roach"
 )
 
-func ProcessCountByYear() {
-
+func ProcessVehicleCountByYear() {
+	roch.GetVehicleCountByYear()
 }
 
-func ProcessCountByModel() {
-
+func ProcessVehicleCountByModel() {
+	roch.GetVehicleCountByModel()
 }
 
 func main() {
@@ -28,8 +28,8 @@ func main() {
 	interval := 1000
 
 	for {
-		ProcessCountByYear()
-		ProcessCountByModel()
+		ProcessVehicleCountByYear()
+		ProcessVehicleCountByModel()
 
 		log.Debug("Sleeping for", interval, "ms")
 
