@@ -22,13 +22,12 @@
 
 ### UI
 
-- Chronograf - http://192.168.0.213:8888/
-- CockroachDB - http://192.168.0.213:8080/
-- Grafana - http://192.168.0.213:3000/
-- Kafka UI - http://192.168.0.213:8080/
-- Kibana - http://192.168.0.213:5601/
-- InfluxDB - http://192.168.0.213:8086/
-- Mongo Express - http://192.168.0.213:8081/
-- Prometheus - http://192.168.0.213:9090/
-- RabbitMQ - http://192.168.0.213:15672/
-- RedisInsight - http://192.168.0.213:8001/
+- Chronograf - http://localhost:8888/
+- CockroachDB - http://localhost:8080/
+- Grafana - http://localhost:3000/ (admin, admin)
+- InfluxDB - http://localhost:8086/ (go_user, go_password)
+- Mongo Express - http://localhost:8880/
+- Nakama - http://localhost:7351/ (admin, password)
+- Prometheus - http://localhost:9090/
+- RabbitMQ - http://localhost:15672/ (guest, guest)
+- RedisInsight - http://localhost:8001/

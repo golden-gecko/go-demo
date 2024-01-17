@@ -1,109 +1,109 @@
 package queue
 
 import (
-	"context"
-	"log"
-	"time"
+    "context"
+    "log"
+    "time"
 
-	amqp "github.com/rabbitmq/amqp091-go"
-	kafka "github.com/segmentio/kafka-go"
+    amqp "github.com/rabbitmq/amqp091-go"
+    kafka "github.com/segmentio/kafka-go"
 )
 
 var (
-	Client  *amqp.Connection
-	Channel *amqp.Channel
-	Context context.Context
-	Cancel  context.CancelFunc
+    Client  *amqp.Connection
+    Channel *amqp.Channel
+    Context context.Context
+    Cancel  context.CancelFunc
 
-	KafkaClient *kafka.Conn
+    KafkaClient *kafka.Conn
 )
 
 func InitRabbit() error {
-	conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672/")
+    conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672/")
 
-	if err != nil {
-		log.Println(err)
-		return err
-	}
+    if err != nil {
+        log.Println(err)
+        return err
+    }
 
-	ch, err := conn.Channel()
+    ch, err := conn.Channel()
 
-	if err != nil {
-		log.Println(err)
-		return err
-	}
+    if err != nil {
+        log.Println(err)
+        return err
+    }
 
-	queues := []string{"temperatures", "transits"}
+    queues := []string{"temperatures", "transits"}
 
-	for _, queueName := range queues {
-		_, err := ch.QueueDeclare(
-			queueName, // name
-			false,     // durable
-			false,     // delete when unused
-			false,     // exclusive
-			false,     // no-wait
-			nil,       // arguments
-		)
+    for _, queueName := range queues {
+        _, err := ch.QueueDeclare(
+            queueName, // name
+            false,     // durable
+            false,     // delete when unused
+            false,     // exclusive
+            false,     // no-wait
+            nil,       // arguments
+        )
 
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-	}
+        if err != nil {
+            log.Println(err)
+            return err
+        }
+    }
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
 
-	Client = conn
-	Channel = ch
-	Context = ctx
-	Cancel = cancel
+    Client = conn
+    Channel = ch
+    Context = ctx
+    Cancel = cancel
 
-	return nil
+    return nil
 }
 
 func InitKafka() error {
-	topic := "my-topic"
-	partition := 0
+    topic := "my-topic"
+    partition := 0
 
-	connection, err := kafka.DialLeader(context.Background(), "tcp", "192.168.0.213:9092", topic, partition)
+    connection, err := kafka.DialLeader(context.Background(), "tcp", "192.168.0.213:9092", topic, partition)
 
-	if err != nil {
-		log.Println(err)
-		return err
-	}
+    if err != nil {
+        log.Println(err)
+        return err
+    }
 
-	connection.SetReadDeadline(time.Now().Add(10 * time.Second))
-	connection.SetWriteDeadline(time.Now().Add(10 * time.Second))
+    connection.SetReadDeadline(time.Now().Add(10 * time.Second))
+    connection.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
-	KafkaClient = connection
+    KafkaClient = connection
 
-	return nil
+    return nil
 }
 
 func DeinitKafka() error {
-	err := KafkaClient.Close()
+    err := KafkaClient.Close()
 
-	if err != nil {
-		log.Println(err)
-		return err
-	}
+    if err != nil {
+        log.Println(err)
+        return err
+    }
 
-	return nil
+    return nil
 }
 
 func DeinitRabbit() error {
-	Cancel()
+    Cancel()
 
-	if err := Channel.Close(); err != nil {
-		log.Println(err)
-		return err
-	}
+    if err := Channel.Close(); err != nil {
+        log.Println(err)
+        return err
+    }
 
-	if err := Client.Close(); err != nil {
-		log.Println(err)
-		return err
-	}
+    if err := Client.Close(); err != nil {
+        log.Println(err)
+        return err
+    }
 
-	return nil
+    return nil
 }
