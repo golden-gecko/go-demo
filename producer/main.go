@@ -7,12 +7,68 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"producer/models"
 )
+
+func GetCars() (models.Cars, error) {
+    var cars models.Cars
+
+    jsonFile, err := os.Open(filepath.Join("data", "cars.json"))
+
+    if err != nil {
+		return cars, err
+    }
+
+    defer jsonFile.Close()
+
+    byteValue, err := io.ReadAll(jsonFile)
+
+	if err != nil {
+		return cars, err
+    }
+
+    if json.Unmarshal(byteValue, &cars) != nil {
+		return cars, err
+	}
+
+    return cars, nil
+}
+
+func GetNames() (models.Names, error) {
+    var names models.Names
+
+    jsonFile, err := os.Open(filepath.Join("data", "names.json"))
+
+    if err != nil {
+		return names, err
+    }
+
+    defer jsonFile.Close()
+
+    byteValue, err := io.ReadAll(jsonFile)
+
+	if err != nil {
+		return names, err
+    }
+
+    if json.Unmarshal(byteValue, &names) != nil {
+		return names, err
+	}
+
+    return names, nil
+}
+
+func RandomPlate() string {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    const digits = "0123456789"
+
+    return RandomString(2, characters) + RandomString(3, digits)
+}
 
 func RandomString(length int, charset string) string {
     b := make([]byte, length)
@@ -24,39 +80,59 @@ func RandomString(length int, charset string) string {
     return string(b)
 }
 
-func RandomPlate() string {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    const digits = "0123456789"
-
-    return RandomString(2, characters) + RandomString(3, digits)
-}
-
 func RandomWord(length int) string {
     const characters = "abcdefghijklmnopqrstuvwxyz"
 
     return RandomString(length, characters)
 }
 
-func is_success(response *http.Response) bool {
-	return response.StatusCode >= 200 && response.StatusCode < 300;
+func RandomYear() int {
+	return 1980 + rand.Intn(30)
 }
 
 func Send(url string, data []byte) error {
-    body := bytes.NewBuffer(data)
-    response, err := http.Post(url, "application/json", body)
+	log.Println(url)
+
+	response, err := http.Post(url, "application/json", bytes.NewBuffer(data))
 
     if err != nil {
-        log.Error(err)
         return err
     }
 
-    if is_success(response) {
-        log.Println(response.StatusCode)
+	body, err := io.ReadAll(response.Body)
+
+    if err != nil {
+		log.Println(response.StatusCode)
     } else {
-        log.Error(response.StatusCode)
-    }
+		log.Println(response.StatusCode, string(body))
+	}
 
     return nil
+}
+
+func CreateTemperature(location string) models.Temperature {
+    t := models.Temperature{
+        Location:  location,
+        Value:     rand.Float32() * 100,
+        Timestamp: time.Now().Format(time.RFC3339),
+    }
+
+    return t
+}
+
+func CreateTransit() models.Transit {
+    c := models.Coordinate{
+        Latitude:  14.0745211117 + rand.Float32() * (24.0299857927 - 14.0745211117),
+        Longitude: 49.0273953314 + rand.Float32() * (54.8515359564 - 49.0273953314),
+    }
+
+    t := models.Transit{
+        Plate:     RandomPlate(),
+        Location:  c,
+        Timestamp: time.Now().Format(time.RFC3339),
+    }
+
+    return t
 }
 
 func CreateUser(names models.Names) models.User {
@@ -75,154 +151,109 @@ func CreateVehicle(cars models.Cars) models.Vehicle {
         Plate:    RandomPlate(),
         Brand:    car.Brand,
         Model:    car.Model,
-        Year:     1980 + rand.Intn(30),
+        Year:     RandomYear(),
         Category: car.Category,
     }
 
     return t
 }
 
-func CreateTemperature(location string) models.Temperature {
-    t := models.Temperature{
-        Location:  location,
-        Value:     rand.Float32() * 100,
-        Timestamp: time.Now().Format(time.RFC3339),
-    }
+func ProcessTemperatues(receiverUrl string) error {
+    t1 := CreateTemperature("Room #1")
+    t2 := CreateTemperature("Room #2")
+    t3 := CreateTemperature("Room #3")
 
-    return t
-}
-
-func CreateTransit() models.Transit {
-    c := models.Coordinate{
-        Latitude:  14.0745211117 + rand.Float32() * (24.0299857927-14.0745211117),
-        Longitude: 49.0273953314 + rand.Float32() * (54.8515359564-49.0273953314),
-    }
-
-    t := models.Transit{
-        Plate:     RandomPlate(),
-        Location:  c,
-        Timestamp: time.Now().Format(time.RFC3339),
-    }
-
-    return t
-}
-
-func GetCars() models.Cars {
-    jsonFile, err := os.Open("data/cars.json")
+    data, err := json.Marshal([]models.Temperature{t1, t2, t3})
 
     if err != nil {
-        log.Error(err)
-        os.Exit(1)
+		return err
     }
 
-    defer jsonFile.Close()
-
-    var cars models.Cars
-
-    byteValue, _ := io.ReadAll(jsonFile)
-
-    json.Unmarshal(byteValue, &cars)
-
-    return cars
+    return Send(receiverUrl + "/temperature", data)
 }
 
-func GetNames() models.Names {
-    jsonFile, err := os.Open("data/names.json")
+func ProcessTransits(receiverUrl string) error {
+    var transits []models.Transit
+
+    for i := 0; i < 1 + rand.Intn(9); i++ {
+        transits = append(transits, CreateTransit())
+    }
+
+    data, err := json.Marshal(transits)
 
     if err != nil {
-        log.Error(err)
-        os.Exit(1)
+		return err
     }
 
-    defer jsonFile.Close()
-
-    var names models.Names
-
-    byteValue, _ := io.ReadAll(jsonFile)
-
-    json.Unmarshal(byteValue, &names)
-
-    return names
+    return Send(receiverUrl + "/transit", data)
 }
 
-func ProcessUsers(apiUrl string, names models.Names) {
-	u1 := CreateUser(names)
+func ProcessUsers(apiUrl string, names models.Names) error {
+    data, err := json.Marshal(CreateUser(names))
 
-	data, err := json.Marshal(u1)
+    if err != nil {
+        return err
+    }
 
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	Send(apiUrl + "/users", data)
+    return Send(apiUrl + "/users", data)
 }
 
-func ProcessVehicles(apiUrl string, cars models.Cars) {
-	v1 := CreateVehicle(cars)
+func ProcessVehicles(apiUrl string, cars models.Cars) error {
+    data, err := json.Marshal(CreateVehicle(cars))
 
-	data, err := json.Marshal(v1)
+    if err != nil {
+        return err
+    }
 
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	Send(apiUrl+"/vehicles", data)
-}
-
-func ProcessTemperatues(receiverUrl string) {
-	t1 := CreateTemperature("Room #1")
-	t2 := CreateTemperature("Room #2")
-	t3 := CreateTemperature("Room #3")
-
-	data, err := json.Marshal([]models.Temperature{t1, t2, t3})
-
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	Send(receiverUrl + "/temperature", data)
-}
-
-func ProcessTransits(receiverUrl string) {
-	var transits []models.Transit
-
-	for i := 0; i < 1+rand.Intn(9); i++ {
-		transits = append(transits, CreateTransit())
-	}
-
-	data, err := json.Marshal(transits)
-
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	Send(receiverUrl + "/transit", data)
+    return Send(apiUrl + "/vehicles", data)
 }
 
 func main() {
     apiUrl := "http://haproxy:9020/v1"
     receiverUrl := "http://haproxy:9050/v1/data"
 
-    cars := GetCars()
-    names := GetNames()
+    cars, err := GetCars()
 
-    minInterval := 100
-    maxInterval := 500
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+    names, err := GetNames()
+
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 
     for {
-		ProcessTemperatues(receiverUrl)
-		ProcessTransits(receiverUrl)
-		ProcessUsers(apiUrl, names)
-		ProcessVehicles(apiUrl, cars)
+        if err := ProcessTemperatues(receiverUrl); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
 
-        sleep := minInterval + rand.Intn(maxInterval-minInterval)
+        if err := ProcessTransits(receiverUrl); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
 
-        log.Debug("Sleeping for", sleep, "ms")
+        if err := ProcessUsers(apiUrl, names); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
 
-        time.Sleep(time.Duration(sleep) * time.Millisecond)
+        if err := ProcessVehicles(apiUrl, cars); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+
+		minInterval := 100
+		maxInterval := 500
+
+        interval := minInterval + rand.Intn(maxInterval - minInterval)
+
+        log.Info("Sleeping for ", interval, " ms")
+
+        time.Sleep(time.Duration(interval) * time.Millisecond)
     }
 }

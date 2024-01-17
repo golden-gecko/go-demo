@@ -1,21 +1,24 @@
 package api
 
 import (
-    "context"
-    "errors"
-    "net/http"
-    "strings"
+	"context"
+	"net/http"
+	"strings"
 
-    "github.com/gin-gonic/gin"
-    "github.com/google/uuid"
-    "go.mongodb.org/mongo-driver/bson"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
 
-    log "github.com/sirupsen/logrus"
-
-    "api/db"
-    "api/models"
-    "api/roach"
+	"api/db"
+	"api/models"
+	"api/roach"
 )
+
+// ---------------------------------------------------------------------------
+
+func ValidateString(value string) bool {
+    return len(strings.Trim(value, " ")) > 0
+}
 
 // ---------------------------------------------------------------------------
 
@@ -25,24 +28,39 @@ func Healthcheck(c *gin.Context) {
 
 // ---------------------------------------------------------------------------
 
+func ResponseNoBody(c *gin.Context, code int) {
+	c.JSON(code, nil)
+}
+
+func ResponseError(c *gin.Context, code int, err string) {
+	c.JSON(code, map[string]string{"message": err})
+}
+
+// ---------------------------------------------------------------------------
+
 func CreateTransit(c *gin.Context) {
     var transit models.Transit
 
     transit.Plate = c.Param("plate")
 
-    if err := c.BindJSON(&transit); err != nil {
-        log.Error(err)
-        panic(err)
+    if ValidateString(transit.Plate) == false {
+		ResponseError(c, http.StatusBadRequest, "invalid value: no name")
+        return
+    }
+
+	if err := c.BindJSON(&transit); err != nil {
+		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+		return
     }
 
     _, err := db.TransitCollection.InsertOne(context.TODO(), transit)
 
     if err != nil {
-        log.Error(err)
-        panic(err)
+		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+		return
     }
 
-    c.IndentedJSON(http.StatusCreated, nil)
+	ResponseNoBody(c, http.StatusCreated)
 }
 
 // ---------------------------------------------------------------------------
@@ -51,36 +69,26 @@ func CreateUser(c *gin.Context) {
     var user models.User
 
     if err := c.BindJSON(&user); err != nil {
-        log.Error(err)
-        c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
+		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
         return
     }
 
-    if validate_string(user.Name) == false {
-        err := errors.New("invalid value: no name")
-        log.Error(err)
-        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+    if ValidateString(user.Name) == false {
+		ResponseError(c, http.StatusBadGateway, "invalid value: no name")
         return
     }
 
-    if validate_string(user.Password) == false {
-        err := errors.New("invalid value: no password")
-        log.Error(err)
-        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
+    if ValidateString(user.Password) == false {
+		ResponseError(c, http.StatusBadGateway, "invalid value: no password")
         return
     }
 
     if err := roach.CreateUser(user); err != nil {
-        log.Error(err)
-        c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
-        return
+		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+		return
     }
 
-    c.JSON(http.StatusCreated, map[string]error{})
-}
-
-func DeleteUser(c *gin.Context) {
-    c.JSON(http.StatusOK, map[string]error{})
+	ResponseNoBody(c, http.StatusCreated)
 }
 
 func GetUsers(c *gin.Context) {
@@ -94,20 +102,20 @@ func GetUsers(c *gin.Context) {
         var user3 models.User
 
         if err := cursor.Decode(&user1); err != nil {
-            log.Error(err)
-            panic(err)
+			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			return
         }
 
         user2, err := bson.Marshal(user1)
 
         if err != nil {
-            log.Error(err)
-            panic(err)
+			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			return
         }
 
         if err := bson.Unmarshal(user2, &user3); err != nil {
-            log.Error(err)
-            panic(err)
+			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			return
         }
 
         users = append(users, user3)
@@ -120,72 +128,56 @@ func GetUser(c *gin.Context) {
     userId, err := uuid.Parse(c.Param("userId"))
 
     if err != nil {
-        log.Error(err)
-        c.IndentedJSON(http.StatusBadRequest, err)
-        return
+		ResponseError(c, http.StatusBadRequest, err.Error())
+		return
     }
 
     user, err := roach.GetUser(userId)
 
     if err != nil {
-        log.Error(err)
-        c.IndentedJSON(http.StatusUnprocessableEntity, err)
-        return
+		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+		return
     }
 
-    c.IndentedJSON(http.StatusUnprocessableEntity, user)
+    c.IndentedJSON(http.StatusOK, user)
 }
 
 // ---------------------------------------------------------------------------
-
-func validate_string(value string) bool {
-    return len(strings.Trim(value, " ")) > 0
-}
 
 func CreateVehicle(c *gin.Context) {
     var vehicle models.Vehicle
 
     if err := c.BindJSON(&vehicle); err != nil {
-        log.Error(err)
-        c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
-        return
+		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+		return
     }
 
-    if validate_string(vehicle.Plate) == false {
-        err := errors.New("invalid value: no plate")
-        log.Error(err)
-        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
-        return
+    if ValidateString(vehicle.Plate) == false {
+		ResponseError(c, http.StatusBadRequest, "invalid value: no plate")
+		return
     }
 
-    if validate_string(vehicle.Brand) == false {
-        err := errors.New("invalid value: no brand")
-        log.Error(err)
-        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
-        return
+    if ValidateString(vehicle.Brand) == false {
+		ResponseError(c, http.StatusBadRequest, "invalid value: no brand")
+		return
     }
 
-    if validate_string(vehicle.Model) == false {
-        err := errors.New("invalid value: no model")
-        log.Error(err)
-        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
-        return
+    if ValidateString(vehicle.Model) == false {
+		ResponseError(c, http.StatusBadRequest, "invalid value: no model")
+		return
     }
 
-    if validate_string(vehicle.Category) == false {
-        err := errors.New("invalid value: no category")
-        log.Error(err)
-        c.JSON(http.StatusBadRequest, map[string]error{"message": err})
-        return
+    if ValidateString(vehicle.Category) == false {
+		ResponseError(c, http.StatusBadRequest,"invalid value: no category")
+		return
     }
 
     if err := roach.CreateVehicle(vehicle); err != nil {
-        log.Error(err)
-        c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
-        return
+		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+		return
     }
 
-    c.JSON(http.StatusCreated, map[string]error{})
+	ResponseNoBody(c, http.StatusCreated)
 }
 
 func GetVehicles(c *gin.Context) {
@@ -199,28 +191,24 @@ func GetVehicles(c *gin.Context) {
         var vehicle3 models.Vehicle
 
         if err := cursor.Decode(&vehicle1); err != nil {
-            log.Error(err)
-            panic(err)
+			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			return
         }
 
         vehicle2, err := bson.Marshal(vehicle1)
 
         if err != nil {
-            log.Error(err)
-            panic(err)
+			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			return
         }
 
         if err := bson.Unmarshal(vehicle2, &vehicle3); err != nil {
-            log.Error(err)
-            panic(err)
+			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			return
         }
 
         vehicles = append(vehicles, vehicle3)
     }
 
     c.IndentedJSON(http.StatusOK, vehicles)
-}
-
-func GetVehicle(c *gin.Context) {
-    // vehicleID := c.Param("vehicleID")
 }

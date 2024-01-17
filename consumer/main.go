@@ -1,17 +1,18 @@
 package main
 
 import (
-    "context"
-    "encoding/json"
-    "os"
-    "time"
+	"context"
+	"encoding/json"
+	"os"
+	"time"
 
-    "github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/rabbitmq/amqp091-go"
 
-    influxdb2 "github.com/influxdata/influxdb-client-go/v2"
-    log "github.com/sirupsen/logrus"
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	log "github.com/sirupsen/logrus"
 
-    "consumer/queue"
+	"consumer/queue"
 )
 
 type Coordinate struct {
@@ -37,18 +38,16 @@ func ProcessTemperature(writeAPI api.WriteAPIBlocking, body []byte) error {
     err := json.Unmarshal(body, &temperature)
 
     if err != nil {
-        log.Error(err)
         return err
     }
 
-    p := influxdb2.NewPointWithMeasurement("temperatue").
-        AddTag("location", temperature.Location).
+    point := influxdb2.NewPointWithMeasurement("temperatue").
+		AddTag("location", temperature.Location).
         AddTag("unit", "celsius").
         AddField("current", temperature.Value).
-        SetTime(time.Now())
+        SetTime(time.Now()) // TODO: Move timestamp to producer.
 
-    if err := writeAPI.WritePoint(context.Background(), p); err != nil {
-        log.Error(err)
+    if err := writeAPI.WritePoint(context.Background(), point); err != nil {
         return err
     }
 
@@ -61,11 +60,22 @@ func ProcessTransit(body []byte) error {
     err := json.Unmarshal(body, &transit)
 
     if err != nil {
-        log.Error(err)
         return err
     }
 
     return nil
+}
+
+func CreateQueue(name string) (<-chan amqp091.Delivery, error) {
+	return queue.Channel.Consume(
+		name,
+		"",    // consumer
+		false, // auto-ack
+		false, // exclusive
+		false, // no-local
+		false, // no-wait
+		nil,   // args
+	)
 }
 
 func main() {
@@ -78,6 +88,8 @@ func main() {
 
     defer queue.Deinit()
 
+	log.Info("Connected to RabbitMQ")
+
     client := influxdb2.NewClient("http://influx:8086", "my-super-secret-auth-token")
 
     if _, err := client.Health(context.Background()); err != nil {
@@ -87,68 +99,58 @@ func main() {
 
     defer client.Close()
 
+	log.Info("Connected to InfluxDB")
+
     writeAPI := client.WriteAPIBlocking("my-org", "house")
 
-    msgs1, err := queue.Channel.Consume(
-        "temperatures",
-        "",    // consumer
-        false, // auto-ack
-        false, // exclusive
-        false, // no-local
-        false, // no-wait
-        nil,   // args
-    )
+	msgs1, err := CreateQueue("temperatures")
 
     if err != nil {
         log.Error(err)
         os.Exit(1)
     }
 
-    msgs2, err := queue.Channel.Consume(
-        "transits",
-        "",    // consumer
-        false, // auto-ack
-        false, // exclusive
-        false, // no-local
-        false, // no-wait
-        nil,   // args
-    )
+	log.Info("Queue temperatures created")
+
+	msgs2, err := CreateQueue("transits")
 
     if err != nil {
         log.Error(err)
         os.Exit(1)
     }
+
+	log.Info("Queue temperatures transits")
 
     for {
         select {
-        case d := <-msgs1:
-            log.Debug("Received a message: %s", d.Body)
+			case d := <-msgs1:
+				log.Info("Received temperature message")
 
-            if err := ProcessTemperature(writeAPI, d.Body); err != nil {
-                if err := d.Nack(false, true); err != nil {
-                    log.Error(err)
-                    os.Exit(1)
-                }
-            } else {
-                if err := d.Ack(false); err != nil {
-                    log.Error(err)
-                    os.Exit(1)
-                }
-            }
-        case d := <-msgs2:
-            log.Debug("Received a message: %s", d.Body)
+				if err := ProcessTemperature(writeAPI, d.Body); err != nil {
+					log.Error(err)
 
-            if err := ProcessTransit(d.Body); err != nil {
-                if err := d.Nack(false, true); err != nil {
-                    log.Error(err)
-                    os.Exit(1)
-                }
-            } else {
-                if err := d.Ack(false); err != nil {
-                    log.Error(err)
-                    os.Exit(1)
-                }
-            }
+					if err := d.Nack(false, true); err != nil {
+						log.Error(err)
+						os.Exit(1)
+					}
+				} else if err := d.Ack(false); err != nil {
+					log.Error(err)
+					os.Exit(1)
+				}
+			case d := <-msgs2:
+				log.Info("Received transit message")
+
+				if err := ProcessTransit(d.Body); err != nil {
+					log.Error(err)
+
+					if err := d.Nack(false, true); err != nil {
+						log.Error(err)
+						os.Exit(1)
+					}
+				} else if err := d.Ack(false); err != nil {
+					log.Error(err)
+					os.Exit(1)
+				}
         }
     }
 }

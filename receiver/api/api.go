@@ -1,17 +1,15 @@
 package api
 
 import (
-    "encoding/json"
-    "log"
-    "net/http"
-    "os"
+	"encoding/json"
+	"net/http"
 
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 
-    amqp "github.com/rabbitmq/amqp091-go"
-    kafka "github.com/segmentio/kafka-go"
+	amqp "github.com/rabbitmq/amqp091-go"
+	kafka "github.com/segmentio/kafka-go"
 
-    "receiver/queue"
+	"receiver/queue"
 )
 
 type Coordinate struct {
@@ -31,19 +29,17 @@ type Transit struct {
     Timestamp string     `bson:"Timestamp"`
 }
 
-func WriteToKafka(data []byte) {
+func WriteToKafka(data []byte) error {
     _, err := queue.KafkaClient.WriteMessages(
         kafka.Message{
             Value: data,
         },
     )
 
-    if err != nil {
-        panic(err)
-    }
+	return err
 }
 
-func WriteToRabbit(queueName string, data []byte) {
+func WriteToRabbit(queueName string, data []byte) error {
     err := queue.Channel.PublishWithContext(
         queue.Context,
         "",
@@ -56,66 +52,80 @@ func WriteToRabbit(queueName string, data []byte) {
         },
     )
 
-    if err != nil {
-        log.Println(err)
-        os.Exit(1)
-    }
+	return err
+}
+
+func ResponseNoBody(c *gin.Context, code int) {
+	c.JSON(code, nil)
+}
+
+func ResponseError(c *gin.Context, code int, err string) {
+	c.JSON(code, map[string]string{"message": err})
 }
 
 func Healthcheck(c *gin.Context) {
     c.IndentedJSON(http.StatusOK, nil)
 }
 
+func CreateDataTemperature(c *gin.Context) {
+	var temperatures []Temperature
+
+	if err := c.ShouldBind(&temperatures); err != nil {
+		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
+	for _, temperature := range temperatures {
+		data, err := json.Marshal(&temperature)
+
+		if err != nil {
+			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+
+		if err := WriteToRabbit("temperatures", data); err != nil {
+			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+	}
+
+	c.IndentedJSON(http.StatusAccepted, nil)
+}
+
+func CreateDataTransit(c *gin.Context) {
+	var transits []Transit
+
+	if err := c.ShouldBind(&transits); err != nil {
+		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
+	for _, transit := range transits {
+		data, err := json.Marshal(&transit)
+
+		if err != nil {
+			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+
+		if err := WriteToRabbit("transits", data); err != nil {
+			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+	}
+
+	c.IndentedJSON(http.StatusAccepted, nil)
+}
+
 func CreateData(c *gin.Context) {
     switch c.Param("type") {
-    case "temperature":
-        var temperatures []Temperature
+		case "temperature":
+			CreateDataTemperature(c)
 
-        if err := c.ShouldBind(&temperatures); err != nil {
-            log.Println(err)
-        } else {
-            // log.Println(temperatures)
+		case "transit":
+			CreateDataTransit(c)
 
-            for _, temperature := range temperatures {
-                data, err := json.Marshal(&temperature)
-
-                // log.Println(temperature)
-                // log.Println(data)
-
-                if err != nil {
-                    os.Exit(1)
-                }
-
-                WriteToRabbit("temperatures", data)
-
-                c.IndentedJSON(http.StatusAccepted, nil)
-            }
-        }
-    case "transit":
-        var transits []Transit
-
-        if err := c.ShouldBind(&transits); err != nil {
-            log.Println(err)
-        } else {
-            // log.Println(transits)
-
-            for _, transit := range transits {
-                data, err := json.Marshal(&transit)
-
-                // log.Println(transit)
-                // log.Println(data)
-
-                if err != nil {
-                    log.Println(err)
-                    os.Exit(1)
-                }
-
-                WriteToRabbit("transits", data)
-
-                c.IndentedJSON(http.StatusAccepted, nil)
-            }
-        }
-    default:
-        c.IndentedJSON(http.StatusBadRequest, nil)
+		default:
+			c.IndentedJSON(http.StatusBadRequest, nil)
     }
 }
