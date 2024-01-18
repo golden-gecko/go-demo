@@ -26,7 +26,7 @@ type VehicleCountByYear struct {
 func Connect() error {
     log.Println("Connecting to database...")
 
-    config, err := pgx.ParseConfig("postgres://go_user:go_password@haproxy:26257/go_demo")
+    config, err := pgx.ParseConfig("postgres://go_user:go_password@cockroach_1:26257/go_demo")
 
     if err != nil {
         log.Error(err)

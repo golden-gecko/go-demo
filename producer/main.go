@@ -266,8 +266,8 @@ func ProcessVehicles(wg *sync.WaitGroup, apiUrl string, cars models.Cars) error 
 }
 
 func main() {
-    apiUrl := "http://haproxy:9020/v1"
-    receiverUrl := "http://haproxy:9050/v1/data"
+    apiUrl := "http://haproxy:6100/v1"
+    receiverUrl := "http://haproxy:7100/v1/data"
 
     cars, err := GetCars()
 
