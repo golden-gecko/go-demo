@@ -124,7 +124,7 @@ func main() {
     for {
         select {
 			case d := <-msgs1:
-				log.Info("Received temperature message")
+				// log.Info("Received temperature message")
 
 				if err := ProcessTemperature(writeAPI, d.Body); err != nil {
 					log.Error(err)
@@ -137,8 +137,8 @@ func main() {
 					log.Error(err)
 					os.Exit(1)
 				}
-			case d := <-msgs2:
-				log.Info("Received transit message")
+			case d := <-msgs2: {
+				// log.Info("Received transit message")
 
 				if err := ProcessTransit(d.Body); err != nil {
 					log.Error(err)
@@ -151,6 +151,7 @@ func main() {
 					log.Error(err)
 					os.Exit(1)
 				}
+			}
         }
     }
 }
