@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/segmentio/kafka-go"
-
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -15,11 +13,9 @@ var (
     Queue   amqp.Queue
     Context context.Context
     Cancel  context.CancelFunc
-
-    KafkaClient *kafka.Conn
 )
 
-func Init() error {
+func Connect() error {
     conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672/")
 
     if err != nil {
@@ -55,7 +51,7 @@ func Init() error {
         return err
     }
 
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 
     Client = conn
     Channel = ch
@@ -65,7 +61,7 @@ func Init() error {
     return nil
 }
 
-func Deinit() error {
+func Disconnect() error {
     Cancel()
 
     if err := Channel.Close(); err != nil {
@@ -78,6 +74,21 @@ func Deinit() error {
 
     return nil
 }
+
+func CreateQueue(name string) (<-chan amqp.Delivery, error) {
+	return Channel.Consume(
+		name,  // name
+		"",    // consumer
+		false, // auto-ack
+		false, // exclusive
+		false, // no-local
+		false, // no-wait
+		nil,   // args
+	)
+}
+
+/*
+KafkaClient *kafka.Conn
 
 func InitKafka() error {
     topic := "my-topic"
@@ -106,3 +117,4 @@ func DeinitKafka() error {
 
     return nil
 }
+*/

@@ -6,17 +6,60 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// ---------------------------------------------------------------------------
+type Car struct {
+    Year     int    `bson:"Year"`
+    Brand    string `bson:"Brand"`
+    Model    string `bson:"Model"`
+    Category string `bson:"Category"`
+}
+
+type Cars struct {
+    Cars []Car `json:"cars"`
+}
 
 type Coordinate struct {
     Latitude  float32 `bson:"Latitude"`
     Longitude float32 `bson:"Longitude"`
 }
 
+type Names struct {
+    Names []string `json:"names"`
+}
+
+type Temperature struct {
+    Location  string  `bson:"Location"`
+    Value     float32 `bson:"Value"`
+    Timestamp string  `bson:"Timestamp"`
+}
+
 type Transit struct {
     Plate     string     `bson:"Plate"`
     Location  Coordinate `bson:"Location"`
     Timestamp string     `bson:"Timestamp"`
+}
+
+type User struct {
+    Name     string `bson:"Name"`
+    Password string `bson:"Password"`
+}
+
+type Vehicle struct {
+    Plate    string `bson:"Plate"`
+    Brand    string `bson:"Brand"`
+    Model    string `bson:"Model"`
+    Year     int    `bson:"Year"`
+    Category string `bson:"Category"`
+}
+
+type VehicleCountByModel struct {
+    Brand string `bson:"Brand"`
+    Model string `bson:"Model"`
+    Count int    `bson:"Count"`
+}
+
+type VehicleCountByYear struct {
+    Year  int `bson:"Year"`
+    Count int `bson:"Count"`
 }
 
 func NewTransit(plate string, latitude float32, longitude float32, timestamp string) Transit {
@@ -45,13 +88,6 @@ func (transit Transit) Print() error {
 	return nil
 }
 
-// ---------------------------------------------------------------------------
-
-type User struct {
-    Name     string `bson:"Name"`
-    Password string `bson:"Password"`
-}
-
 func NewUser(name string, password string) User {
     return User{name, password}
 }
@@ -78,16 +114,6 @@ func (user User) Print() error {
 	return nil
 }
 
-// ---------------------------------------------------------------------------
-
-type Vehicle struct {
-    Plate    string `bson:"Plate"`
-    Brand    string `bson:"Brand"`
-    Model    string `bson:"Model"`
-    Year     int    `bson:"Year"`
-    Category string `bson:"Category"`
-}
-
 func NewVehicle(plate string, brand string, model string, year int, category string) Vehicle {
     return Vehicle{plate, brand, model, year, category}
 }
@@ -112,42 +138,4 @@ func (vehicle Vehicle) Print() error {
     log.Info(json)
 
 	return nil
-}
-
-// ---------------------------------------------------------------------------
-
-type Car struct {
-    Year     int    `bson:"Year"`
-    Brand    string `bson:"Brand"`
-    Model    string `bson:"Model"`
-    Category string `bson:"Category"`
-}
-
-type Cars struct {
-    Cars []Car `json:"cars"`
-}
-
-type Names struct {
-    Names []string `json:"names"`
-}
-
-// ---------------------------------------------------------------------------
-
-type Temperature struct {
-    Location  string  `bson:"Location"`
-    Value     float32 `bson:"Value"`
-    Timestamp string  `bson:"Timestamp"`
-}
-
-// ---------------------------------------------------------------------------
-
-type VehicleCountByModel struct {
-    Brand string `bson:"Brand"`
-    Model string `bson:"Model"`
-    Count int    `bson:"Count"`
-}
-
-type VehicleCountByYear struct {
-    Year  int `bson:"Year"`
-    Count int `bson:"Count"`
 }

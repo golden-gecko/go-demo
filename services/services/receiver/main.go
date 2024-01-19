@@ -18,11 +18,11 @@ func Run(host string, port int) {
 }
 
 func main() {
-    if err := queue.Init(); err != nil {
+    if err := queue.Connect(); err != nil {
 		panic(err)
     }
 
-    defer queue.Deinit()
+    defer queue.Disconnect()
 
     Run("0.0.0.0", 7000)
 }
