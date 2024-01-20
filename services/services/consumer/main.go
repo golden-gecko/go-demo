@@ -15,6 +15,18 @@ import (
 	"services/common/queue"
 )
 
+func ProcessItem(writeAPI api.WriteAPIBlocking, body []byte) error {
+    var item model.Item
+
+    err := json.Unmarshal(body, &item)
+
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
 func ProcessTemperature(writeAPI api.WriteAPIBlocking, body []byte) error {
     var temperature model.Temperature
 
@@ -47,6 +59,24 @@ func ProcessTransit(body []byte) error {
     }
 
     return nil
+}
+
+func ProcessItemQueue(writeAPI api.WriteAPIBlocking, msgs <-chan amqp091.Delivery) {
+	for d := range msgs {
+		// log.Info("Received a message: %s", d.Body)
+
+		if err := ProcessItem(writeAPI, d.Body); err != nil {
+			log.Error(err)
+
+			if err := d.Nack(false, true); err != nil {
+				panic(err)
+			}
+		} else if err := d.Ack(false); err != nil {
+			panic(err)
+		}
+	}
+
+	writeAPI.Flush(context.Background())
 }
 
 func ProcessTemperatureQueue(writeAPI api.WriteAPIBlocking, msgs <-chan amqp091.Delivery) {
@@ -107,7 +137,15 @@ func main() {
 
     writeAPI := client.WriteAPIBlocking("my-org", "house")
 
-	msgs1, err := queue.CreateQueue("temperatures")
+	msgs1, err := queue.CreateQueue("items")
+
+    if err != nil {
+		panic(err)
+    }
+
+	log.Info("Queue items created")
+
+	msgs2, err := queue.CreateQueue("temperatures")
 
     if err != nil {
 		panic(err)
@@ -115,19 +153,21 @@ func main() {
 
 	log.Info("Queue temperatures created")
 
-	msgs2, err := queue.CreateQueue("transits")
+	msgs3, err := queue.CreateQueue("transits")
 
     if err != nil {
 		panic(err)
     }
 
 	log.Info("Queue transits created")
+
 	log.Info("Waiting for messages...")
 
 	var forever chan struct {}
 
-	go ProcessTemperatureQueue(writeAPI, msgs1)
-	go ProcessTransitQueue(writeAPI, msgs2)
+	go ProcessItemQueue(writeAPI, msgs1)
+	go ProcessTemperatureQueue(writeAPI, msgs2)
+	go ProcessTransitQueue(writeAPI, msgs3)
 
 	<-forever
 }

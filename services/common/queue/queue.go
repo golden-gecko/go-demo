@@ -30,12 +30,12 @@ func Connect() error {
 
     err = ch.Qos(10, 0, true)
 
-    queues := []string{"temperatures", "transits"}
+    queues := []string{"items", "temperatures", "transits"}
 
     for _, queueName := range queues {
         _, err := ch.QueueDeclare(
             queueName, // name
-            false,     // durable
+            true,      // durable
             false,     // delete when unused
             false,     // exclusive
             false,     // no-wait
@@ -86,35 +86,3 @@ func CreateQueue(name string) (<-chan amqp.Delivery, error) {
 		nil,   // args
 	)
 }
-
-/*
-KafkaClient *kafka.Conn
-
-func InitKafka() error {
-    topic := "my-topic"
-    partition := 0
-
-    connection, err := kafka.DialLeader(context.Background(), "tcp", "192.168.0.213:9092", topic, partition)
-
-    if err != nil {
-        return err
-    }
-
-    connection.SetReadDeadline(time.Now().Add(10 * time.Second))
-    connection.SetWriteDeadline(time.Now().Add(10 * time.Second))
-
-    KafkaClient = connection
-
-    return nil
-}
-
-func DeinitKafka() error {
-    err := KafkaClient.Close()
-
-    if err != nil {
-        return err
-    }
-
-    return nil
-}
-*/

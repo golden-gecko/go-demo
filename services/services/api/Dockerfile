@@ -1,6 +1,6 @@
 FROM golang:1.21.6-bookworm
 
-WORKDIR /go/src/app
+WORKDIR /app
 
 COPY . .
 

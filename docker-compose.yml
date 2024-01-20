@@ -21,7 +21,7 @@ services:
       context: services
       dockerfile: services/api/Dockerfile
     deploy:
-      replicas: 2
+      replicas: 3
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:${API_PORT}/v1/healthcheck']
       interval: 10s
@@ -157,9 +157,25 @@ services:
     volumes:
       - influx:/var/lib/influxdb
 
-  mongo:
-    deploy:
-      replicas: 0
+  mongo_1:
+    build:
+      context: mongo
+    command: ["--config", "/etc/mongo/mongod.conf", "--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+    networks:
+      - main
+    ports:
+      - 27017:27017
+    restart: unless-stopped
+    volumes:
+      - mongo_1:/data/db
+
+  mongo_2:
+    build:
+      context: mongo
+    command: ["--config", "/etc/mongo/mongod.conf", "--replSet", "rs0", "--bind_ip_all", "--port", "27018"]
     environment:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
@@ -167,25 +183,41 @@ services:
     networks:
       - main
     ports:
-      - ${MONGO_PORT}:${MONGO_PORT}    
+      - 27018:27018
     restart: unless-stopped
     volumes:
-      - mongo:/data/db
+      - mongo_2:/data/db
+
+  mongo_3:
+    build:
+      context: mongo
+    command: ["--config", "/etc/mongo/mongod.conf", "--replSet", "rs0", "--bind_ip_all", "--port", "27019"]
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+    image: mongo:4.4.6
+    networks:
+      - main
+    ports:
+      - 27019:27019
+    restart: unless-stopped
+    volumes:
+      - mongo_3:/data/db
 
   mongo_express:
-    depends_on:
-      - mongo
     deploy:
       replicas: 0
     environment:
+      - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_PASSWORD}
+      - ME_CONFIG_BASICAUTH_USERNAME=${MONGO_USER}
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
-      - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:${MONGO_PORT}/
+      - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@localhost:27017
     image: mongo-express:1.0.2-20-alpine3.19
     networks:
       - main
     ports:
-      - 8880:${MONGO_EXPRESS_PORT}
+      - 8881:8081
     restart: unless-stopped
 
   nakama:
@@ -223,8 +255,6 @@ services:
       replicas: 0
     networks:
       - main
-    ports:
-      - ${NODE_PORT}:${NODE_PORT}
     restart: unless-stopped
 
   producer:
@@ -252,6 +282,8 @@ services:
       - 5672:5672
       - 15672:15672
     restart: unless-stopped
+    volumes:
+      - rabbit:/var/lib/rabbitmq/mnesia
 
   receiver:
     build:
@@ -279,8 +311,6 @@ services:
       - redis:/data
 
   redis_insight:
-    depends_on:
-      - redis
     image: redislabs/redisinsight:1.14.0
     networks:
       - main
@@ -317,9 +347,12 @@ volumes:
   grafana_etc:
   grafana_var_lib:
   influx:
-  mongo:
+  mongo_1:
+  mongo_2:
+  mongo_3:
   nakama:
   postgres:
+  rabbit:
   redis:
   redis_insight:
   redis_slave:

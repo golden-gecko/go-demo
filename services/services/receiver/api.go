@@ -13,36 +13,48 @@ import (
 	"services/common/rest"
 )
 
-/*
-func WriteToKafka(data []byte) error {
-    _, err := queue.KafkaClient.WriteMessages(
-        kafka.Message{
-            Value: data,
-        },
-    )
-
-	return err
-}
-*/
-
 func WriteToRabbit(queueName string, data []byte) error {
-    err := queue.Channel.PublishWithContext(
+    return queue.Channel.PublishWithContext(
         queue.Context,
         "",
         queueName,
         false, // mandatory
         false, // immediate
         amqp.Publishing{
-            ContentType: "text/plain",
-            Body:        data,
+            ContentType:  "text/plain",
+            Body:         data,
+			DeliveryMode: 2,
         },
     )
-
-	return err
 }
 
 func Healthcheck(c *gin.Context) {
     c.IndentedJSON(http.StatusOK, nil)
+}
+
+func CreateDataItem(c *gin.Context) {
+	var items []model.Item
+
+	if err := c.ShouldBind(&items); err != nil {
+		rest.ResponseError(c, err.Error())
+		return
+	}
+
+	for _, item := range items {
+		data, err := json.Marshal(&item)
+
+		if err != nil {
+			rest.ResponseError(c, err.Error())
+			return
+		}
+
+		if err := WriteToRabbit("items", data); err != nil {
+			rest.ResponseError(c, err.Error())
+			return
+		}
+	}
+
+	c.IndentedJSON(http.StatusAccepted, nil)
 }
 
 func CreateDataTemperature(c *gin.Context) {
@@ -97,6 +109,9 @@ func CreateDataTransit(c *gin.Context) {
 
 func CreateData(c *gin.Context) {
     switch c.Param("type") {
+		case "item":
+			CreateDataItem(c)
+
 		case "temperature":
 			CreateDataTemperature(c)
 
