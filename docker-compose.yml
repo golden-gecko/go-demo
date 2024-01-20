@@ -10,26 +10,18 @@ networks:
 services:
   aggregator:
     build:
-      context: aggregator
+      context: services
+      dockerfile: services/aggregator/Dockerfile
     networks:
       - main
     restart: unless-stopped
 
-  api_1:
+  api:
     build:
-      context: api
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:${API_PORT}/v1/healthcheck']
-      interval: 10s
-      timeout: 2s
-      retries: 2
-    networks:
-      - main
-    restart: unless-stopped
-
-  api_2:
-    build:
-      context: api
+      context: services
+      dockerfile: services/api/Dockerfile
+    deploy:
+      replicas: 2
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:${API_PORT}/v1/healthcheck']
       interval: 10s
@@ -40,6 +32,8 @@ services:
     restart: unless-stopped
 
   chronograf:
+    deploy:
+      replicas: 0
     image: chronograf:1.10.2-alpine
     networks:
       - main
@@ -52,7 +46,7 @@ services:
   cockroach_1:
     command: start --advertise-addr=cockroach_1:26357 --http-addr=cockroach_1:8080 --listen-addr=cockroach_1:26357 --sql-addr=cockroach_1:26257 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://cockroach_1:8080/health?ready=1"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
       interval: 10s
       timeout: 2s
       retries: 2
@@ -69,7 +63,7 @@ services:
   cockroach_2:
     command: start --advertise-addr=cockroach_2:26357 --http-addr=cockroach_2:8081 --listen-addr=cockroach_2:26357 --sql-addr=cockroach_2:26258 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://cockroach_2:8081/health?ready=1"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health?ready=1"]
       interval: 10s
       timeout: 2s
       retries: 2
@@ -86,7 +80,7 @@ services:
   cockroach_3:
     command: start --advertise-addr=cockroach_3:26357 --http-addr=cockroach_3:8082 --listen-addr=cockroach_3:26357 --sql-addr=cockroach_3:26259 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://cockroach_3:8082/health?ready=1"]
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health?ready=1"]
       interval: 10s
       timeout: 2s
       retries: 2
@@ -100,16 +94,12 @@ services:
     volumes:
       - cockroach_3:/data/db
 
-  consumer_1:
+  consumer:
     build:
-      context: consumer
-    networks:
-      - main
-    restart: unless-stopped
-
-  consumer_2:
-    build:
-      context: consumer
+      context: services
+      dockerfile: services/consumer/Dockerfile
+    deploy:
+      replicas: 3
     networks:
       - main
     restart: unless-stopped
@@ -117,6 +107,13 @@ services:
   grafana:
     build:
       context: grafana
+    deploy:
+      replicas: 0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${GRAFANA_PORT}/api/health"]
+      interval: 10s
+      timeout: 2s
+      retries: 2
     networks:
       - main
     ports:
@@ -132,8 +129,9 @@ services:
     networks:
       - main
     ports:
-      - 9020:9020
-      - 9050:9050
+      - 6100:6100
+      - 7100:7100
+      - 8404:8404
     restart: unless-stopped
 
   influx:
@@ -145,7 +143,12 @@ services:
       - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_PASSWORD}
       - DOCKER_INFLUXDB_INIT_RETENTION=1w
       - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USER}
-    image: influxdb:${INFLUX_VERSION}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${INFLUX_PORT}/ping"]
+      interval: 10s
+      timeout: 2s
+      retries: 2
+    image: influxdb:2.7.5-alpine
     networks:
       - main
     ports:
@@ -155,10 +158,12 @@ services:
       - influx:/var/lib/influxdb
 
   mongo:
+    deploy:
+      replicas: 0
     environment:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-    image: mongo:${MONGO_VERSION}
+    image: mongo:4.4.6
     networks:
       - main
     ports:
@@ -170,11 +175,13 @@ services:
   mongo_express:
     depends_on:
       - mongo
+    deploy:
+      replicas: 0
     environment:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
       - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:${MONGO_PORT}/
-    image: mongo-express:${MONGO_EXPRESS_VERSION}
+    image: mongo-express:1.0.2-20-alpine3.19
     networks:
       - main
     ports:
@@ -184,6 +191,8 @@ services:
   nakama:
     build:
       context: nakama
+    deploy:
+      replicas: 0
     entrypoint:
       - "/bin/sh"
       - "-ecx"
@@ -200,7 +209,7 @@ services:
       - nakama:/nakama/data
 
   node_exporter:
-    image: prom/node-exporter:v${NODE_EXPORTER_VERSION}
+    image: prom/node-exporter:v1.7.0
     networks:
       - main
     ports: 
@@ -210,6 +219,8 @@ services:
   node:
     build:
       context: node
+    deploy:
+      replicas: 0
     networks:
       - main
     ports:
@@ -218,23 +229,19 @@ services:
 
   producer:
     build:
-      context: producer
+      context: services
+      dockerfile: services/producer/Dockerfile
     networks:
       - main
     restart: unless-stopped
 
   prometheus:
-    image: prom/prometheus:v${PROMETHEUS_VERSION}
+    image: prom/prometheus:v2.49.1
     networks:
       - main
     ports:
       - ${PROMETHEUS_PORT}:${PROMETHEUS_PORT}
     restart: unless-stopped
-    volumes:
-      - type: bind
-        source: ./prometheus/prometheus.yml
-        target: /etc/prometheus/prometheus.yml
-        read_only: true
 
   rabbit:
     build:
@@ -242,36 +249,16 @@ services:
     networks:
       - main
     ports:
+      - 5672:5672
       - 15672:15672
     restart: unless-stopped
 
-  receiver_1:
+  receiver:
     build:
-      context: receiver
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/v1/healthcheck']
-      interval: 10s
-      timeout: 2s
-      retries: 2
-    networks:
-      - main
-    restart: unless-stopped
-
-  receiver_2:
-    build:
-      context: receiver
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/v1/healthcheck']
-      interval: 10s
-      timeout: 2s
-      retries: 2
-    networks:
-      - main
-    restart: unless-stopped
-
-  receiver_3:
-    build:
-      context: receiver
+      context: services
+      dockerfile: services/receiver/Dockerfile
+    deploy:
+      replicas: 3
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/v1/healthcheck']
       interval: 10s
@@ -303,8 +290,19 @@ services:
     volumes:
       - redis_insight:/db
 
+  redis_slave:
+    command: redis-server --slaveof redis ${REDIS_PORT}
+    image: redis:7.2.4-alpine3.19
+    networks:
+      - main
+    ports:
+      - 6380:6379
+    restart: unless-stopped
+    volumes:
+      - redis_slave:/data
+
   statsd_exporter:
-    image: prom/statsd-exporter:v${STATSD_EXPORTER_VERSION}
+    image: prom/statsd-exporter:v0.26.0
     networks:
       - main
     ports:
@@ -324,3 +322,4 @@ volumes:
   postgres:
   redis:
   redis_insight:
+  redis_slave:
