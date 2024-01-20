@@ -2,7 +2,6 @@ package mongo
 
 import (
 	"context"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,44 +20,52 @@ var (
     VehicleCollection *mongo.Collection
 )
 
-func Init(uri string) {
-    Client = Connect("mongodb://mongo_user:mongo_password@mongo:27017")
+func Init(uri string) error {
+	client, err := Connect("mongodb://mongo_user:mongo_password@mongo:27017")
+
+	if err != nil {
+		return err
+	}
+
+	Client = client
 
     TransitCollection = CreateCollection(Client, "traffic", "transits")
     UserCollection = CreateCollection(Client, "traffic", "users")
     VehicleCollection = CreateCollection(Client, "traffic", "vehicles")
+
+	return nil
 }
 
 func Deinit() error {
     return Client.Disconnect(context.TODO())
 }
 
-func Connect(uri string) *mongo.Client {
+func Connect(uri string) (*mongo.Client, error) {
     log.Info("Connecting to database...")
 
     client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 
     if err != nil {
-        log.Error(err)
-        panic(err)
+		return nil, err
     }
 
     if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
-        log.Error(err)
-        panic(err)
+		return nil, err
     }
 
     log.Info("Connected to database")
 
-    return client
+    return client, nil
 }
 
-func Disconnect(client *mongo.Client) {
+func Disconnect(client *mongo.Client) error {
     log.Info("Disconnecting to database...")
 
-    client.Disconnect(context.TODO())
+    err := client.Disconnect(context.TODO())
 
     log.Info("Disconnected from database")
+
+	return err
 }
 
 func CreateCollection(client *mongo.Client, database string, collection string) *mongo.Collection {
@@ -69,38 +76,33 @@ func CreateCollection(client *mongo.Client, database string, collection string) 
     return mongoCollection
 }
 
-func Add(collection *mongo.Collection, document interface{}) primitive.ObjectID {
+func Add(collection *mongo.Collection, document interface{}) (primitive.ObjectID, error) {
     id, err := collection.InsertOne(context.TODO(), document)
 
     if err != nil {
-        log.Error(err)
-        panic(err)
+		// TODO: Fix.
+		// return nil, err
     }
 
-    return id.InsertedID.(primitive.ObjectID)
+    return id.InsertedID.(primitive.ObjectID), nil
 }
 
-func Delete(collection *mongo.Collection, id primitive.ObjectID) *mongo.DeleteResult {
-    filter := bson.M{"_id": id}
-    result, err := collection.DeleteOne(context.TODO(), filter)
+func Delete(collection *mongo.Collection, id primitive.ObjectID) (*mongo.DeleteResult, error) {
+    result, err := collection.DeleteOne(context.TODO(), bson.M{"_id": id})
 
     if err != nil {
-        log.Error(err)
-        panic(err)
+		return nil, err
     }
 
-    log.Info(fmt.Sprintf("Deleted %d rows", result.DeletedCount))
-
-    return result
+    return result, nil
 }
 
-func Find(collection *mongo.Collection) *mongo.Cursor {
+func Find(collection *mongo.Collection) (*mongo.Cursor, error) {
     result, err := collection.Find(context.TODO(), bson.M{})
 
     if err != nil {
-        log.Error(err)
-        panic(err)
+		return nil, err
     }
 
-    return result
+    return result, nil
 }
