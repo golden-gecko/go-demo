@@ -5,23 +5,22 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"services/common/rest"
 	"services/common/roach"
 )
 
 func Run(host string, port int) {
 	gin.SetMode(gin.ReleaseMode)
 
-    router := gin.Default()
-	router.ForwardedByClientIP = true
-	router.SetTrustedProxies([]string{"127.0.0.1"})
+	router := rest.CreateRouter()
 
     router.GET("/v1/healthcheck", Healthcheck)
-    router.GET("/v1/users", GetUsers)
+    // router.GET("/v1/users", GetUsers)
     router.GET("/v1/users/:userId", GetUser)
     router.POST("/v1/users", CreateUser)
-    router.GET("/v1/vehicles", GetVehicles)
+    // router.GET("/v1/vehicles", GetVehicles)
     router.POST("/v1/vehicles", CreateVehicle)
-    router.POST("/v1/vehicles/:plate/transits", CreateTransit)
+    // router.POST("/v1/vehicles/:plate/transits", CreateTransit)
 
     router.Run(fmt.Sprintf("%s:%d", host, port))
 }

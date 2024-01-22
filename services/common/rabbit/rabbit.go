@@ -12,7 +12,7 @@ var (
 )
 
 func Connect() error {
-    conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672/")
+    conn, err := amqp.Dial("amqp://guest:guest@rabbit-1:5672")
 
     if err != nil {
         return err

@@ -15,9 +15,7 @@ import (
 var (
     Client *mongo.Client
 
-    TransitCollection *mongo.Collection
-    UserCollection    *mongo.Collection
-    VehicleCollection *mongo.Collection
+    ItemCollection *mongo.Collection
 )
 
 func Connect() error {
@@ -37,9 +35,7 @@ func Connect() error {
 
 	Client = client
 
-    TransitCollection = CreateCollection(Client, "traffic", "transits")
-    UserCollection = CreateCollection(Client, "traffic", "users")
-    VehicleCollection = CreateCollection(Client, "traffic", "vehicles")
+    ItemCollection = CreateCollection(Client, "go_demo", "items")
 
     return nil
 }

@@ -1,18 +1,14 @@
 package main
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"go.mongodb.org/mongo-driver/bson"
 
 	"services/common/model"
-	"services/common/mongo"
 	"services/common/rest"
 	"services/common/roach"
-	"services/common/sanitize"
 	"services/common/validate"
 )
 
@@ -20,6 +16,7 @@ func Healthcheck(c *gin.Context) {
     c.IndentedJSON(http.StatusOK, nil)
 }
 
+/*
 func CreateTransit(c *gin.Context) {
     var transit model.Transit
 
@@ -42,6 +39,7 @@ func CreateTransit(c *gin.Context) {
 
 	rest.ResponseNoBody(c, http.StatusCreated)
 }
+*/
 
 func CreateUser(c *gin.Context) {
     var user model.User
@@ -69,6 +67,7 @@ func CreateUser(c *gin.Context) {
 	rest.ResponseNoBody(c, http.StatusCreated)
 }
 
+/*
 func GetUsers(c *gin.Context) {
     var users []model.User
 
@@ -107,6 +106,7 @@ func GetUsers(c *gin.Context) {
 
     c.IndentedJSON(http.StatusOK, users)
 }
+*/
 
 func GetUser(c *gin.Context) {
     userId, err := uuid.Parse(c.Param("userId"))
@@ -162,6 +162,7 @@ func CreateVehicle(c *gin.Context) {
 	rest.ResponseNoBody(c, http.StatusCreated)
 }
 
+/*
 func GetVehicles(c *gin.Context) {
     var vehicles []model.Vehicle
 
@@ -200,3 +201,4 @@ func GetVehicles(c *gin.Context) {
 
     c.IndentedJSON(http.StatusOK, vehicles)
 }
+*/
