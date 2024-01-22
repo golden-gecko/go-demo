@@ -1,21 +1,19 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
-	"time"
 
-	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/rabbitmq/amqp091-go"
 
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	log "github.com/sirupsen/logrus"
 
+	"services/common/influx"
 	"services/common/model"
-	"services/common/queue"
+	"services/common/mongo"
+	"services/common/rabbit"
 )
 
-func ProcessItem(writeAPI api.WriteAPIBlocking, body []byte) error {
+func ProcessItem(body []byte) error {
     var item model.Item
 
     err := json.Unmarshal(body, &item)
@@ -27,7 +25,7 @@ func ProcessItem(writeAPI api.WriteAPIBlocking, body []byte) error {
     return nil
 }
 
-func ProcessTemperature(writeAPI api.WriteAPIBlocking, body []byte) error {
+func ProcessTemperature(body []byte) error {
     var temperature model.Temperature
 
     err := json.Unmarshal(body, &temperature)
@@ -36,13 +34,7 @@ func ProcessTemperature(writeAPI api.WriteAPIBlocking, body []byte) error {
         return err
     }
 
-    point := influxdb2.NewPointWithMeasurement("temperatue").
-		AddTag("location", temperature.Location).
-        AddTag("unit", "celsius").
-        AddField("current", temperature.Value).
-        SetTime(time.Now()) // TODO: Move timestamp to producer.
-
-    if err := writeAPI.WritePoint(context.Background(), point); err != nil {
+    if err := influx.WriteTemperature(temperature.Location, temperature.Value, temperature.Timestamp); err != nil {
         return err
     }
 
@@ -61,11 +53,11 @@ func ProcessTransit(body []byte) error {
     return nil
 }
 
-func ProcessItemQueue(writeAPI api.WriteAPIBlocking, msgs <-chan amqp091.Delivery) {
+func ProcessItemQueue(msgs <-chan amqp091.Delivery) {
 	for d := range msgs {
 		// log.Info("Received a message: %s", d.Body)
 
-		if err := ProcessItem(writeAPI, d.Body); err != nil {
+		if err := ProcessItem(d.Body); err != nil {
 			log.Error(err)
 
 			if err := d.Nack(false, true); err != nil {
@@ -75,15 +67,13 @@ func ProcessItemQueue(writeAPI api.WriteAPIBlocking, msgs <-chan amqp091.Deliver
 			panic(err)
 		}
 	}
-
-	writeAPI.Flush(context.Background())
 }
 
-func ProcessTemperatureQueue(writeAPI api.WriteAPIBlocking, msgs <-chan amqp091.Delivery) {
+func ProcessTemperatureQueue(msgs <-chan amqp091.Delivery) {
 	for d := range msgs {
 		// log.Info("Received a message: %s", d.Body)
 
-		if err := ProcessTemperature(writeAPI, d.Body); err != nil {
+		if err := ProcessTemperature(d.Body); err != nil {
 			log.Error(err)
 
 			if err := d.Nack(false, true); err != nil {
@@ -93,11 +83,9 @@ func ProcessTemperatureQueue(writeAPI api.WriteAPIBlocking, msgs <-chan amqp091.
 			panic(err)
 		}
 	}
-
-	writeAPI.Flush(context.Background())
 }
 
-func ProcessTransitQueue(writeAPI api.WriteAPIBlocking, msgs <-chan amqp091.Delivery) {
+func ProcessTransitQueue(msgs <-chan amqp091.Delivery) {
 	for d := range msgs {
 		// log.Info("Received a message: %s", d.Body)
 
@@ -114,30 +102,31 @@ func ProcessTransitQueue(writeAPI api.WriteAPIBlocking, msgs <-chan amqp091.Deli
 }
 
 func main() {
-    if err := queue.Connect(); err != nil {
+	if err := influx.Connect(); err != nil {
+		panic(err);
+	}
+
+	defer influx.Disconnect();
+
+	//
+
+	if err := mongo.Connect(); err != nil {
+		panic(err);
+	}
+
+	defer mongo.Disconnect();
+
+	//
+
+    if err := rabbit.Connect(); err != nil {
 		panic(err)
     }
 
-    defer queue.Disconnect()
+    defer rabbit.Disconnect()
 
-	log.Info("Connected to RabbitMQ")
+	//
 
-    client := influxdb2.NewClientWithOptions(
-		"http://influx:8086",
-		"my-super-secret-auth-token",
-		influxdb2.DefaultOptions().SetBatchSize(10))
-
-    if _, err := client.Health(context.Background()); err != nil {
-		panic(err)
-    }
-
-    defer client.Close()
-
-	log.Info("Connected to InfluxDB")
-
-    writeAPI := client.WriteAPIBlocking("my-org", "house")
-
-	msgs1, err := queue.CreateQueue("items")
+	msgs1, err := rabbit.CreateQueue("items")
 
     if err != nil {
 		panic(err)
@@ -145,7 +134,7 @@ func main() {
 
 	log.Info("Queue items created")
 
-	msgs2, err := queue.CreateQueue("temperatures")
+	msgs2, err := rabbit.CreateQueue("temperatures")
 
     if err != nil {
 		panic(err)
@@ -153,7 +142,7 @@ func main() {
 
 	log.Info("Queue temperatures created")
 
-	msgs3, err := queue.CreateQueue("transits")
+	msgs3, err := rabbit.CreateQueue("transits")
 
     if err != nil {
 		panic(err)
@@ -161,13 +150,15 @@ func main() {
 
 	log.Info("Queue transits created")
 
+	//
+
 	log.Info("Waiting for messages...")
 
 	var forever chan struct {}
 
-	go ProcessItemQueue(writeAPI, msgs1)
-	go ProcessTemperatureQueue(writeAPI, msgs2)
-	go ProcessTransitQueue(writeAPI, msgs3)
+	go ProcessItemQueue(msgs1)
+	go ProcessTemperatureQueue(msgs2)
+	go ProcessTransitQueue(msgs3)
 
 	<-forever
 }

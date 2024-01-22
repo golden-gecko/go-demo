@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"services/common/sql"
+	"services/common/roach"
 )
 
 func Run(host string, port int) {
@@ -27,13 +27,13 @@ func Run(host string, port int) {
 }
 
 func main() {
-	err := sql.Connect();
+	err := roach.Connect();
 
     if err != nil {
 		panic(err)
     }
 
-    defer sql.Disconnect()
+    defer roach.Disconnect()
 
     Run("0.0.0.0", 6000)
 }

@@ -1,4 +1,4 @@
-FROM mongo:4.4.6
+FROM mongo:4.4.28
 
 COPY mongo.key /etc/mongo/mongo.key
 COPY mongod.conf /etc/mongo/mongod.conf

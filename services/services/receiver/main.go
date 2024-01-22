@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"services/common/queue"
+	"services/common/rabbit"
 )
 
 func Run(host string, port int) {
@@ -22,11 +22,11 @@ func Run(host string, port int) {
 }
 
 func main() {
-    if err := queue.Connect(); err != nil {
+    if err := rabbit.Connect(); err != nil {
 		panic(err)
     }
 
-    defer queue.Disconnect()
+    defer rabbit.Disconnect()
 
     Run("0.0.0.0", 7000)
 }

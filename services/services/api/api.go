@@ -11,8 +11,8 @@ import (
 	"services/common/model"
 	"services/common/mongo"
 	"services/common/rest"
+	"services/common/roach"
 	"services/common/sanitize"
-	"services/common/sql"
 	"services/common/validate"
 )
 
@@ -35,7 +35,7 @@ func CreateTransit(c *gin.Context) {
 		return
     }
 
-    if _, err := mongo.TransitCollection.InsertOne(context.TODO(), transit); err != nil {
+    if _, err := mongo.TransitCollection.InsertOne(context.Background(), transit); err != nil {
 		rest.ResponseError(c, err.Error())
 		panic(err)
     }
@@ -61,7 +61,7 @@ func CreateUser(c *gin.Context) {
         return
     }
 
-    if err := sql.CreateUser(user); err != nil {
+    if err := roach.CreateUser(user); err != nil {
 		rest.ResponseError(c, err.Error())
 		panic(err)
     }
@@ -79,9 +79,9 @@ func GetUsers(c *gin.Context) {
 		return
 	}
 
-    defer cursor.Close(context.TODO())
+    defer cursor.Close(context.Background())
 
-    for cursor.Next(context.TODO()) {
+    for cursor.Next(context.Background()) {
         var user1 bson.D
         var user3 model.User
 
@@ -116,7 +116,7 @@ func GetUser(c *gin.Context) {
 		return
     }
 
-    user, err := sql.GetUser(userId)
+    user, err := roach.GetUser(userId)
 
     if err != nil {
 		rest.ResponseError(c, err.Error())
@@ -154,7 +154,7 @@ func CreateVehicle(c *gin.Context) {
 		return
     }
 
-    if err := sql.CreateVehicle(vehicle); err != nil {
+    if err := roach.CreateVehicle(vehicle); err != nil {
 		rest.ResponseError(c, err.Error())
 		panic(err)
     }
@@ -172,9 +172,9 @@ func GetVehicles(c *gin.Context) {
 		return
 	}
 
-    defer cursor.Close(context.TODO())
+    defer cursor.Close(context.Background())
 
-    for cursor.Next(context.TODO()) {
+    for cursor.Next(context.Background()) {
         var vehicle1 bson.D
         var vehicle3 model.Vehicle
 

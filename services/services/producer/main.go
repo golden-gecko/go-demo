@@ -7,10 +7,10 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
+	"services/common"
 	"services/common/model"
 )
 
@@ -60,7 +60,7 @@ func CreateTemperature(location string) model.Temperature {
     return model.Temperature{
         Location:  location,
         Value:     rand.Float32() * 100,
-        Timestamp: time.Now().Format(time.RFC3339),
+        Timestamp: common.Timestamp(),
     }
 }
 
@@ -73,7 +73,7 @@ func CreateTransit() model.Transit {
     t := model.Transit{
         Plate:     RandomPlate(),
         Location:  c,
-        Timestamp: time.Now().Format(time.RFC3339),
+        Timestamp: common.Timestamp(),
     }
 
     return t
@@ -98,14 +98,6 @@ func CreateVehicle(cars model.Cars) model.Vehicle {
     }
 }
 
-func Sleep(minInterval int, maxInterval int) {
-	interval := minInterval + rand.Intn(maxInterval - minInterval)
-
-	log.Info(fmt.Sprintf("Sleeping for %d ms", interval))
-
-	time.Sleep(time.Duration(interval) * time.Millisecond)
-}
-
 func ProcessItems(receiverUrl string, names model.Names, minInterval int, maxInterval int) {
 	for {
 		var items []model.Item
@@ -124,7 +116,7 @@ func ProcessItems(receiverUrl string, names model.Names, minInterval int, maxInt
 			panic(err)
 		}
 
-		Sleep(minInterval, maxInterval)
+		common.SleepRange(minInterval, maxInterval)
 	}
 }
 
@@ -144,7 +136,7 @@ func ProcessTemperatures(receiverUrl string, minInterval int, maxInterval int) {
 			panic(err)
 		}
 
-		Sleep(minInterval, maxInterval)
+		common.SleepRange(minInterval, maxInterval)
 	}
 }
 
@@ -166,7 +158,7 @@ func ProcessTransits(receiverUrl string, minInterval int, maxInterval int) {
 			panic(err)
 		}
 
-		Sleep(minInterval, maxInterval)
+		common.SleepRange(minInterval, maxInterval)
 	}
 }
 
@@ -182,7 +174,7 @@ func ProcessUsers(apiUrl string, users model.Users, minInterval int, maxInterval
 			panic(err)
 		}
 
-		Sleep(minInterval, maxInterval)
+		common.SleepRange(minInterval, maxInterval)
 	}
 }
 
@@ -198,7 +190,7 @@ func ProcessVehicles(apiUrl string, cars model.Cars, minInterval int, maxInterva
 			panic(err)
 		}
 
-		Sleep(minInterval, maxInterval)
+		common.SleepRange(minInterval, maxInterval)
 	}
 }
 
