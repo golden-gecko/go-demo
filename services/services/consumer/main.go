@@ -128,7 +128,7 @@ func main() {
 
 	//
 
-	msgs1, err := rabbit.CreateQueue("items")
+	msgs1, err := rabbit.ConsumeQueue("items")
 
     if err != nil {
 		panic(err)
@@ -136,7 +136,7 @@ func main() {
 
 	log.Info("Queue items created")
 
-	msgs2, err := rabbit.CreateQueue("temperatures")
+	msgs2, err := rabbit.ConsumeQueue("temperatures")
 
     if err != nil {
 		panic(err)
@@ -144,7 +144,7 @@ func main() {
 
 	log.Info("Queue temperatures created")
 
-	msgs3, err := rabbit.CreateQueue("transits")
+	msgs3, err := rabbit.ConsumeQueue("transits")
 
     if err != nil {
 		panic(err)

@@ -241,8 +241,6 @@ services:
   rabbit-1:
     build:
       context: rabbit
-    environment:
-      - RABBITMQ_ERLANG_COOKIE=rabbitcookie
     networks:
       - main
     ports:
@@ -250,16 +248,11 @@ services:
       - 15672:15672
     restart: unless-stopped
     volumes:
-      - rabbit-1:/var/lib/rabbitmq/mnesia
+      - rabbit-1:/var/lib/rabbitmq
 
   rabbit-2:
     build:
       context: rabbit
-    environment:
-      - JOIN_CLUSTER_HOST=rabbit-1
-      - RABBITMQ_ERLANG_COOKIE=rabbitcookie
-      - CLUSTERED=true
-      - CLUSTER_WITH=rabbit-1
     networks:
       - main
     ports:
@@ -267,16 +260,11 @@ services:
       - 15673:15672
     restart: unless-stopped
     volumes:
-      - rabbit-2:/var/lib/rabbitmq/mnesia
+      - rabbit-2:/var/lib/rabbitmq
 
   rabbit-3:
     build:
       context: rabbit
-    environment:
-      - JOIN_CLUSTER_HOST=rabbit-1
-      - RABBITMQ_ERLANG_COOKIE=rabbitcookie
-      - CLUSTERED=true
-      - CLUSTER_WITH=rabbit-1
     networks:
       - main
     ports:
@@ -284,7 +272,7 @@ services:
       - 15674:15672
     restart: unless-stopped
     volumes:
-      - rabbit-3:/var/lib/rabbitmq/mnesia
+      - rabbit-3:/var/lib/rabbitmq
 
   receiver:
     build:

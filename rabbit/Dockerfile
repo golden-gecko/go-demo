@@ -4,3 +4,7 @@ RUN rabbitmq-plugins enable --offline \
     rabbitmq_prometheus \
     rabbitmq_shovel \
     rabbitmq_shovel_management
+
+RUN echo secret-cookie > /var/lib/rabbitmq/.erlang.cookie
+
+CMD ["rabbitmq-server", "start"]

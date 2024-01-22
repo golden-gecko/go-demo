@@ -12,7 +12,7 @@ var (
 )
 
 func Connect() error {
-    conn, err := amqp.Dial("amqp://guest:guest@rabbit-1:5672")
+    connection, err := amqp.Dial("amqp://guest:guest@rabbit-1:5672")
 
     if err != nil {
         return err
@@ -20,36 +20,25 @@ func Connect() error {
 
 	log.Info("Connected to RabbitMQ")
 
-    ch, err := conn.Channel()
+    ch, err := connection.Channel()
 
     if err != nil {
         return err
     }
 
-    err = ch.Qos(10, 0, true)
+	if err = ch.Qos(10, 0, true); err != nil {
+        return err
+    }
 
     queues := []string{"items", "temperatures", "transits"}
 
     for _, queueName := range queues {
-        _, err := ch.QueueDeclare(
-            queueName, // name
-            true,      // durable
-            false,     // delete when unused
-            false,     // exclusive
-            false,     // no-wait
-            nil,       // arguments
-        )
-
-        if err != nil {
-            return err
-        }
+        if err := DeclareQueue(queueName); err != nil {
+			return err
+		}
     }
 
-    if err != nil {
-        return err
-    }
-
-    Client = conn
+    Client = connection
     Channel = ch
 
     return nil
@@ -67,7 +56,20 @@ func Disconnect() error {
     return nil
 }
 
-func CreateQueue(name string) (<-chan amqp.Delivery, error) {
+func DeclareQueue(name string) error {
+	_, err := Channel.QueueDeclare(
+		name,  // name
+		true,  // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+
+	return err
+}
+
+func ConsumeQueue(name string) (<-chan amqp.Delivery, error) {
 	return Channel.Consume(
 		name,  // name
 		"",    // consumer
