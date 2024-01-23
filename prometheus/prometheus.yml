@@ -20,4 +20,4 @@ scrape_configs:
       - targets: ['localhost:9090']
   - job_name: 'rabbit'
     static_configs:
-      - targets: ['rabbit:15692']
+      - targets: ['rabbit-1:15692']

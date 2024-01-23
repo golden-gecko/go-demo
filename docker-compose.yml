@@ -241,7 +241,6 @@ services:
   rabbit-1:
     build:
       context: rabbit
-    command: /root/init.sh
     networks:
       - main
     ports:
@@ -254,7 +253,6 @@ services:
   rabbit-2:
     build:
       context: rabbit
-    command: /root/init.sh rabbit-1
     networks:
       - main
     ports:
@@ -267,7 +265,6 @@ services:
   rabbit-3:
     build:
       context: rabbit
-    command: /root/init.sh rabbit-1
     networks:
       - main
     ports:

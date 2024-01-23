@@ -16,7 +16,7 @@ var (
 )
 
 func Connect() error {
-    log.Info("Connecting to database...")
+    log.Info("Connecting to CockroachDB...")
 
     config, err := pgx.ParseConfig("postgres://go_user:go_password@cockroach-1:26257/go_demo")
 
@@ -30,7 +30,7 @@ func Connect() error {
         return err
     }
 
-    log.Info("Connected to database")
+    log.Info("Connected to CockroachDB")
 
     connnection = conn
 
@@ -38,7 +38,7 @@ func Connect() error {
 }
 
 func Disconnect() error {
-    log.Info("Disconnecting from database...")
+    log.Info("Disconnecting from CockroachDB...")
 
     err := connnection.Close(context.Background())
 
@@ -46,7 +46,7 @@ func Disconnect() error {
         return err
     }
 
-    log.Info("Disconnected from database")
+    log.Info("Disconnected from CockroachDB")
 
     return nil
 }

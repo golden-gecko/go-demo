@@ -6,9 +6,9 @@ import (
 )
 
 var (
-    Client  *amqp.Connection
-    Channel *amqp.Channel
-    Queue   amqp.Queue
+    Connection *amqp.Connection
+    Channel    *amqp.Channel
+    Queue       amqp.Queue
 )
 
 func Connect() error {
@@ -18,15 +18,19 @@ func Connect() error {
         return err
     }
 
+	Connection = connection
+
 	log.Info("Connected to RabbitMQ")
 
-    ch, err := connection.Channel()
+    channel, err := connection.Channel()
 
     if err != nil {
         return err
     }
 
-	if err = ch.Qos(10, 0, true); err != nil {
+    Channel = channel
+
+	if err = channel.Qos(10, 0, true); err != nil {
         return err
     }
 
@@ -38,20 +42,21 @@ func Connect() error {
 		}
     }
 
-    Client = connection
-    Channel = ch
-
     return nil
 }
 
 func Disconnect() error {
+    log.Info("Disconnecting from RabbitMQ...")
+
     if err := Channel.Close(); err != nil {
         return err
     }
 
-    if err := Client.Close(); err != nil {
+    if err := Connection.Close(); err != nil {
         return err
     }
+
+    log.Info("Disconnected from RabbitMQ")
 
     return nil
 }
