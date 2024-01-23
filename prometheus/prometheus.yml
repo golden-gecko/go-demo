@@ -10,7 +10,7 @@ scrape_configs:
       - targets: ['haproxy:9103']
   - job_name: 'nodes'
     static_configs:
-      - targets: ['node_exporter:9100', 'statsd_exporter:9102']
+      - targets: ['node-exporter:9100', 'statsd-exporter:9102']
   - job_name: nakama
       metrics_path: /
       static_configs:
