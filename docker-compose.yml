@@ -31,18 +31,6 @@ services:
       - main
     restart: unless-stopped
 
-  chronograf:
-    deploy:
-      replicas: 0
-    image: chronograf:1.10.2-alpine
-    networks:
-      - main
-    ports:
-      - ${CHRONOGRAF_PORT}:${CHRONOGRAF_PORT}
-    restart: unless-stopped
-    volumes:
-      - chronograf:/var/lib/chronograf
-
   cockroach-1:
     command: start --advertise-addr=cockroach-1:26357 --http-addr=cockroach-1:8080 --listen-addr=cockroach-1:26357 --sql-addr=cockroach-1:26257 --insecure --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
     healthcheck:
@@ -104,20 +92,28 @@ services:
       - main
     restart: unless-stopped
 
+  dynamodb:
+    image: amazon/dynamodb-local:2.2.1
+    networks:
+      - main
+    ports:
+      - 8000:8000
+    restart: unless-stopped
+    volumes:
+      - dynamodb:/home/dynamodblocal/data
+
   grafana:
     build:
       context: grafana
-    deploy:
-      replicas: 0
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${GRAFANA_PORT}/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 10s
       timeout: 2s
       retries: 2
     networks:
       - main
     ports:
-      - ${GRAFANA_PORT}:${GRAFANA_PORT}
+      - 3000:3000
     restart: unless-stopped
     volumes:
       - grafana-etc:/etc/grafana
@@ -129,6 +125,7 @@ services:
     networks:
       - main
     ports:
+      - 2100:2100
       - 6100:6100
       - 7100:7100
       - 8404:8404
@@ -188,38 +185,31 @@ services:
   nakama:
     build:
       context: nakama
-    deploy:
-      replicas: 0
-    entrypoint:
-      - "/bin/sh"
-      - "-ecx"
-      - >
-          /nakama/nakama migrate up --database.address root@cockroach-1:26257 &&
-          exec /nakama/nakama --name nakama1 --database.address root@cockroach-1:26257 --logger.level DEBUG --session.token_expiry_sec 7200 --metrics.prometheus_port 9100  
     networks:
       - main
     ports:
       - 7350:7350
       - 7351:7351
+      - 9104:9104
     restart: unless-stopped
     volumes:
       - nakama:/nakama/data
+
+  node:
+    build:
+      context: node
+    deploy:
+      replicas: 3
+    networks:
+      - main
+    restart: unless-stopped
 
   node-exporter:
     image: prom/node-exporter:v1.7.0
     networks:
       - main
     ports: 
-      - ${NODE_EXPORTER_PORT}:${NODE_EXPORTER_PORT}
-    restart: unless-stopped
-
-  node:
-    build:
-      context: node
-    deploy:
-      replicas: 0
-    networks:
-      - main
+      - 9100:9100
     restart: unless-stopped
 
   producer:
@@ -231,11 +221,12 @@ services:
     restart: unless-stopped
 
   prometheus:
-    image: prom/prometheus:v2.49.1
+    build:
+      context: prometheus
     networks:
       - main
     ports:
-      - ${PROMETHEUS_PORT}:${PROMETHEUS_PORT}
+      - 9090:9090
     restart: unless-stopped
 
   rabbit-1:
@@ -246,6 +237,7 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+      - 15692:15692
     restart: unless-stopped
     volumes:
       - rabbit-1:/var/lib/rabbitmq/mnesia
@@ -257,7 +249,6 @@ services:
       - main
     ports:
       - 5673:5672
-      - 15673:15672
     restart: unless-stopped
     volumes:
       - rabbit-2:/var/lib/rabbitmq/mnesia
@@ -269,7 +260,6 @@ services:
       - main
     ports:
       - 5674:5672
-      - 15674:15672
     restart: unless-stopped
     volumes:
       - rabbit-3:/var/lib/rabbitmq/mnesia
@@ -289,15 +279,44 @@ services:
       - main
     restart: unless-stopped
 
-  redis:
-    image: redis:7.2.4-alpine3.19
+  redis-1:
+    build:
+      context: redis
     networks:
       - main
     ports:
       - ${REDIS_PORT}:${REDIS_PORT}
     restart: unless-stopped
     volumes:
-      - redis:/data
+      - redis-1:/data
+
+  redis-2:
+    build:
+      context: redis
+    environment:
+      - MASTER_HOST=redis-1
+      - MASTER_PORT=6379
+    networks:
+      - main
+    ports:
+      - 6380:6379
+    restart: unless-stopped
+    volumes:
+      - redis-2:/data
+
+  redis-3:
+    build:
+      context: redis
+    environment:
+      - MASTER_HOST=redis-1
+      - MASTER_PORT=6379
+    networks:
+      - main
+    ports:
+      - 6381:6379
+    restart: unless-stopped
+    volumes:
+      - redis-3:/data
 
   redis-insight:
     image: redislabs/redisinsight:1.14.0
@@ -309,23 +328,12 @@ services:
     volumes:
       - redis-insight:/db
 
-  redis-slave:
-    command: redis-server --slaveof redis ${REDIS_PORT}
-    image: redis:7.2.4-alpine3.19
-    networks:
-      - main
-    ports:
-      - 6380:6379
-    restart: unless-stopped
-    volumes:
-      - redis-slave:/data
-
   statsd-exporter:
     image: prom/statsd-exporter:v0.26.0
     networks:
       - main
     ports:
-      - ${STATSD_EXPORTER_PORT}:${STATSD_EXPORTER_PORT}
+      - 9102:9102
     restart: unless-stopped
 
 volumes:
@@ -333,6 +341,7 @@ volumes:
   cockroach-1:
   cockroach-2:
   cockroach-3:
+  dynamodb:
   grafana-etc:
   grafana-var-lib:
   influx:
@@ -342,6 +351,7 @@ volumes:
   rabbit-1:
   rabbit-2:
   rabbit-3:
-  redis:
+  redis-1:
+  redis-2:
+  redis-3:
   redis-insight:
-  redis-slave:

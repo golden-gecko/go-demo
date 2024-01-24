@@ -2,9 +2,9 @@ FROM node:21.6.0-alpine3.18
 
 WORKDIR /app
 
-RUN npm install express
-
 COPY . .
+
+RUN npm install
 
 EXPOSE 2000
 
