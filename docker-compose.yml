@@ -43,8 +43,8 @@ services:
     volumes:
       - chronograf:/var/lib/chronograf
 
-  cockroach_1:
-    command: start --advertise-addr=cockroach_1:26357 --http-addr=cockroach_1:8080 --listen-addr=cockroach_1:26357 --sql-addr=cockroach_1:26257 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+  cockroach-1:
+    command: start --advertise-addr=cockroach-1:26357 --http-addr=cockroach-1:8080 --listen-addr=cockroach-1:26357 --sql-addr=cockroach-1:26257 --insecure --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
       interval: 10s
@@ -58,10 +58,10 @@ services:
       - 26257:26257
     restart: unless-stopped
     volumes:
-      - cockroach_1:/data/db
+      - cockroach-1:/data/db
 
-  cockroach_2:
-    command: start --advertise-addr=cockroach_2:26357 --http-addr=cockroach_2:8081 --listen-addr=cockroach_2:26357 --sql-addr=cockroach_2:26258 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+  cockroach-2:
+    command: start --advertise-addr=cockroach-2:26357 --http-addr=cockroach-2:8081 --listen-addr=cockroach-2:26357 --sql-addr=cockroach-2:26258 --insecure --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/health?ready=1"]
       interval: 10s
@@ -75,10 +75,10 @@ services:
       - 26258:26258
     restart: unless-stopped
     volumes:
-      - cockroach_2:/data/db
+      - cockroach-2:/data/db
 
-  cockroach_3:
-    command: start --advertise-addr=cockroach_3:26357 --http-addr=cockroach_3:8082 --listen-addr=cockroach_3:26357 --sql-addr=cockroach_3:26259 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+  cockroach-3:
+    command: start --advertise-addr=cockroach-3:26357 --http-addr=cockroach-3:8082 --listen-addr=cockroach-3:26357 --sql-addr=cockroach-3:26259 --insecure --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/health?ready=1"]
       interval: 10s
@@ -92,7 +92,7 @@ services:
       - 26259:26259
     restart: unless-stopped
     volumes:
-      - cockroach_3:/data/db
+      - cockroach-3:/data/db
 
   consumer:
     build:
@@ -120,8 +120,8 @@ services:
       - ${GRAFANA_PORT}:${GRAFANA_PORT}
     restart: unless-stopped
     volumes:
-      - grafana_etc:/etc/grafana
-      - grafana_var_lib:/var/lib/grafana
+      - grafana-etc:/etc/grafana
+      - grafana-var-lib:/var/lib/grafana
 
   haproxy:
     build:
@@ -171,7 +171,7 @@ services:
     volumes:
       - mongo:/data/db
 
-  mongo_express:
+  mongo-express:
     environment:
       - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_BASICAUTH_USERNAME=${MONGO_USER}
@@ -194,8 +194,8 @@ services:
       - "/bin/sh"
       - "-ecx"
       - >
-          /nakama/nakama migrate up --database.address root@cockroach_1:26257 &&
-          exec /nakama/nakama --name nakama1 --database.address root@cockroach_1:26257 --logger.level DEBUG --session.token_expiry_sec 7200 --metrics.prometheus_port 9100  
+          /nakama/nakama migrate up --database.address root@cockroach-1:26257 &&
+          exec /nakama/nakama --name nakama1 --database.address root@cockroach-1:26257 --logger.level DEBUG --session.token_expiry_sec 7200 --metrics.prometheus_port 9100  
     networks:
       - main
     ports:
@@ -205,7 +205,7 @@ services:
     volumes:
       - nakama:/nakama/data
 
-  node_exporter:
+  node-exporter:
     image: prom/node-exporter:v1.7.0
     networks:
       - main
@@ -241,8 +241,6 @@ services:
   rabbit-1:
     build:
       context: rabbit
-    environment:
-      - RABBITMQ_ERLANG_COOKIE=rabbitcookie
     networks:
       - main
     ports:
@@ -255,11 +253,6 @@ services:
   rabbit-2:
     build:
       context: rabbit
-    environment:
-      - JOIN_CLUSTER_HOST=rabbit-1
-      - RABBITMQ_ERLANG_COOKIE=rabbitcookie
-      - CLUSTERED=true
-      - CLUSTER_WITH=rabbit-1
     networks:
       - main
     ports:
@@ -272,11 +265,6 @@ services:
   rabbit-3:
     build:
       context: rabbit
-    environment:
-      - JOIN_CLUSTER_HOST=rabbit-1
-      - RABBITMQ_ERLANG_COOKIE=rabbitcookie
-      - CLUSTERED=true
-      - CLUSTER_WITH=rabbit-1
     networks:
       - main
     ports:
@@ -311,7 +299,7 @@ services:
     volumes:
       - redis:/data
 
-  redis_insight:
+  redis-insight:
     image: redislabs/redisinsight:1.14.0
     networks:
       - main
@@ -319,9 +307,9 @@ services:
       - ${REDIS_INSIGHT_PORT}:${REDIS_INSIGHT_PORT}
     restart: unless-stopped
     volumes:
-      - redis_insight:/db
+      - redis-insight:/db
 
-  redis_slave:
+  redis-slave:
     command: redis-server --slaveof redis ${REDIS_PORT}
     image: redis:7.2.4-alpine3.19
     networks:
@@ -330,9 +318,9 @@ services:
       - 6380:6379
     restart: unless-stopped
     volumes:
-      - redis_slave:/data
+      - redis-slave:/data
 
-  statsd_exporter:
+  statsd-exporter:
     image: prom/statsd-exporter:v0.26.0
     networks:
       - main
@@ -342,11 +330,11 @@ services:
 
 volumes:
   chronograf:
-  cockroach_1:
-  cockroach_2:
-  cockroach_3:
-  grafana_etc:
-  grafana_var_lib:
+  cockroach-1:
+  cockroach-2:
+  cockroach-3:
+  grafana-etc:
+  grafana-var-lib:
   influx:
   mongo:
   nakama:
@@ -355,5 +343,5 @@ volumes:
   rabbit-2:
   rabbit-3:
   redis:
-  redis_insight:
-  redis_slave:
+  redis-insight:
+  redis-slave:

@@ -19,7 +19,7 @@ var (
 )
 
 func Connect() error {
-    log.Info("Connecting to database...")
+    log.Info("Connecting to MongoDB...")
 
     client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://mongo_user:mongo_password@mongo:27017"))
 
@@ -27,13 +27,13 @@ func Connect() error {
 		return  err
     }
 
+	Client = client
+
     if err := client.Ping(context.Background(), readpref.Primary()); err != nil {
 		return  err
     }
 
-    log.Info("Connected to database")
-
-	Client = client
+    log.Info("Connected to MongoDB")
 
     ItemCollection = CreateCollection(Client, "go_demo", "items")
 
@@ -41,11 +41,11 @@ func Connect() error {
 }
 
 func Disconnect() error {
-    log.Info("Disconnecting to database...")
+    log.Info("Disconnecting from MongoDB...")
 
     err := Client.Disconnect(context.Background())
 
-    log.Info("Disconnected from database")
+    log.Info("Disconnected from MongoDB")
 
 	return err
 }
