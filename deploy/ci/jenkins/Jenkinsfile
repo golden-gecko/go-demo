@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                sh 'git --version'
+            }
+        }
+    }
+
+    stages {
+        stage('Test') {
+            steps {
+                sh 'git --version'
+            }
+        }
+    }
+}
