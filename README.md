@@ -22,7 +22,15 @@ Run CI.
 deploy/ci/run.sh
 ```
 
+Generate SSH key.
+
+```bash
+deploy/ci/init.sh
+```
+
 Open Jenkins http://localhost:8888/.
+
+Add SSH key to Jenkins and Git repository.
 
 ### UI
 
