@@ -2,6 +2,8 @@ package roach
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
@@ -18,13 +20,19 @@ var (
 func Connect() error {
     log.Info("Connecting to CockroachDB...")
 
-    config, err := pgx.ParseConfig("postgres://go_user:go_password@cockroach-1:26257/go_demo")
+	user := os.Getenv("COCKROACH_USER")
+	password := os.Getenv("COCKROACH_PASSWORD")
+	host := os.Getenv("COCKROACH_HOST")
+	port := os.Getenv("COCKROACH_PORT")
+	database := os.Getenv("COCKROACH_DATABASE")
+
+    config, err := pgx.ParseConfig(fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, host, port, database))
 
     if err != nil {
         return err
     }
 
-    conn, err := pgx.ConnectConfig(context.Background(), config)
+    connnection_, err := pgx.ConnectConfig(context.Background(), config)
 
     if err != nil {
         return err
@@ -32,7 +40,7 @@ func Connect() error {
 
     log.Info("Connected to CockroachDB")
 
-    connnection = conn
+    connnection = connnection_
 
     return nil
 }
