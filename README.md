@@ -8,17 +8,29 @@
 ./run.sh
 ```
 
-### How to stop
+### How to deploy locally
 
 ```bash
-./stop.sh
+./run.sh
 ```
 
-### How to view logs
+### How to deploy using Jenkins
+
+Run CI.
 
 ```bash
-./logs.sh
+deploy/ci/run.sh
 ```
+
+Generate SSH key.
+
+```bash
+deploy/ci/init.sh
+```
+
+Open Jenkins http://localhost:8888/.
+
+Add SSH key to Jenkins and Git repository.
 
 ### UI
 
