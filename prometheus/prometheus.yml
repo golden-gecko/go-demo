@@ -3,6 +3,9 @@ global:
   evaluation_interval: 10s
 
 scrape_configs:
+  - job_name: 'aggregator'
+    static_configs:
+      - targets: ['aggregator:9105']
   - job_name: 'haproxy'
     static_configs:
       - targets: ['haproxy:8404']
@@ -12,6 +15,9 @@ scrape_configs:
   - job_name: 'nodes'
     static_configs:
       - targets: ['node-exporter:9100', 'statsd-exporter:9102']
+  - job_name: 'producer'
+    static_configs:
+      - targets: ['producer:9106']
   - job_name: 'prometheus'
     static_configs:
       - targets: ['prometheus:9090']
