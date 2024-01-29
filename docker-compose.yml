@@ -119,6 +119,7 @@ services:
       interval: 10s
       timeout: 2s
       retries: 2
+    image: registry.com.gecko/grafana
     networks:
       - main
     ports:

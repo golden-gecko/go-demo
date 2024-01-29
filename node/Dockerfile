@@ -2,9 +2,11 @@ FROM node:21.6.0-alpine3.18
 
 WORKDIR /app
 
-COPY . .
+COPY package*.json .
 
 RUN npm install
+
+COPY . .
 
 EXPOSE 2000
 
