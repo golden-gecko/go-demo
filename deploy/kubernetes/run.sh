@@ -2,19 +2,19 @@
 
 cd "$(dirname "$0")"
 
-# kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
-# kubectl -n kubernetes-dashboard apply -f admin-role.yml
-# kubectl -n kubernetes-dashboard get secret admin-user-secret -o jsonpath="{.data.token}" | base64 -d
-
-# find *.yml -print0 | xargs -n 1 -0 kubectl apply -f
+# API
+kubectl apply -f api/api.yaml
 
 # CockroachDB
+kubectl apply -f cockroachdb/crds.yaml
+kubectl apply -f cockroachdb/operator.yaml
+kubectl apply -f cockroachdb/example.yaml
 
-kubectl apply -f https://raw.githubusercontent.com/cockroachdb/cockroach-operator/v2.12.0/install/crds.yaml
-kubectl apply -f https://raw.githubusercontent.com/cockroachdb/cockroach-operator/v2.12.0/install/operator.yaml
-kubectl apply -f https://raw.githubusercontent.com/cockroachdb/cockroach-operator/v2.12.0/examples/example.yaml
+# CockroachDB client
+# kubectl create -f cockroachdb/client-secure-operator.yaml
 
-kubectl create -f https://raw.githubusercontent.com/cockroachdb/cockroach-operator/v2.12.0/examples/client-secure-operator.yaml
+# CockroachDB forward
+# kubectl port-forward service/cockroachdb 8080:8080
 
 # InfluxDB
 
@@ -29,6 +29,10 @@ kubectl create -f https://raw.githubusercontent.com/cockroachdb/cockroach-operat
 # Redis Insight
 
 # Status
-kubectl get pods --all-namespaces
-kubectl get pv --all-namespaces
-kubectl get service --all-namespaces
+# kubectl get deployments --all-namespaces
+# kubectl get pods --all-namespaces
+# kubectl get pv --all-namespaces
+# kubectl get service --all-namespaces
+
+# Logs
+# kubectl logs pod_name
