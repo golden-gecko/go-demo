@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api
+  name: receiver
   labels:
-    app: api
+    app: receiver
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: api
+      app: receiver
   template:
     metadata:
       labels:
-        app: api
+        app: receiver
     spec:
       containers:
-      - name: api
-        image: localhost:5000/api
+      - name: receiver
+        image: registry.com.gecko/receiver
         ports:
-        - containerPort: 6000
+        - containerPort: 7000
