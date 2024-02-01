@@ -17,5 +17,16 @@ spec:
       containers:
       - name: api
         image: registry.com.gecko/api
+        env:
+          - name: COCKROACH_USER
+            value: "a"
+          - name: COCKROACH_PASSWORD
+            value: "b"
+          - name: COCKROACH_HOST
+            value: "cockroachdb-public"
+          - name: COCKROACH_PORT
+            value: "26257"
+          - name: COCKROACH_DATABASE
+            value: "c"
         ports:
         - containerPort: 6000

@@ -2,4 +2,10 @@
 
 cd "$(dirname "$0")"
 
-# find *.yml -print0 | xargs -n 1 -0 kubectl delete -f
+# API
+kubectl delete -f api/api.yaml
+
+# CockroachDB
+kubectl delete -f cockroachdb/crds.yaml
+kubectl delete -f cockroachdb/operator.yaml
+kubectl delete -f cockroachdb/example.yaml

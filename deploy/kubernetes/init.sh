@@ -2,5 +2,7 @@
 
 cd "$(dirname "$0")"
 
-# kubectl krew
-# kubectl krew install rabbitmq
+kubectl exec -i cockroachdb-client-secure \
+    -- ./cockroach sql \
+    --certs-dir=/cockroach/cockroach-certs \
+    --host=cockroachdb-public < ..\..\cockroach\init.sql

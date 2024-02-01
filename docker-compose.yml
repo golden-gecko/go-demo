@@ -38,7 +38,7 @@ services:
     restart: unless-stopped
 
   cockroach-1:
-    command: start --advertise-addr=cockroach-1:26357 --http-addr=cockroach-1:8080 --listen-addr=cockroach-1:26357 --sql-addr=cockroach-1:26257 --insecure --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
+    command: start --advertise-addr=cockroach-1:26357 --certs-dir=/certs --http-addr=cockroach-1:8080 --listen-addr=cockroach-1:26357 --sql-addr=cockroach-1:26257 --insecure --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
       interval: 10s
@@ -53,9 +53,10 @@ services:
     restart: unless-stopped
     volumes:
       - cockroach-1:/data/db
+      - ./cockroach/certs:/certs
 
   cockroach-2:
-    command: start --advertise-addr=cockroach-2:26357 --http-addr=cockroach-2:8081 --listen-addr=cockroach-2:26357 --sql-addr=cockroach-2:26258 --insecure --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
+    command: start --advertise-addr=cockroach-2:26357 --certs-dir=/certs --http-addr=cockroach-2:8081 --listen-addr=cockroach-2:26357 --sql-addr=cockroach-2:26258 --insecure --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/health?ready=1"]
       interval: 10s
@@ -70,9 +71,10 @@ services:
     restart: unless-stopped
     volumes:
       - cockroach-2:/data/db
+      - ./cockroach/certs:/certs
 
   cockroach-3:
-    command: start --advertise-addr=cockroach-3:26357 --http-addr=cockroach-3:8082 --listen-addr=cockroach-3:26357 --sql-addr=cockroach-3:26259 --insecure --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
+    command: start --advertise-addr=cockroach-3:26357 --certs-dir=/certs --http-addr=cockroach-3:8082 --listen-addr=cockroach-3:26357 --sql-addr=cockroach-3:26259 --insecure --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/health?ready=1"]
       interval: 10s
@@ -87,6 +89,7 @@ services:
     restart: unless-stopped
     volumes:
       - cockroach-3:/data/db
+      - ./cockroach/certs:/certs
 
   consumer:
     build:
@@ -189,7 +192,7 @@ services:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
       - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017
-    image: 
+    image: registry.com.gecko/mongo-express
     networks:
       - main
     ports:

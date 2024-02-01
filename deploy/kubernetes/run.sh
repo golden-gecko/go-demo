@@ -11,7 +11,7 @@ kubectl apply -f cockroachdb/operator.yaml
 kubectl apply -f cockroachdb/example.yaml
 
 # CockroachDB client
-# kubectl create -f cockroachdb/client-secure-operator.yaml
+kubectl create -f cockroachdb/client-secure-operator.yaml
 
 # CockroachDB forward
 # kubectl port-forward service/cockroachdb 8080:8080
@@ -29,9 +29,11 @@ kubectl apply -f cockroachdb/example.yaml
 # Redis Insight
 
 # Status
-# kubectl get deployments --all-namespaces
-# kubectl get pods --all-namespaces
+# kubectl get deployment --all-namespaces
+# kubectl get pod --all-namespaces
 # kubectl get pv --all-namespaces
+# kubectl get pvc --all-namespaces
+# kubectl get secret --all-namespaces
 # kubectl get service --all-namespaces
 
 # Logs
