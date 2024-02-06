@@ -2,5 +2,5 @@
 
 cd "$(dirname "$0")"
 
-docker-compose --file docker-compose.yml \
+docker-compose --file docker-compose.yml --project-name demo-stack \
     stop "$@"

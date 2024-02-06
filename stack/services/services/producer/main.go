@@ -262,9 +262,9 @@ func main() {
 
 	go ProcessItems(receiverUrl, names, dataProduced, 1000, 2000)
 	go ProcessTemperatures(receiverUrl, dataProduced, 1000, 2000)
-	go ProcessTransits(receiverUrl, dataProduced, 2000, 4000)
-	go ProcessUsers(apiUrl, users, dataProduced, 4000, 6000)
-	go ProcessVehicles(apiUrl, cars, dataProduced, 6000, 8000)
+	go ProcessTransits(receiverUrl, dataProduced, 1000, 2000)
+	go ProcessUsers(apiUrl, users, dataProduced, 1000, 2000)
+	go ProcessVehicles(apiUrl, cars, dataProduced, 1000, 2000)
 
 	<- forever
 }
