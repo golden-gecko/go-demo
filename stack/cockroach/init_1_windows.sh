@@ -2,4 +2,4 @@
 
 cd "$(dirname "$0")"
 
-MSYS_NO_PATHCONV=1 ./init.sh
+MSYS_NO_PATHCONV=1 ./init_1.sh
