@@ -2,8 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,6 +20,7 @@ import (
 )
 
 func Send(url string, data []byte) error {
+	/*
 	caCert, err := os.ReadFile("certs/ca-cert.pem")
 
 	if err != nil {
@@ -46,6 +45,24 @@ func Send(url string, data []byte) error {
     if err != nil {
         return err
     }
+	*/
+
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+
+	if err != nil {
+		return err
+	}
+
+	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
 
 	body, err := io.ReadAll(response.Body)
 

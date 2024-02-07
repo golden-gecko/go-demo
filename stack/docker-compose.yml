@@ -1,12 +1,6 @@
 version: '3.9'
 
 networks:
-  external:
-    enable_ipv6: false
-    ipam:
-      config:
-        - subnet: 192.168.100.0/24
-
   main:
     enable_ipv6: false
     ipam:
@@ -167,7 +161,7 @@ services:
       - ${INFLUX_PORT}:${INFLUX_PORT}
     restart: unless-stopped
     volumes:
-      - influx:/var/lib/influxdb
+      - influx:/var/lib/influxdb2
 
   mongo:
     build:
@@ -254,7 +248,7 @@ services:
       - .env
     image: registry.com.gecko/producer
     networks:
-      - external
+      - main
     restart: unless-stopped
 
   prometheus:
