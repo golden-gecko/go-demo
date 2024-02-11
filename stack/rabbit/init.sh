@@ -2,9 +2,6 @@
 
 cd "$(dirname "$0")"
 
-export COMPOSE_DOCKER_CLI_BUILD=0
-export DOCKER_BUILDKIT=0
-
 name=$(docker exec -it demo-stack-rabbit-1-1 hostname | tr -d '\n' | tr -d '\r')
 
 docker exec -it demo-stack-rabbit-2-1 rabbitmqctl stop_app

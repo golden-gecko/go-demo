@@ -1,12 +1,19 @@
-FROM golang:1.21.6-bookworm
+FROM golang:1.22.0-bookworm
 
 WORKDIR /app
 
-COPY . .
+RUN ls -al
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+COPY go.mod go.sum ./
 
-EXPOSE 6000
+RUN go mod download
 
-CMD [ "api" ]
+COPY common common
+COPY services services
+
+RUN cd services/api && \
+    CGO_ENABLED=0 GOOS=linux go build -o /api
+
+COPY certs certs
+
+CMD [ "/api" ]

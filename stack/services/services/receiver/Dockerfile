@@ -1,12 +1,17 @@
-FROM golang:1.21.6-bookworm
+FROM golang:1.22.0-bookworm
 
 WORKDIR /app
 
-COPY . .
+RUN ls -al
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+COPY go.mod go.sum ./
 
-EXPOSE 7000
+RUN go mod download
 
-CMD [ "receiver" ]
+COPY common common
+COPY services services
+
+RUN cd services/receiver && \
+    CGO_ENABLED=0 GOOS=linux go build -o /receiver
+
+CMD [ "/receiver" ]

@@ -55,7 +55,7 @@ services:
     restart: unless-stopped
     volumes:
       - cockroach-1:/cockroach/cockroach-data
-      - ./cockroach/certs/node-1:/certs
+      - ./cockroach/certs/node-1:/certs:ro
 
   cockroach-2:
     build:
@@ -75,7 +75,7 @@ services:
     restart: unless-stopped
     volumes:
       - cockroach-2:/cockroach/cockroach-data
-      - ./cockroach/certs/node-2:/certs
+      - ./cockroach/certs/node-2:/certs:ro
 
   cockroach-3:
     build:
@@ -95,7 +95,7 @@ services:
     restart: unless-stopped
     volumes:
       - cockroach-3:/cockroach/cockroach-data
-      - ./cockroach/certs/node-3:/certs
+      - ./cockroach/certs/node-3:/certs:ro
 
   consumer:
     build:
