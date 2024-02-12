@@ -1,6 +1,6 @@
 CREATE DATABASE go_demo;
 
-CREATE USER go_user;
+CREATE USER go_user WITH PASSWORD 'go_password';
 
 GRANT ALL ON DATABASE go_demo TO go_user WITH GRANT OPTION;
 
