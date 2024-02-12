@@ -4,6 +4,8 @@ import { Client } from "@heroiclabs/nakama-js";
     try {
         const client = new Client("defaultkey", "localhost", 7350);
 
+        client.timeout = 10000;
+
         const deviceId = "72258d81-b535-4c3c-b286-d780ef90a847";
         const session = await client.authenticateDevice(deviceId, true, "mycustomusername");
 

@@ -207,6 +207,8 @@ services:
     image: registry.com.gecko/nakama
     networks:
       - main
+    ports:
+      - 7350:7350
     restart: unless-stopped
     volumes:
       - cockroach-certs:/certs
