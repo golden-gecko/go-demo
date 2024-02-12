@@ -14,6 +14,4 @@ COPY services services
 RUN cd services/api && \
     CGO_ENABLED=0 GOOS=linux go build -o /api
 
-COPY certs certs
-
 CMD [ "/api" ]
