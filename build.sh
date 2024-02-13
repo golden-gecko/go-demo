@@ -1,9 +1,0 @@
-#!/bin/bash -ex
-
-cd "$(dirname "$0")"
-
-docker-compose --file docker-compose.yml \
-    build --pull "$@"
-
-docker-compose --file docker-compose.yml \
-    push "$@"

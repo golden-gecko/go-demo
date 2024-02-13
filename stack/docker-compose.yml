@@ -1,0 +1,411 @@
+version: '3.9'
+
+networks:
+  main:
+    enable_ipv6: false
+    ipam:
+      config:
+        - subnet: 192.168.110.0/24
+
+services:
+  aggregator:
+    build:
+      context: services
+      dockerfile: services/aggregator/Dockerfile
+    env_file:
+      - .env
+    image: registry.com.gecko/aggregator
+    networks:
+      - main
+    restart: unless-stopped
+    volumes:
+      - demo-cockroach-certs:/certs
+
+  api:
+    build:
+      context: services
+      dockerfile: services/api/Dockerfile
+    deploy:
+      replicas: 3
+    env_file:
+      - .env
+    image: registry.com.gecko/api
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:6000/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
+    networks:
+      - main
+    restart: unless-stopped
+    volumes:
+      - demo-cockroach-certs:/certs
+
+  cockroach-1:
+    build:
+      context: cockroach
+    command: start --advertise-addr=cockroach-1:26357 --certs-dir=/certs/node-1 --http-addr=cockroach-1:8080 --listen-addr=cockroach-1:26357 --sql-addr=cockroach-1:26257 --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
+    image: registry.com.gecko/cockroach
+    networks:
+      - main
+    ports:
+      - 8080:8080
+      - 26257:26257
+    restart: unless-stopped
+    volumes:
+      - cockroach-1:/cockroach/cockroach-data
+      - demo-cockroach-certs:/certs
+
+  cockroach-2:
+    build:
+      context: cockroach
+    command: start --advertise-addr=cockroach-2:26357 --certs-dir=/certs/node-2 --http-addr=cockroach-2:8081 --listen-addr=cockroach-2:26357 --sql-addr=cockroach-2:26258 --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
+    image: registry.com.gecko/cockroach
+    networks:
+      - main
+    ports:
+      - 8081:8081
+      - 26258:26258
+    restart: unless-stopped
+    volumes:
+      - cockroach-2:/cockroach/cockroach-data
+      - demo-cockroach-certs:/certs
+
+  cockroach-3:
+    build:
+      context: cockroach
+    command: start --advertise-addr=cockroach-3:26357 --certs-dir=/certs/node-3 --http-addr=cockroach-3:8082 --listen-addr=cockroach-3:26357 --sql-addr=cockroach-3:26259 --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
+    image: registry.com.gecko/cockroach
+    networks:
+      - main
+    ports:
+      - 8082:8082
+      - 26259:26259
+    restart: unless-stopped
+    volumes:
+      - cockroach-3:/cockroach/cockroach-data
+      - demo-cockroach-certs:/certs
+
+  consul:
+    build:
+      context: consul
+    env_file:
+      - .env
+    image: registry.com.gecko/consul
+    networks:
+      - main
+    restart: unless-stopped
+    ports:
+      - 8300:8300/tcp
+      - 8301:8301/tcp
+      - 8302:8302/tcp
+      - 8300:8300/udp
+      - 8301:8301/udp
+      - 8302:8302/udp
+      - 8500:8500/tcp
+      - 8600:8600/tcp
+      - 8600:8600/udp
+
+  consumer:
+    build:
+      context: services
+      dockerfile: services/consumer/Dockerfile
+    deploy:
+      replicas: 3
+    env_file:
+      - .env
+    image: registry.com.gecko/consumer
+    networks:
+      - main
+    restart: unless-stopped
+
+  grafana:
+    build:
+      context: grafana
+    image: registry.com.gecko/grafana
+    networks:
+      - main
+    restart: unless-stopped
+    volumes:
+      - grafana-etc:/etc/grafana
+      - grafana-var-lib:/var/lib/grafana
+
+  haproxy:
+    build:
+      context: haproxy
+    image: registry.com.gecko/haproxy
+    networks:
+      - main
+    ports:
+      - 2100:2100
+      - 6100:6100
+      - 7100:7100
+      - 8404:8404
+    restart: unless-stopped
+
+  influx:
+    build:
+      context: influx
+    environment:
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+      - DOCKER_INFLUXDB_INIT_BUCKET=house
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_ORG=my-org
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_RETENTION=1w
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USER}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${INFLUX_PORT}/ping"]
+      interval: 10s
+      timeout: 2s
+      retries: 2
+    image: registry.com.gecko/influx
+    networks:
+      - main
+    ports:
+      - ${INFLUX_PORT}:${INFLUX_PORT}
+    restart: unless-stopped
+    volumes:
+      - influx:/var/lib/influxdb2
+
+  mongo:
+    build:
+      context: mongo
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+    image: registry.com.gecko/mongo
+    networks:
+      - main
+    ports:
+      - 27017:27017
+    restart: unless-stopped
+    volumes:
+      - mongo:/data/db
+
+  mongo-express:
+    build:
+      context: mongo-express
+    environment:
+      - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_PASSWORD}
+      - ME_CONFIG_BASICAUTH_USERNAME=${MONGO_USER}
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD}
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
+      - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017
+    image: registry.com.gecko/mongo-express
+    networks:
+      - main
+    ports:
+      - 8881:8081
+    restart: unless-stopped
+
+  nakama:
+    build:
+      context: nakama
+    image: registry.com.gecko/nakama
+    networks:
+      - main
+    ports:
+      - 7350:7350
+    restart: unless-stopped
+    volumes:
+      - demo-cockroach-certs:/certs
+      - nakama:/nakama/data
+
+  node:
+    build:
+      context: node
+    deploy:
+      replicas: 3
+    env_file:
+      - .env
+    image: registry.com.gecko/node
+    networks:
+      - main
+    restart: unless-stopped
+
+  node-exporter:
+    build:
+      context: node-exporter
+    image: registry.com.gecko/node-exporter
+    networks:
+      - main
+    ports: 
+      - 9100:9100
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: nginx
+    image: registry.com.gecko/nginx
+    networks:
+      - main
+    ports:
+      - 4000:443
+    restart: unless-stopped
+    volumes:
+      - demo-certs:/certs
+
+  producer:
+    build:
+      context: services
+      dockerfile: services/producer/Dockerfile
+    env_file:
+      - .env
+    image: registry.com.gecko/producer
+    networks:
+      - main
+    restart: unless-stopped
+
+  prometheus:
+    build:
+      context: prometheus
+    image: registry.com.gecko/prometheus
+    networks:
+      - main
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+
+  rabbit-1:
+    build:
+      context: rabbit
+    image: registry.com.gecko/rabbit
+    networks:
+      - main
+    ports:
+      - 5672:5672
+      - 15672:15672
+      - 15692:15692
+    restart: unless-stopped
+    volumes:
+      - rabbit-1:/var/lib/rabbitmq/mnesia
+
+  rabbit-2:
+    build:
+      context: rabbit
+    image: registry.com.gecko/rabbit
+    networks:
+      - main
+    ports:
+      - 5673:5672
+    restart: unless-stopped
+    volumes:
+      - rabbit-2:/var/lib/rabbitmq/mnesia
+
+  rabbit-3:
+    build:
+      context: rabbit
+    image: registry.com.gecko/rabbit
+    networks:
+      - main
+    ports:
+      - 5674:5672
+    restart: unless-stopped
+    volumes:
+      - rabbit-3:/var/lib/rabbitmq/mnesia
+
+  receiver:
+    build:
+      context: services
+      dockerfile: services/receiver/Dockerfile
+    deploy:
+      replicas: 3
+    env_file:
+      - .env
+    image: registry.com.gecko/receiver
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7000/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
+    networks:
+      - main
+    restart: unless-stopped
+
+  redis-1:
+    build:
+      context: redis
+    image: registry.com.gecko/redis
+    networks:
+      - main
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    restart: unless-stopped
+    volumes:
+      - redis-1:/data
+
+  redis-2:
+    build:
+      context: redis
+    environment:
+      - MASTER_HOST=redis-1
+      - MASTER_PORT=6379
+    image: registry.com.gecko/redis
+    networks:
+      - main
+    ports:
+      - 6380:6379
+    restart: unless-stopped
+    volumes:
+      - redis-2:/data
+
+  redis-3:
+    build:
+      context: redis
+    environment:
+      - MASTER_HOST=redis-1
+      - MASTER_PORT=6379
+    image: registry.com.gecko/redis
+    networks:
+      - main
+    ports:
+      - 6381:6379
+    restart: unless-stopped
+    volumes:
+      - redis-3:/data
+
+  redis-insight:
+    build:
+      context: redis-insight
+    image: registry.com.gecko/redis-insight
+    networks:
+      - main
+    ports:
+      - 8001:8001
+    restart: unless-stopped
+    volumes:
+      - redis-insight:/db
+
+  statsd-exporter:
+    build:
+      context: statsd-exporter
+    image: registry.com.gecko/statsd-exporter
+    networks:
+      - main
+    ports:
+      - 9102:9102
+    restart: unless-stopped
+
+volumes:
+  demo-certs:
+    external: true
+  demo-cockroach-certs:
+    external: true
+
+  cockroach-1:
+  cockroach-2:
+  cockroach-3:
+  dynamodb:
+  grafana-etc:
+  grafana-var-lib:
+  influx:
+  mongo:
+  nakama:
+  rabbit-1:
+  rabbit-2:
+  rabbit-3:
+  redis-1:
+  redis-2:
+  redis-3:
+  redis-insight:
