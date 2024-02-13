@@ -7,7 +7,9 @@ Stack for gathering and processing data.
 Add following domain to DNS and point them to Docker IP.
 
 - api.com.gecko
+- consul.com.gecko
 - grafana.com.gecko
+- nakama.com.gecko
 - receiver.com.gecko
 
 ## How to run

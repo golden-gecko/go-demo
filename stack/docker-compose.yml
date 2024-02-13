@@ -145,8 +145,6 @@ services:
     image: registry.com.gecko/grafana
     networks:
       - main
-    ports:
-      - 3000:3000
     restart: unless-stopped
     volumes:
       - grafana-etc:/etc/grafana

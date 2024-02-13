@@ -2,9 +2,7 @@
 
 cd "$(dirname "$0")"
 
-MSYS_NO_PATHCONV=1 # for Bash on Windows
-
-cd certs
+cd /certs
 
 # CA (gecko)
 openssl genrsa \
