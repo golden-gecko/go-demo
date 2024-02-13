@@ -45,11 +45,6 @@ services:
     build:
       context: cockroach
     command: start --advertise-addr=cockroach-1:26357 --certs-dir=/certs/node-1 --http-addr=cockroach-1:8080 --listen-addr=cockroach-1:26357 --sql-addr=cockroach-1:26257 --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "--insecure", "https://localhost:8080/health?ready=1"]
-      interval: 10s
-      timeout: 2s
-      retries: 2
     image: registry.com.gecko/cockroach
     networks:
       - main
@@ -65,11 +60,6 @@ services:
     build:
       context: cockroach
     command: start --advertise-addr=cockroach-2:26357 --certs-dir=/certs/node-2 --http-addr=cockroach-2:8081 --listen-addr=cockroach-2:26357 --sql-addr=cockroach-2:26258 --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "--insecure", "https://localhost:8081/health?ready=1"]
-      interval: 10s
-      timeout: 2s
-      retries: 2
     image: registry.com.gecko/cockroach
     networks:
       - main
@@ -85,11 +75,6 @@ services:
     build:
       context: cockroach
     command: start --advertise-addr=cockroach-3:26357 --certs-dir=/certs/node-3 --http-addr=cockroach-3:8082 --listen-addr=cockroach-3:26357 --sql-addr=cockroach-3:26259 --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "--insecure", "https://localhost:8082/health?ready=1"]
-      interval: 10s
-      timeout: 2s
-      retries: 2
     image: registry.com.gecko/cockroach
     networks:
       - main
@@ -137,11 +122,6 @@ services:
   grafana:
     build:
       context: grafana
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 10s
-      timeout: 2s
-      retries: 2
     image: registry.com.gecko/grafana
     networks:
       - main
