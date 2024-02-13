@@ -19,7 +19,7 @@ services:
       - main
     restart: unless-stopped
     volumes:
-      - cockroach-certs:/certs
+      - demo-cockroach-certs:/certs
 
   api:
     build:
@@ -39,7 +39,7 @@ services:
       - main
     restart: unless-stopped
     volumes:
-      - cockroach-certs:/certs
+      - demo-cockroach-certs:/certs
 
   cockroach-1:
     build:
@@ -59,7 +59,7 @@ services:
     restart: unless-stopped
     volumes:
       - cockroach-1:/cockroach/cockroach-data
-      - cockroach-certs:/certs
+      - demo-cockroach-certs:/certs
 
   cockroach-2:
     build:
@@ -79,7 +79,7 @@ services:
     restart: unless-stopped
     volumes:
       - cockroach-2:/cockroach/cockroach-data
-      - cockroach-certs:/certs
+      - demo-cockroach-certs:/certs
 
   cockroach-3:
     build:
@@ -99,7 +99,7 @@ services:
     restart: unless-stopped
     volumes:
       - cockroach-3:/cockroach/cockroach-data
-      - cockroach-certs:/certs
+      - demo-cockroach-certs:/certs
 
   consul:
     build:
@@ -229,7 +229,7 @@ services:
       - 7350:7350
     restart: unless-stopped
     volumes:
-      - cockroach-certs:/certs
+      - demo-cockroach-certs:/certs
       - nakama:/nakama/data
 
   node:
@@ -263,6 +263,8 @@ services:
     ports:
       - 4000:443
     restart: unless-stopped
+    volumes:
+      - demo-certs:/certs
 
   producer:
     build:
@@ -406,10 +408,14 @@ services:
     restart: unless-stopped
 
 volumes:
+  demo-certs:
+    external: true
+  demo-cockroach-certs:
+    external: true
+
   cockroach-1:
   cockroach-2:
   cockroach-3:
-  cockroach-certs:
   dynamodb:
   grafana-etc:
   grafana-var-lib:

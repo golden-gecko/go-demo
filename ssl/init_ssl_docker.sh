@@ -54,13 +54,3 @@ openssl verify -CAfile ca-cert.pem \
 # Chain
 cat server-cert.pem ca-cert.pem > server-chain.pem
 cat client-cert.pem server-cert.pem ca-cert.pem > client-chain.pem
-
-# Copy
-mkdir -p ../../ci/nginx/certs
-mkdir -p ../../stack/nginx/certs
-mkdir -p ../../stack/services/certs
-
-cp *.pem ../../ci/nginx/certs
-cp *.pem ../../stack/nginx/certs
-
-cp ca-cert.pem ../../stack/services/certs

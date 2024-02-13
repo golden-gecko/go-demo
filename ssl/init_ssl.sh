@@ -2,4 +2,5 @@
 
 cd "$(dirname "$0")"
 
-docker run -it -v demo-certs:/certs -v $(pwd):/app busybox bash /app/init_ssl_docker.sh
+docker build -t demo-tools .
+docker run -it -v demo-certs:/certs -v $(pwd):/app demo-tools bash /app/init_ssl_docker.sh

@@ -30,6 +30,8 @@ services:
     ports:
       - 443:443
     restart: unless-stopped
+    volumes:
+      - demo-certs:/certs
 
   jenkins:
     build:
@@ -68,5 +70,8 @@ services:
       - registry:/registry-data
 
 volumes:
+  demo-certs:
+    external: true
+
   jenkins:
   registry:
