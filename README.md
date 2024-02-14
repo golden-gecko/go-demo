@@ -15,11 +15,16 @@ Add following entries to hosts file:
 - 127.0.0.1 nakama.com.gecko
 - 127.0.0.1 receiver.com.gecko
 
-## How to run
+## How to run CI
 
 ```bash
 ssl/init_ssl.sh
 ci/run.sh
+```
+
+## How to run demo on Docker Compose
+
+```bash
 stack/build.sh
 stack/run.sh cockroach-1 cockroach-2 cockroach-3
 stack/cockroach/init_ssl.sh
@@ -28,12 +33,18 @@ stack/cockroach/init_cluster.sh
 stack/rabbit/init_cluster.sh
 ```
 
-## How to stop
+## How to run demo on Nomad
 
-```bash
-stack/stop.sh
-ci/stop.sh
-```
+1. Install Nomad.
+
+   <https://developer.hashicorp.com/nomad/tutorials/get-started/gs-install>
+
+2. Create cluster.
+
+   ```bash
+   stack/build.sh
+   deployments/nomad/init_cluster.sh
+   ```
 
 ## UI
 
