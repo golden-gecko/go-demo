@@ -3,6 +3,7 @@ job "roach" {
 
   group "roach-group" {
     count = 1
+
     network {
       port "roach-port" {
         to = 26257
@@ -19,8 +20,15 @@ job "roach" {
       driver = "docker"
 
       config {
-        image = "registry.com.gecko/roach"
-        ports = ["roach-port"]
+        image   = "registry.com.gecko/roach"
+        ports   = ["roach-port"]
+        command = "start-single-node"
+        args    = ["--insecure"]
+      }
+
+      resources {
+        cpu    = 100
+        memory = 1024
       }
     }
   }
