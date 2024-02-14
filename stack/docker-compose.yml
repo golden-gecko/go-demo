@@ -19,7 +19,7 @@ services:
       - main
     restart: unless-stopped
     volumes:
-      - demo-cockroach-certs:/certs
+      - demo-roach-certs:/certs
 
   api:
     build:
@@ -39,52 +39,7 @@ services:
       - main
     restart: unless-stopped
     volumes:
-      - demo-cockroach-certs:/certs
-
-  cockroach-1:
-    build:
-      context: cockroach
-    command: start --advertise-addr=cockroach-1:26357 --certs-dir=/certs/node-1 --http-addr=cockroach-1:8080 --listen-addr=cockroach-1:26357 --sql-addr=cockroach-1:26257 --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
-    image: registry.com.gecko/cockroach
-    networks:
-      - main
-    ports:
-      - 8080:8080
-      - 26257:26257
-    restart: unless-stopped
-    volumes:
-      - cockroach-1:/cockroach/cockroach-data
-      - demo-cockroach-certs:/certs
-
-  cockroach-2:
-    build:
-      context: cockroach
-    command: start --advertise-addr=cockroach-2:26357 --certs-dir=/certs/node-2 --http-addr=cockroach-2:8081 --listen-addr=cockroach-2:26357 --sql-addr=cockroach-2:26258 --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
-    image: registry.com.gecko/cockroach
-    networks:
-      - main
-    ports:
-      - 8081:8081
-      - 26258:26258
-    restart: unless-stopped
-    volumes:
-      - cockroach-2:/cockroach/cockroach-data
-      - demo-cockroach-certs:/certs
-
-  cockroach-3:
-    build:
-      context: cockroach
-    command: start --advertise-addr=cockroach-3:26357 --certs-dir=/certs/node-3 --http-addr=cockroach-3:8082 --listen-addr=cockroach-3:26357 --sql-addr=cockroach-3:26259 --join=cockroach-1:26357,cockroach-2:26357,cockroach-3:26357
-    image: registry.com.gecko/cockroach
-    networks:
-      - main
-    ports:
-      - 8082:8082
-      - 26259:26259
-    restart: unless-stopped
-    volumes:
-      - cockroach-3:/cockroach/cockroach-data
-      - demo-cockroach-certs:/certs
+      - demo-roach-certs:/certs
 
   consul:
     build:
@@ -209,7 +164,7 @@ services:
       - 7350:7350
     restart: unless-stopped
     volumes:
-      - demo-cockroach-certs:/certs
+      - demo-roach-certs:/certs
       - nakama:/nakama/data
 
   node:
@@ -377,6 +332,51 @@ services:
     volumes:
       - redis-insight:/db
 
+  roach-1:
+    build:
+      context: roach
+    command: start --advertise-addr=roach-1:26357 --certs-dir=/certs/node-1 --http-addr=roach-1:8080 --listen-addr=roach-1:26357 --sql-addr=roach-1:26257 --join=roach-1:26357,roach-2:26357,roach-3:26357
+    image: registry.com.gecko/roach
+    networks:
+      - main
+    ports:
+      - 8080:8080
+      - 26257:26257
+    restart: unless-stopped
+    volumes:
+      - roach-1:/roach/roach-data
+      - demo-roach-certs:/certs
+
+  roach-2:
+    build:
+      context: roach
+    command: start --advertise-addr=roach-2:26357 --certs-dir=/certs/node-2 --http-addr=roach-2:8081 --listen-addr=roach-2:26357 --sql-addr=roach-2:26258 --join=roach-1:26357,roach-2:26357,roach-3:26357
+    image: registry.com.gecko/roach
+    networks:
+      - main
+    ports:
+      - 8081:8081
+      - 26258:26258
+    restart: unless-stopped
+    volumes:
+      - roach-2:/roach/roach-data
+      - demo-roach-certs:/certs
+
+  roach-3:
+    build:
+      context: roach
+    command: start --advertise-addr=roach-3:26357 --certs-dir=/certs/node-3 --http-addr=roach-3:8082 --listen-addr=roach-3:26357 --sql-addr=roach-3:26259 --join=roach-1:26357,roach-2:26357,roach-3:26357
+    image: registry.com.gecko/roach
+    networks:
+      - main
+    ports:
+      - 8082:8082
+      - 26259:26259
+    restart: unless-stopped
+    volumes:
+      - roach-3:/roach/roach-data
+      - demo-roach-certs:/certs
+
   statsd-exporter:
     build:
       context: statsd-exporter
@@ -390,12 +390,12 @@ services:
 volumes:
   demo-certs:
     external: true
-  demo-cockroach-certs:
+  demo-roach-certs:
     external: true
 
-  cockroach-1:
-  cockroach-2:
-  cockroach-3:
+  roach-1:
+  roach-2:
+  roach-3:
   dynamodb:
   grafana-etc:
   grafana-var-lib:

@@ -26,10 +26,10 @@ ci/run.sh
 
 ```bash
 stack/build.sh
-stack/run.sh cockroach-1 cockroach-2 cockroach-3
-stack/cockroach/init_ssl.sh
+stack/run.sh roach-1 roach-2 roach-3
+stack/roach/init_ssl.sh
 stack/run.sh
-stack/cockroach/init_cluster.sh
+stack/roach/init_cluster.sh
 stack/rabbit/init_cluster.sh
 ```
 
