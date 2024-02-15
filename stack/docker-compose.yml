@@ -129,8 +129,6 @@ services:
     image: registry.com.gecko/mongo
     networks:
       - main
-    ports:
-      - 27017:27017
     restart: unless-stopped
     volumes:
       - mongo:/data/db
@@ -147,8 +145,6 @@ services:
     image: registry.com.gecko/mongo-express
     networks:
       - main
-    ports:
-      - 8881:8081
     restart: unless-stopped
 
   nakama:
@@ -213,8 +209,6 @@ services:
     image: registry.com.gecko/prometheus
     networks:
       - main
-    ports:
-      - 9090:9090
     restart: unless-stopped
 
   rabbit-1:
