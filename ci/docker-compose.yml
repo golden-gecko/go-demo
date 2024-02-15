@@ -61,7 +61,7 @@ services:
       - NGINX_PROXY_PASS_URL=http://192.168.200.40:5000
       - SHOW_CATALOG_NB_TAGS=true
       - SHOW_CONTENT_DIGEST=true
-    image: joxit/docker-registry-ui:2.5.6-debian
+    image: joxit/docker-registry-ui:2.5.7-debian
     networks:
       main:
         ipv4_address: 192.168.200.50

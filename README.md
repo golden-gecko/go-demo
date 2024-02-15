@@ -6,17 +6,22 @@ Infrastructure and stack deployment.
 
 Add following entries to hosts file and points them to localhost or Docker network IP:
 
-- 127.0.0.1 api.com.gecko
-- 127.0.0.1 consul.com.gecko
-- 127.0.0.1 grafana.com.gecko
-- 127.0.0.1 jenkins.com.gecko
-- 127.0.0.1 mongo.com.gecko
-- 127.0.0.1 nakama.com.gecko
-- 127.0.0.1 nomad.com.gecko
-- 127.0.0.1 prometheus.com.gecko
-- 127.0.0.1 receiver.com.gecko
-- 127.0.0.1 registry.com.gecko
-- 127.0.0.1 registry-ui.com.gecko
+```bash
+172.22.217.94 api.com.gecko
+172.22.217.94 consul.com.gecko
+172.22.217.94 grafana.com.gecko
+172.22.217.94 jenkins.com.gecko
+172.22.217.94 mongo.com.gecko
+172.22.217.94 nakama.com.gecko
+172.22.217.94 nomad.com.gecko
+172.22.217.94 prometheus.com.gecko
+172.22.217.94 rabbit.com.gecko
+172.22.217.94 receiver.com.gecko
+172.22.217.94 redis.com.gecko
+172.22.217.94 registry.com.gecko
+172.22.217.94 registry-ui.com.gecko
+172.22.217.94 roach.com.gecko
+```
 
 ## How to run CI
 
@@ -55,12 +60,14 @@ UI dashboards:
 
 - Jenkins - <https://jenkins.com.gecko>
 - Docker Registry - <https://registry-ui.com.gecko>
-- CockroachDB - <http://localhost:8080>
+- CockroachDB - <https://roach.com.gecko:4000>
 - Grafana - <https://grafana.com.gecko:4000> (admin, admin)
-- HAProxy - <http://localhost:8404/stats>
-- InfluxDB - <http://localhost:8086> (go_user, go_password)
-- Mongo Express - <http://localhost:8881>
-- Nakama - <https://nakam.com.gecko:4000> (admin, password)
-- Prometheus - <http://localhost:9090>
-- RabbitMQ - <http://localhost:15672> (guest, guest)
-- RedisInsight - <http://localhost:8001>
+
+HAProxy - <http://localhost:8404/stats>
+InfluxDB - <http://localhost:8086> (go_user, go_password)
+
+- Mongo Express - <https://mongo.com.gecko:4000>
+- Nakama - <https://nakama.com.gecko:4000> (admin, password)
+- Prometheus - <https://prometheus.com.gecko:4000>
+- RabbitMQ - <https://rabbit.com.gecko:4000> (guest, guest)
+- RedisInsight - <https://redis.com.gecko:4000>
