@@ -92,9 +92,6 @@ services:
     networks:
       - main
     ports:
-      - 2100:2100
-      - 6100:6100
-      - 7100:7100
       - 8404:8404
     restart: unless-stopped
 
@@ -160,8 +157,6 @@ services:
     image: registry.com.gecko/nakama
     networks:
       - main
-    ports:
-      - 7350:7350
     restart: unless-stopped
     volumes:
       - demo-roach-certs:/certs
@@ -185,8 +180,6 @@ services:
     image: registry.com.gecko/node-exporter
     networks:
       - main
-    ports: 
-      - 9100:9100
     restart: unless-stopped
 
   nginx:
@@ -383,8 +376,6 @@ services:
     image: registry.com.gecko/statsd-exporter
     networks:
       - main
-    ports:
-      - 9102:9102
     restart: unless-stopped
 
 volumes:

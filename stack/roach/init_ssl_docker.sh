@@ -17,15 +17,15 @@ cp ca.crt node-1/
 cp ca.crt node-2/
 cp ca.crt node-3/
 
-cockroach cert create-node cockroach-1 \
+cockroach cert create-node roach-1 \
     --certs-dir=/certs/node-1 \
     --ca-key=/certs/ca.key
 
-cockroach cert create-node cockroach-2 \
+cockroach cert create-node roach-2 \
     --certs-dir=/certs/node-2 \
     --ca-key=/certs/ca.key
 
-cockroach cert create-node cockroach-3 \
+cockroach cert create-node roach-3 \
     --certs-dir=/certs/node-3 \
     --ca-key=/certs/ca.key
 
