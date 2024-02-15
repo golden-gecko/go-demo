@@ -204,6 +204,8 @@ services:
     networks:
       - main
     restart: unless-stopped
+    volumes:
+      - demo-certs:/certs
 
   prometheus:
     build:

@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -20,8 +22,7 @@ import (
 )
 
 func Send(url string, data []byte) error {
-	/*
-	caCert, err := os.ReadFile("certs/ca-cert.pem")
+	caCert, err := os.ReadFile(os.Getenv("PRODUCER_SSL_CA"))
 
 	if err != nil {
         return err
@@ -33,7 +34,7 @@ func Send(url string, data []byte) error {
     client := &http.Client{
         Transport: &http.Transport{
             TLSClientConfig: &tls.Config{
-                RootCAs:      caCertPool,
+                RootCAs: caCertPool,
             },
         },
     }
@@ -42,11 +43,7 @@ func Send(url string, data []byte) error {
 
 	response, err := client.Post(url, "application/json", bytes.NewBuffer(data))
 
-    if err != nil {
-        return err
-    }
-	*/
-
+	/*
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 
 	if err != nil {
@@ -57,6 +54,7 @@ func Send(url string, data []byte) error {
 
 	client := &http.Client{}
 	response, err := client.Do(request)
+	*/
 
 	if err != nil {
 		return err

@@ -4,7 +4,7 @@ Infrastructure and stack deployment.
 
 ## How to setup DNS
 
-Add following entries to hosts file:
+Add following entries to hosts file and points them to localhost or Docker network IP:
 
 - 127.0.0.1 api.com.gecko
 - 127.0.0.1 consul.com.gecko
