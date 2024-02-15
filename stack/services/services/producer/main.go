@@ -21,40 +21,10 @@ import (
 	"services/common/model"
 )
 
-func Send(url string, data []byte) error {
-	caCert, err := os.ReadFile(os.Getenv("PRODUCER_SSL_CA"))
-
-	if err != nil {
-        return err
-    }
-
-    caCertPool := x509.NewCertPool()
-    caCertPool.AppendCertsFromPEM(caCert)
-
-    client := &http.Client{
-        Transport: &http.Transport{
-            TLSClientConfig: &tls.Config{
-                RootCAs: caCertPool,
-            },
-        },
-    }
-
+func Send(client *http.Client, url string, data []byte) error {
 	log.Info(url)
 
 	response, err := client.Post(url, "application/json", bytes.NewBuffer(data))
-
-	/*
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
-
-	if err != nil {
-		return err
-	}
-
-	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
-
-	client := &http.Client{}
-	response, err := client.Do(request)
-	*/
 
 	if err != nil {
 		return err
@@ -137,7 +107,7 @@ func CreateVehicle(cars model.Cars) model.Vehicle {
     }
 }
 
-func ProcessItems(receiverUrl string, names model.Names, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
+func ProcessItems(client *http.Client, receiverUrl string, names model.Names, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
 	for {
 		var items []model.Item
 
@@ -153,7 +123,7 @@ func ProcessItems(receiverUrl string, names model.Names, dataProcessed prometheu
 			panic(err)
 		}
 
-		if err := Send(receiverUrl + "/item", data); err != nil {
+		if err := Send(client, receiverUrl + "/item", data); err != nil {
 			log.Error(err)
 		}
 
@@ -161,7 +131,7 @@ func ProcessItems(receiverUrl string, names model.Names, dataProcessed prometheu
 	}
 }
 
-func ProcessTemperatures(receiverUrl string, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
+func ProcessTemperatures(client *http.Client, receiverUrl string, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
 	for {
 		t1 := CreateTemperature("Room #1")
 		t2 := CreateTemperature("Room #2")
@@ -177,7 +147,7 @@ func ProcessTemperatures(receiverUrl string, dataProcessed prometheus.Counter, m
 			panic(err)
 		}
 
-		if err := Send(receiverUrl + "/temperature", data); err != nil {
+		if err := Send(client, receiverUrl + "/temperature", data); err != nil {
 			log.Error(err)
 		}
 
@@ -185,7 +155,7 @@ func ProcessTemperatures(receiverUrl string, dataProcessed prometheus.Counter, m
 	}
 }
 
-func ProcessTransits(receiverUrl string, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
+func ProcessTransits(client *http.Client, receiverUrl string, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
 	for {
 		var transits []model.Transit
 
@@ -201,7 +171,7 @@ func ProcessTransits(receiverUrl string, dataProcessed prometheus.Counter, minIn
 			panic(err)
 		}
 
-		if err := Send(receiverUrl + "/transit", data); err != nil {
+		if err := Send(client, receiverUrl + "/transit", data); err != nil {
 			log.Error(err)
 		}
 
@@ -209,7 +179,7 @@ func ProcessTransits(receiverUrl string, dataProcessed prometheus.Counter, minIn
 	}
 }
 
-func ProcessUsers(apiUrl string, users model.Users, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
+func ProcessUsers(client *http.Client, apiUrl string, users model.Users, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
 	for {
 		data, err := json.Marshal(CreateUser(users))
 
@@ -219,7 +189,7 @@ func ProcessUsers(apiUrl string, users model.Users, dataProcessed prometheus.Cou
 			panic(err)
 		}
 
-		if err := Send(apiUrl + "/users", data); err != nil {
+		if err := Send(client, apiUrl + "/users", data); err != nil {
 			log.Error(err)
 		}
 
@@ -227,7 +197,7 @@ func ProcessUsers(apiUrl string, users model.Users, dataProcessed prometheus.Cou
 	}
 }
 
-func ProcessVehicles(apiUrl string, cars model.Cars, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
+func ProcessVehicles(client *http.Client, apiUrl string, cars model.Cars, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
 	for {
 		data, err := json.Marshal(CreateVehicle(cars))
 
@@ -237,7 +207,7 @@ func ProcessVehicles(apiUrl string, cars model.Cars, dataProcessed prometheus.Co
 			panic(err)
 		}
 
-		if err := Send(apiUrl + "/vehicles", data); err != nil {
+		if err := Send(client, apiUrl + "/vehicles", data); err != nil {
 			log.Error(err)
 		}
 
@@ -275,11 +245,28 @@ func main() {
 
 	go metrics.Serve(9106)
 
-	go ProcessItems(receiverUrl, names, dataProduced, 1000, 2000)
-	go ProcessTemperatures(receiverUrl, dataProduced, 1000, 2000)
-	go ProcessTransits(receiverUrl, dataProduced, 1000, 2000)
-	go ProcessUsers(apiUrl, users, dataProduced, 1000, 2000)
-	go ProcessVehicles(apiUrl, cars, dataProduced, 1000, 2000)
+	caCert, err := os.ReadFile(os.Getenv("PRODUCER_SSL_CA"))
+
+	if err != nil {
+		panic(err)
+    }
+
+    caCertPool := x509.NewCertPool()
+    caCertPool.AppendCertsFromPEM(caCert)
+
+    client := &http.Client{
+        Transport: &http.Transport{
+            TLSClientConfig: &tls.Config{
+                RootCAs: caCertPool,
+            },
+        },
+    }
+
+	go ProcessItems(client, receiverUrl, names, dataProduced, 1000, 2000)
+	go ProcessTemperatures(client, receiverUrl, dataProduced, 1000, 2000)
+	go ProcessTransits(client, receiverUrl, dataProduced, 1000, 2000)
+	go ProcessUsers(client, apiUrl, users, dataProduced, 1000, 2000)
+	go ProcessVehicles(client, apiUrl, cars, dataProduced, 1000, 2000)
 
 	<- forever
 }
