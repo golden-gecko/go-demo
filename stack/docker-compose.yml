@@ -91,8 +91,6 @@ services:
     image: registry.com.gecko/haproxy
     networks:
       - main
-    ports:
-      - 8404:8404
     restart: unless-stopped
 
   influx:
@@ -114,8 +112,6 @@ services:
     image: registry.com.gecko/influx
     networks:
       - main
-    ports:
-      - ${INFLUX_PORT}:${INFLUX_PORT}
     restart: unless-stopped
     volumes:
       - influx:/var/lib/influxdb2

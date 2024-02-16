@@ -10,6 +10,8 @@ Add following entries to hosts file and points them to localhost or Docker netwo
 172.22.217.94 api.com.gecko
 172.22.217.94 consul.com.gecko
 172.22.217.94 grafana.com.gecko
+172.22.217.94 haproxy.com.gecko
+172.22.217.94 influx.com.gecko
 172.22.217.94 jenkins.com.gecko
 172.22.217.94 mongo.com.gecko
 172.22.217.94 nakama.com.gecko
@@ -58,14 +60,12 @@ stack/rabbit/init_cluster.sh
 
 UI dashboards:
 
-- Jenkins - <https://jenkins.com.gecko>
+- Jenkins - <https://jenkins.com.gecko> (admin, ...)
 - Docker Registry - <https://registry-ui.com.gecko>
-- CockroachDB - <https://roach.com.gecko:4000>
+- CockroachDB - <https://roach.com.gecko:4000> (go_user, go_password)
 - Grafana - <https://grafana.com.gecko:4000> (admin, admin)
-
-HAProxy - <http://localhost:8404/stats>
-InfluxDB - <http://localhost:8086> (go_user, go_password)
-
+- HAProxy - <https://haproxy.com.gecko:4000/stats>
+- InfluxDB - <https://influx.com.gecko:4000> (go_user, go_password)
 - Mongo Express - <https://mongo.com.gecko:4000>
 - Nakama - <https://nakama.com.gecko:4000> (admin, password)
 - Prometheus - <https://prometheus.com.gecko:4000>
