@@ -1,26 +1,29 @@
 job "mongo" {
   type = "service"
 
-  group "mongo-group" {
+  group "mongo" {
     count = 1
+
     network {
-      port "mongo-port" {
+      mode = "host"
+
+      port "mongo" {
         to = 27017
       }
     }
 
     service {
-      name     = "mongo-service"
-      port     = "mongo-port"
+      name     = "mongo"
+      port     = "mongo"
       provider = "nomad"
     }
 
-    task "node-task" {
+    task "node" {
       driver = "docker"
 
       config {
         image = "registry.com.gecko/mongo"
-        ports = ["mongo-port"]
+        ports = ["mongo"]
       }
     }
   }

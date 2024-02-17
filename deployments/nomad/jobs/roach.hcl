@@ -1,34 +1,60 @@
 job "roach" {
   type = "service"
 
-  group "roach-group" {
+  group "roach" {
     count = 1
 
     network {
-      port "roach-port" {
+      mode = "host"
+
+      port "roach" {
         to = 26257
       }
     }
 
     service {
-      name     = "roach-service"
-      port     = "roach-port"
+      name     = "roach"
+      port     = "roach"
       provider = "nomad"
     }
 
-    task "roach-task" {
+    volume "roach-certs" {
+      type      = "host"
+      read_only = true
+      source    = "roach-certs"
+    }
+
+    volume "roach-1" {
+      type      = "host"
+      read_only = false
+      source    = "roach-1"
+    }
+
+    task "roach" {
       driver = "docker"
 
       config {
         image   = "registry.com.gecko/roach"
-        ports   = ["roach-port"]
+        ports   = ["roach"]
         command = "start-single-node"
-        args    = ["--insecure"]
+        args    = ["--certs-dir=/certs/node-1"]
       }
 
       resources {
         cpu    = 100
         memory = 1024
+      }
+
+      volume_mount {
+        volume      = "roach-certs"
+        destination = "/certs"
+        read_only   = true
+      }
+
+      volume_mount {
+        volume      = "roach-1"
+        destination = "/cockroach/cockroach-data"
+        read_only   = false
       }
     }
   }

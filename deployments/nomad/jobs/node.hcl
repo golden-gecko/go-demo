@@ -1,26 +1,28 @@
 job "node" {
   type = "service"
 
-  group "node-group" {
+  group "node" {
     count = 1
+
     network {
-      port "node-port" {
-        to = 2000
-      }
+      mode = "bridge"
     }
 
     service {
-      name     = "node-service"
-      port     = "node-port"
-      provider = "nomad"
+      name     = "node"
+      port     = 2000
+
+      connect {
+        sidecar_service {}
+      }
     }
 
-    task "node-task" {
+    task "node" {
       driver = "docker"
 
       config {
         image = "registry.com.gecko/node"
-        ports = ["node-port"]
+        ports = ["node"]
       }
     }
   }

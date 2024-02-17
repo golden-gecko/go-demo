@@ -6,7 +6,7 @@ Infrastructure and stack deployment.
 
 Add following entries to hosts file and points them to localhost or Docker network IP:
 
-```bash
+```text
 172.22.217.94 api.com.gecko
 172.22.217.94 consul.com.gecko
 172.22.217.94 grafana.com.gecko
@@ -23,6 +23,14 @@ Add following entries to hosts file and points them to localhost or Docker netwo
 172.22.217.94 registry.com.gecko
 172.22.217.94 registry-ui.com.gecko
 172.22.217.94 roach.com.gecko
+```
+
+## How to setup Docker
+
+This demo is using self-signed certificates. Mark registry as insecure in Docker configuration.
+
+```text
+"insecure-registries": ["registry.com.gecko"]
 ```
 
 ## How to run CI
