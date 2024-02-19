@@ -10,7 +10,8 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // sh 'deployments/compose/run.sh'
+                sh 'exit 0'
+                sh 'deployments/compose/run.sh'
             }
         }
     }
