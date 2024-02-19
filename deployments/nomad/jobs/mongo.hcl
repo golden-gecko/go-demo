@@ -4,18 +4,9 @@ job "mongo" {
   group "mongo" {
     count = 1
 
-    network {
-      mode = "host"
-
-      port "mongo" {
-        to = 27017
-      }
-    }
-
     service {
       name     = "mongo"
-      port     = "mongo"
-      provider = "nomad"
+      port     = 27017
     }
 
     task "node" {
@@ -23,7 +14,7 @@ job "mongo" {
 
       config {
         image = "registry.com.gecko/mongo"
-        ports = ["mongo"]
+        ports = [27017]
       }
     }
   }

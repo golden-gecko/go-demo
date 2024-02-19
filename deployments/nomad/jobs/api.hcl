@@ -4,18 +4,9 @@ job "api" {
   group "api" {
     count = 1
 
-    network {
-      mode = "host"
-
-      port "api" {
-        to = 6000
-      }
-    }
-
     service {
       name     = "api"
-      port     = "api"
-      provider = "nomad"
+      port     = 2000
     }
 
     volume "roach-certs" {

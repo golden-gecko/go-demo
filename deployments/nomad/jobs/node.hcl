@@ -6,11 +6,13 @@ job "node" {
 
     network {
       mode = "bridge"
+
+      port "node" {}
     }
 
     service {
       name     = "node"
-      port     = 2000
+      port     = "node"
 
       connect {
         sidecar_service {}
@@ -22,7 +24,6 @@ job "node" {
 
       config {
         image = "registry.com.gecko/node"
-        ports = ["node"]
       }
     }
   }
