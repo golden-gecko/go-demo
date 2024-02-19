@@ -10,7 +10,7 @@ networks:
 services:
   aggregator:
     build:
-      context: services
+      context: ../../stack/services
       dockerfile: services/aggregator/Dockerfile
     env_file:
       - .env
@@ -23,7 +23,7 @@ services:
 
   api:
     build:
-      context: services
+      context: ../../stack/services
       dockerfile: services/api/Dockerfile
     deploy:
       replicas: 3
@@ -43,7 +43,7 @@ services:
 
   consul:
     build:
-      context: consul
+      context: ../../stack/consul
     env_file:
       - .env
     image: registry.com.gecko/consul
@@ -63,7 +63,7 @@ services:
 
   consumer:
     build:
-      context: services
+      context: ../../stack/services
       dockerfile: services/consumer/Dockerfile
     deploy:
       replicas: 3
@@ -76,7 +76,7 @@ services:
 
   grafana:
     build:
-      context: grafana
+      context: ../../stack/grafana
     image: registry.com.gecko/grafana
     networks:
       - main
@@ -87,7 +87,7 @@ services:
 
   haproxy:
     build:
-      context: haproxy
+      context: ../../stack/haproxy
     image: registry.com.gecko/haproxy
     networks:
       - main
@@ -95,7 +95,7 @@ services:
 
   influx:
     build:
-      context: influx
+      context: ../../stack/influx
     environment:
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
       - DOCKER_INFLUXDB_INIT_BUCKET=house
@@ -118,7 +118,7 @@ services:
 
   mongo:
     build:
-      context: mongo
+      context: ../../stack/mongo
     environment:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
@@ -131,7 +131,7 @@ services:
 
   mongo-express:
     build:
-      context: mongo-express
+      context: ../../stack/mongo-express
     environment:
       - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_BASICAUTH_USERNAME=${MONGO_USER}
@@ -145,7 +145,7 @@ services:
 
   nakama:
     build:
-      context: nakama
+      context: ../../stack/nakama
     image: registry.com.gecko/nakama
     networks:
       - main
@@ -156,7 +156,7 @@ services:
 
   node:
     build:
-      context: node
+      context: ../../stack/node
     deploy:
       replicas: 3
     env_file:
@@ -168,7 +168,7 @@ services:
 
   node-exporter:
     build:
-      context: node-exporter
+      context: ../../stack/node-exporter
     image: registry.com.gecko/node-exporter
     networks:
       - main
@@ -176,7 +176,7 @@ services:
 
   nginx:
     build:
-      context: nginx
+      context: ../../stack/nginx
     image: registry.com.gecko/nginx
     networks:
       - main
@@ -188,7 +188,7 @@ services:
 
   producer:
     build:
-      context: services
+      context: ../../stack/services
       dockerfile: services/producer/Dockerfile
     env_file:
       - .env
@@ -201,7 +201,7 @@ services:
 
   prometheus:
     build:
-      context: prometheus
+      context: ../../stack/prometheus
     image: registry.com.gecko/prometheus
     networks:
       - main
@@ -209,7 +209,7 @@ services:
 
   rabbit-1:
     build:
-      context: rabbit
+      context: ../../stack/rabbit
     image: registry.com.gecko/rabbit
     networks:
       - main
@@ -219,7 +219,7 @@ services:
 
   rabbit-2:
     build:
-      context: rabbit
+      context: ../../stack/rabbit
     image: registry.com.gecko/rabbit
     networks:
       - main
@@ -229,7 +229,7 @@ services:
 
   rabbit-3:
     build:
-      context: rabbit
+      context: ../../stack/rabbit
     image: registry.com.gecko/rabbit
     networks:
       - main
@@ -239,7 +239,7 @@ services:
 
   receiver:
     build:
-      context: services
+      context: ../../stack/services
       dockerfile: services/receiver/Dockerfile
     deploy:
       replicas: 3
@@ -257,7 +257,7 @@ services:
 
   redis-1:
     build:
-      context: redis
+      context: ../../stack/redis
     image: registry.com.gecko/redis
     networks:
       - main
@@ -267,7 +267,7 @@ services:
 
   redis-2:
     build:
-      context: redis
+      context: ../../stack/redis
     environment:
       - MASTER_HOST=redis-1
       - MASTER_PORT=6379
@@ -280,7 +280,7 @@ services:
 
   redis-3:
     build:
-      context: redis
+      context: ../../stack/redis
     environment:
       - MASTER_HOST=redis-1
       - MASTER_PORT=6379
@@ -293,7 +293,7 @@ services:
 
   redis-insight:
     build:
-      context: redis-insight
+      context: ../../stack/redis-insight
     image: registry.com.gecko/redis-insight
     networks:
       - main
@@ -303,7 +303,7 @@ services:
 
   roach-1:
     build:
-      context: roach
+      context: ../../stack/roach
     command: start --advertise-addr=roach-1:26357 --certs-dir=/certs/node-1 --http-addr=roach-1:8080 --listen-addr=roach-1:26357 --sql-addr=roach-1:26257 --join=roach-1:26357,roach-2:26357,roach-3:26357
     image: registry.com.gecko/roach
     networks:
@@ -317,7 +317,7 @@ services:
 
   roach-2:
     build:
-      context: roach
+      context: ../../stack/roach
     command: start --advertise-addr=roach-2:26357 --certs-dir=/certs/node-2 --http-addr=roach-2:8081 --listen-addr=roach-2:26357 --sql-addr=roach-2:26258 --join=roach-1:26357,roach-2:26357,roach-3:26357
     image: registry.com.gecko/roach
     networks:
@@ -331,7 +331,7 @@ services:
 
   roach-3:
     build:
-      context: roach
+      context: ../../stack/roach
     command: start --advertise-addr=roach-3:26357 --certs-dir=/certs/node-3 --http-addr=roach-3:8082 --listen-addr=roach-3:26357 --sql-addr=roach-3:26259 --join=roach-1:26357,roach-2:26357,roach-3:26357
     image: registry.com.gecko/roach
     networks:
@@ -345,7 +345,7 @@ services:
 
   statsd-exporter:
     build:
-      context: statsd-exporter
+      context: ../../stack/statsd-exporter
     image: registry.com.gecko/statsd-exporter
     networks:
       - main

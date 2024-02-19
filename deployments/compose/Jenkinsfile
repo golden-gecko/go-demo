@@ -4,13 +4,13 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'stack/build.sh'
+                sh 'deployments/compose/build.sh'
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'stack/run.sh'
+                // sh 'deployments/compose/run.sh'
             }
         }
     }
