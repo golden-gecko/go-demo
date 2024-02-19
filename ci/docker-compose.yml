@@ -34,11 +34,12 @@ services:
       - demo-certs:/certs
 
   jenkins:
-    build:
-      context: jenkins
+    image: jenkins/jenkins:2.426.3-jdk17
     networks:
       main:
         ipv4_address: 192.168.200.30
+    ports:
+      - 50000:50000
     restart: unless-stopped
     volumes:
       - jenkins:/var/jenkins_home
