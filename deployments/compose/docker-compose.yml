@@ -308,11 +308,9 @@ services:
     image: registry.com.gecko/roach
     networks:
       - main
-    ports:
-      - 26257:26257
     restart: unless-stopped
     volumes:
-      - roach-1:/roach/roach-data
+      - roach-1:/cockroach/cockroach-data
       - demo-roach-certs:/certs
 
   roach-2:
@@ -322,11 +320,9 @@ services:
     image: registry.com.gecko/roach
     networks:
       - main
-    ports:
-      - 26258:26258
     restart: unless-stopped
     volumes:
-      - roach-2:/roach/roach-data
+      - roach-2:/cockroach/cockroach-data
       - demo-roach-certs:/certs
 
   roach-3:
@@ -336,11 +332,9 @@ services:
     image: registry.com.gecko/roach
     networks:
       - main
-    ports:
-      - 26259:26259
     restart: unless-stopped
     volumes:
-      - roach-3:/roach/roach-data
+      - roach-3:/cockroach/cockroach-data
       - demo-roach-certs:/certs
 
   statsd-exporter:
