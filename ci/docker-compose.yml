@@ -41,6 +41,16 @@ services:
     volumes:
       - jenkins:/var/jenkins_home
 
+  portainer:
+    image: portainer/portainer-ce:2.19.4-alpine
+    networks:
+      main:
+        ipv4_address: 192.168.200.60
+    volumes:
+      - portainer:/data
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+      - /var/run/docker.sock:/var/run/docker.sock
+
   registry:
     environment:
       - REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin=[https://registry-ui.com.gecko]
@@ -72,4 +82,5 @@ volumes:
     external: true
 
   jenkins:
+  portainer:
   registry:

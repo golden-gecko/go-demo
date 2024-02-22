@@ -16,6 +16,7 @@ Add following entries to hosts file and points them to localhost or Docker netwo
 127.0.0.1 mongo.com.gecko
 127.0.0.1 nakama.com.gecko
 127.0.0.1 nomad.com.gecko
+127.0.0.1 portainer.com.gecko
 127.0.0.1 prometheus.com.gecko
 127.0.0.1 rabbit.com.gecko
 127.0.0.1 receiver.com.gecko
@@ -44,9 +45,8 @@ ci/run.sh
 
 ```bash
 deployments/compose/build.sh
-deployments/compose/run.sh roach-1 roach-2 roach-3
 stack/roach/init_ssl.sh
-stack/run.sh
+deployments/compose/run.sh
 stack/roach/init_cluster.sh
 stack/rabbit/init_cluster.sh
 ```
@@ -60,7 +60,7 @@ stack/rabbit/init_cluster.sh
 2. Create cluster.
 
    ```bash
-   stack/build.sh
+   deployments/compose/build.sh
    deployments/nomad/init_cluster.sh
    ```
 
@@ -76,6 +76,7 @@ UI dashboards:
 - InfluxDB - <https://influx.com.gecko:4000> (go_user, go_password)
 - Mongo Express - <https://mongo.com.gecko:4000>
 - Nakama - <https://nakama.com.gecko:4000> (admin, password)
+- Portainer <https://portainer.com.gecko> (admin, ...)
 - Prometheus - <https://prometheus.com.gecko:4000>
 - RabbitMQ - <https://rabbit.com.gecko:4000> (guest, guest)
 - RedisInsight - <https://redis.com.gecko:4000>
