@@ -1,7 +1,6 @@
 FROM mongo:4.4.28
 
-COPY mongo.key /etc/mongo/mongo.key
-COPY mongod.conf /etc/mongo/mongod.conf
+COPY mongod.conf mongo.key /etc/mongo/
 
 RUN chown mongodb /etc/mongo/mongo.key
 RUN chmod 400 /etc/mongo/mongo.key

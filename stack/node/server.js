@@ -2,8 +2,8 @@
 
 const express = require('express');
 
-const PORT = 2000;
 const HOST = '0.0.0.0';
+const PORT = 2000;
 
 const app = express();
 
