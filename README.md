@@ -26,22 +26,23 @@ Add following entries to hosts file and points them to localhost or Docker netwo
 127.0.0.1 roach.com.gecko
 ```
 
-## How to setup Docker
+## How to setup SSL
 
-This demo is using self-signed certificates. Mark registry as insecure in Docker configuration.
+1. Generate certificates.
 
-```text
-"insecure-registries": ["registry.com.gecko"]
-```
+   ```bash
+   ssl/init_ssl.sh
+   ```
+
+2. Install CA certificate.
 
 ## How to run CI
 
 ```bash
-ssl/init_ssl.sh
 ci/run.sh
 ```
 
-## How to run demo on Docker Compose
+## How to run on Docker Compose
 
 ```bash
 deployments/compose/build.sh
@@ -51,7 +52,17 @@ stack/roach/init_cluster.sh
 stack/rabbit/init_cluster.sh
 ```
 
-## How to run demo on Nomad
+## How to run on Kubernetes
+
+1. Install Kubernetes.
+
+2. Create cluster.
+
+   ```bash
+   minikube start
+   ```
+
+## How to run on Nomad
 
 1. Install Nomad.
 

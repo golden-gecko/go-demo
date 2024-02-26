@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: receiver-deployment
+  labels:
+    app: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: receiver
+  template:
+    metadata:
+      labels:
+        app: receiver
+    spec:
+      containers:
+      - name: receiver
+        image: registry.com.gecko/receiver
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7000
