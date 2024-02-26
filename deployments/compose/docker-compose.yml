@@ -186,6 +186,18 @@ services:
     volumes:
       - demo-certs:/certs
 
+  pistache:
+    build:
+      context: ../../stack/pistache
+    deploy:
+      replicas: 3
+    env_file:
+      - .env
+    image: registry.com.gecko/pistache
+    networks:
+      - main
+    restart: unless-stopped
+
   producer:
     build:
       context: ../../stack/services
