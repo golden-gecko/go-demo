@@ -219,6 +219,18 @@ services:
       - main
     restart: unless-stopped
 
+  python:
+    build:
+      context: ../../stack/python
+    deploy:
+      replicas: 3
+    env_file:
+      - .env
+    image: registry.com.gecko/python
+    networks:
+      - main
+    restart: unless-stopped
+
   rabbit-1:
     build:
       context: ../../stack/rabbit
