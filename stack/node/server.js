@@ -10,7 +10,7 @@ const app = express();
 app.get('/', (req, res) => {
     console.log('GET /');
 
-    res.send('Hello World');
+    res.send('Hello World\n');
 });
 
 app.listen(PORT, HOST);
