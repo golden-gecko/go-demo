@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: roach-deployment
+  labels:
+    app: roach
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: roach
+  template:
+    metadata:
+      labels:
+        app: roach
+    spec:
+      containers:
+      - name: roach
+        image: registry.com.gecko/roach
+        command: ["cockroach"]
+        args: ["start-single-node", "--insecure"]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 26257

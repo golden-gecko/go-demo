@@ -18,5 +18,16 @@ spec:
       - name: api
         image: registry.com.gecko/api
         imagePullPolicy: Always
+        env:
+        - name: ROACH_DATABASE
+          value: "go_demo"
+        - name: ROACH_HOST
+          value: "roach-service"
+        - name: ROACH_PASSWORD
+          value: "go_password"
+        - name: ROACH_PORT
+          value: "26257"
+        - name: ROACH_USER
+          value: "go_user"
         ports:
         - containerPort: 6000

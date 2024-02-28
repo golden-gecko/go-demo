@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: node-service
+  name: api-service
 spec:
   selector:
-    app: node
+    app: api
   ports:
     - protocol: TCP
-      port: 2000
+      port: 6000
