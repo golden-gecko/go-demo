@@ -14,18 +14,23 @@ spec:
       labels:
         app: roach
     spec:
-      volumes:
-      - name: roach-pv-volume
-        persistentVolumeClaim:
-          claimName: roach-pv-claim
       containers:
       - name: roach
         image: registry.com.gecko/roach
         command: ["cockroach"]
-        args: ["start-single-node"]
+        args: ["start-single-node", "--certs-dir=/certs"]
         imagePullPolicy: Always
         ports:
         - containerPort: 26257
         volumeMounts:
+        - mountPath: "/certs"
+          name: roach-certs-volume
         - mountPath: "/cockroach/cockroach-data"
-          name: roach-pv-volume
+          name: roach-volume
+      volumes:
+      - name: roach-certs-volume
+        persistentVolumeClaim:
+          claimName: roach-certs-volume-claim
+      - name: roach-volume
+        persistentVolumeClaim:
+          claimName: roach-volume-claim

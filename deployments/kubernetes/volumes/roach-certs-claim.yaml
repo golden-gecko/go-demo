@@ -1,7 +1,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: roach-volume-claim
+  name: roach-certs-volume-claim
 spec:
   storageClassName: manual
   accessModes:

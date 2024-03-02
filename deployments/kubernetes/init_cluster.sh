@@ -2,10 +2,10 @@
 
 cd "$(dirname "$0")"
 
-minikube start
+minikube start --mount --mount-string="../../data:/mnt/data"
 
 minikube addons enable ingress
 minikube addons enable metrics-server
 
-minikube cp /usr/local/share/ca-certificates /usr/local/share/ca-certificates
-minikube ssh "sudo update-ca-certificates --fresh"
+minikube cp /mnt/data/certs/ca-cert.pem /usr/local/share/ca-certificates/gecko.crt
+minikube ssh "sudo update-ca-certificates"

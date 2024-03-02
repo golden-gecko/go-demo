@@ -1,7 +1,7 @@
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: roach-volume
+  name: certs-volume
 spec:
   storageClassName: manual
   capacity:
@@ -9,4 +9,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/mnt/data/roach-1"
+    path: "/mnt/data/certs"

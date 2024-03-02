@@ -31,10 +31,20 @@ Add following entries to hosts file and points them to localhost or Docker netwo
 1. Generate certificates.
 
    ```bash
-   ssl/init_ssl.sh
+   ssl/init_ssl.sh data/certs
    ```
 
 2. Install CA certificate.
+
+   ```bash
+   ssl/install.sh data/certs
+   ```
+
+3. Create docker volume with certificates.
+
+   ```bash
+   ssl/init_docker.sh
+   ```
 
 ## How to run CI
 
