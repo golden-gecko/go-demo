@@ -15,20 +15,8 @@ spec:
         app: node
     spec:
       containers:
-      - name: node
-        image: registry.com.gecko/node
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 2000
-        volumeMounts:
-        - mountPath: "/certs"
-          name: roach-certs-volume
-        - mountPath: "/cockroach/cockroach-data"
-          name: roach-volume
-      volumes:
-      - name: roach-certs-volume
-        persistentVolumeClaim:
-          claimName: roach-certs-volume-claim
-      - name: roach-volume
-        persistentVolumeClaim:
-          claimName: roach-volume-claim
+        - name: node
+          image: registry.com.gecko/node
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 2000

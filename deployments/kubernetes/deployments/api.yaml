@@ -14,20 +14,27 @@ spec:
       labels:
         app: api
     spec:
+      volumes:
+        - name: roach-certs-claim
+          persistentVolumeClaim:
+            claimName: roach-certs-claim
       containers:
-      - name: api
-        image: registry.com.gecko/api
-        imagePullPolicy: Always
-        env:
-        - name: ROACH_DATABASE
-          value: "go_demo"
-        - name: ROACH_HOST
-          value: "roach-service"
-        - name: ROACH_PASSWORD
-          value: "go_password"
-        - name: ROACH_PORT
-          value: "26257"
-        - name: ROACH_USER
-          value: "go_user"
-        ports:
-        - containerPort: 6000
+        - name: api
+          image: registry.com.gecko/api
+          imagePullPolicy: Always
+          env:
+            - name: ROACH_DATABASE
+              value: "go_demo"
+            - name: ROACH_HOST
+              value: "roach-service"
+            - name: ROACH_PASSWORD
+              value: "go_password"
+            - name: ROACH_PORT
+              value: "26257"
+            - name: ROACH_USER
+              value: "go_user"
+          ports:
+            - containerPort: 6000
+          volumeMounts:
+            - mountPath: "/certs"
+              name: roach-certs-claim

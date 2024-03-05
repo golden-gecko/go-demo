@@ -15,8 +15,8 @@ spec:
         app: receiver
     spec:
       containers:
-      - name: receiver
-        image: registry.com.gecko/receiver
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 7000
+        - name: receiver
+          image: registry.com.gecko/receiver
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7000
