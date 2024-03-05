@@ -1,11 +1,10 @@
 #!/bin/bash -ex
 
-cd "$(dirname "$0")"
-
-minikube start --mount --mount-string="../../data:/mnt/data"
+minikube start --mount --mount-string="$1:/opt/data"
 
 minikube addons enable ingress
 minikube addons enable metrics-server
 
-minikube cp /mnt/data/certs/ca-cert.pem /usr/local/share/ca-certificates/gecko.crt
+minikube ssh "sudo rm -f /usr/local/share/ca-certificates/gecko.crt"
+minikube ssh "sudo ln -s /opt/data/certs/ca-cert.pem /usr/local/share/ca-certificates/gecko.crt"
 minikube ssh "sudo update-ca-certificates"

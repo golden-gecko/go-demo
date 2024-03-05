@@ -40,23 +40,27 @@ Add following entries to hosts file and points them to localhost or Docker netwo
    ssl/install.sh data/certs
    ```
 
-3. Create docker volume with certificates.
-
-   ```bash
-   ssl/init_docker.sh
-   ```
-
 ## How to run CI
 
-```bash
-ci/run.sh
-```
+1. Create docker volume with certificates.
+
+   The `/.` at the end of the path is needed to copy all files from directory rather than whole directory.
+
+   ```bash
+   ssl/install_docker.sh data/certs/.
+   ```
+
+2. Run CI.
+
+   ```bash
+   ci/run.sh
+   ```
 
 ## How to run on Docker Compose
 
 ```bash
 deployments/compose/build.sh
-stack/roach/init_ssl.sh
+stack/roach/init_ssl_docker.sh
 deployments/compose/run.sh
 stack/roach/init_cluster.sh
 stack/rabbit/init_cluster.sh
@@ -68,11 +72,22 @@ stack/rabbit/init_cluster.sh
 
 2. Create cluster.
 
+   When mouting files the source path cannot be the same as target path (for example `./data` and `/data`).
+
    ```bash
-   minikube start
+   deployments/kubernetes/init_cluster.sh ./data
    ```
 
-## How to run on Nomad
+3. Run:
+
+   The `$(pwd)` is needed because script mounts its parent directory into docker container.
+
+   ```bash
+   deployments/compose/build.sh
+   stack/roach/init_ssl_local.sh $(pwd)/data/roach-certs
+   ```
+
+## How to run on Nomad (in progress)
 
 1. Install Nomad.
 
