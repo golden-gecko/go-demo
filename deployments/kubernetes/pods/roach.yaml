@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: roach
+  name: roach-1
 spec:
   volumes:
     - name: roach-certs-claim
@@ -11,13 +11,20 @@ spec:
       persistentVolumeClaim:
         claimName: roach-1-claim
   containers:
-    - name: task-pv-container
+    - name: roach
       image: registry.com.gecko/roach
       imagePullPolicy: Always
       command: ["cockroach"]
       args: ["start-single-node", "--certs-dir=/certs/node-1"]
       ports:
         - containerPort: 26257
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
       volumeMounts:
         - mountPath: "/certs"
           name: roach-certs-claim

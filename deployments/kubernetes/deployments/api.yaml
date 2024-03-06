@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-deployment
+  name: api
   labels:
     app: api
 spec:
@@ -31,10 +31,23 @@ spec:
               value: "go_password"
             - name: ROACH_PORT
               value: "26257"
+            - name: ROACH_SSL_CERTIFICATE
+              value: "/certs/client.go_user.crt"
+            - name: ROACH_SSL_KEY
+              value: "/certs/client.go_user.key"
+            - name: ROACH_SSL_CA
+              value: "/certs/ca.crt"
             - name: ROACH_USER
               value: "go_user"
           ports:
             - containerPort: 6000
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
           volumeMounts:
             - mountPath: "/certs"
               name: roach-certs-claim

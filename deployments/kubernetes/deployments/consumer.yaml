@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: receiver
+  name: consumer
   labels:
-    app: receiver
+    app: consumer
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: receiver
+      app: consumer
   template:
     metadata:
       labels:
-        app: receiver
+        app: consumer
     spec:
       containers:
-        - name: receiver
-          image: registry.com.gecko/receiver
+        - name: consumer
+          image: registry.com.gecko/consumer
           imagePullPolicy: Always
           env:
             - name: RABBIT_HOST
@@ -27,8 +27,6 @@ spec:
               value: "5672"
             - name: RABBIT_USER
               value: "guest"
-          ports:
-            - containerPort: 7000
           resources:
             requests:
               memory: "64Mi"

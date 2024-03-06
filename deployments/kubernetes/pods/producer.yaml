@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: producer
+spec:
+  containers:
+    - name: roach
+      image: registry.com.gecko/producer
+      imagePullPolicy: Always
+      env:
+        - name: API_URL
+          value: "https://api.com.gecko:4000"
+        - name: RECEIVER_URL
+          value: "https://receiver.com.gecko:4000"
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"

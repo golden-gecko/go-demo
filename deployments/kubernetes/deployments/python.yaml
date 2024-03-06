@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: node
+  name: python
   labels:
-    app: node
+    app: python
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: node
+      app: python
   template:
     metadata:
       labels:
-        app: node
+        app: python
     spec:
       containers:
-        - name: node
-          image: registry.com.gecko/node
+        - name: python
+          image: registry.com.gecko/python
           imagePullPolicy: Always
           ports:
-            - containerPort: 2000
+            - containerPort: 4000
           resources:
             requests:
               memory: "64Mi"
