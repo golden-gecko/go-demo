@@ -4,7 +4,7 @@ metadata:
   name: producer
 spec:
   containers:
-    - name: roach
+    - name: producer
       image: registry.com.gecko/producer
       imagePullPolicy: Always
       env:
