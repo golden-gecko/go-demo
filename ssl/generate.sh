@@ -1,7 +1,9 @@
 #!/bin/bash -ex
 
-mkdir -p $1
-cd $1
+cd "$(dirname "$0")"
+
+mkdir -p data/certs
+cd data/certs
 
 # CA (gecko)
 openssl genrsa \
