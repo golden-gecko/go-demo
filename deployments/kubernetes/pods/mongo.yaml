@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: mongo
+  name: mongos
 spec:
   volumes:
     - name: mongo-claim

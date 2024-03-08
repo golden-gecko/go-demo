@@ -2,16 +2,14 @@
 
 cd "$(dirname "$0")"
 
-cd /certs
-
-rm -fr *.crt *.key
+mkdir -p $1
+cd $1
 
 cockroach cert create-ca \
     --certs-dir=/certs \
     --ca-key=/certs/ca.key
 
 mkdir -p node-1 node-2 node-3
-rm -fr node-*/*.crt node-*/*.key
 
 cp ca.crt node-1/
 cp ca.crt node-2/

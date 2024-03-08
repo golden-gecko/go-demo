@@ -3,7 +3,7 @@ FROM gcc:13.2.0-bookworm
 WORKDIR /app
 
 RUN apt update \
-    && apt -y install meson
+    && apt install -y meson
 
 RUN git clone https://github.com/pistacheio/pistache.git \
     && cd pistache \

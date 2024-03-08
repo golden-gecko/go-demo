@@ -1,4 +1,6 @@
 *.code-workspace
+*.crt
+*.key
+*.pem
 .vs
-data
 node_modules

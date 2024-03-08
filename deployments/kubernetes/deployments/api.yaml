@@ -26,17 +26,17 @@ spec:
             - name: ROACH_DATABASE
               value: "go_demo"
             - name: ROACH_HOST
-              value: "roach-service"
+              value: "roach-1"
             - name: ROACH_PASSWORD
               value: "go_password"
             - name: ROACH_PORT
               value: "26257"
             - name: ROACH_SSL_CERTIFICATE
-              value: "/certs/client.go_user.crt"
+              value: "/roach-certs/client.go_user.crt"
             - name: ROACH_SSL_KEY
-              value: "/certs/client.go_user.key"
+              value: "/roach-certs/client.go_user.key"
             - name: ROACH_SSL_CA
-              value: "/certs/ca.crt"
+              value: "/roach-certs/ca.crt"
             - name: ROACH_USER
               value: "go_user"
           ports:
@@ -49,5 +49,5 @@ spec:
               memory: "128Mi"
               cpu: "500m"
           volumeMounts:
-            - mountPath: "/certs"
+            - mountPath: "/roach-certs"
               name: roach-certs-claim

@@ -1,8 +1,14 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: rabbit
+  name: rabbit-1
+  labels:
+    app: rabbit-1
 spec:
+  volumes:
+    - name: rabbit-1-claim
+      persistentVolumeClaim:
+        claimName: rabbit-1-claim
   containers:
     - name: rabbit
       image: registry.com.gecko/rabbit
@@ -16,3 +22,6 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
+      volumeMounts:
+        - mountPath: "/var/lib/rabbitmq/mnesia"
+          name: rabbit-1-claim

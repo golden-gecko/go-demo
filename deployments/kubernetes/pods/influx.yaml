@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: influx
+  labels:
+    app: influx
 spec:
   volumes:
     - name: influx-claim

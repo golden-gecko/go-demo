@@ -34,20 +34,24 @@ Add following entries to hosts file and points them to localhost or Docker netwo
    ssl/generate.sh
    ```
 
-2. Install CA certificate.
+2. Install CA certificate in OS.
 
    ```bash
-   ssl/install.sh
+   ssl/install_local.sh
+   ```
+
+3. Restart docker.
+
+   ```bash
+   sudo systemctl restart docker
    ```
 
 ## How to run CI
 
 1. Create docker volume with certificates.
 
-   The `/.` at the end of the path is needed to copy all files from directory rather than whole directory.
-
    ```bash
-   ssl/install_docker.sh data/certs/.
+   ssl/install_docker.sh
    ```
 
 2. Run CI.
@@ -62,29 +66,69 @@ Add following entries to hosts file and points them to localhost or Docker netwo
 deployments/compose/build.sh
 stack/roach/init_ssl_docker.sh
 deployments/compose/run.sh
-stack/roach/init_cluster.sh
-stack/rabbit/init_cluster.sh
+deployments/compose/init_service_cluster.sh
 ```
 
 ## How to run on Kubernetes
 
-1. Install Kubernetes.
+1. Install NFS server.
 
-2. Create cluster.
-
-   When mouting files the source path cannot be the same as target path (for example `./data` and `/data`).
+   Run:
 
    ```bash
-   deployments/kubernetes/init_cluster.sh ./data
+   sudo apt install -y nfs-kernel-server
+   sudo mkdir -p /mnt/nfs_share
+   sudo chown -R nobody:nogroup /mnt/nfs_share
    ```
 
-3. Run:
+   Add:
+
+   ```
+   /mnt/nfs_share *(rw,sync,no_subtree_check,no_root_squash,insecure)
+   ```
+
+   to:
+
+   ```
+   /etc/exports
+   ```
+
+   Run:
+
+   ```bash
+   sudo exportfs -a
+   sudo systemctl restart nfs-kernel-server
+   sudo exportfs -v
+   ```
+
+   Create directories for each volume:
+
+   ```bash
+   sudo mkdir -p /mnt/nfs_share/certs
+   sudo mkdir -p /mnt/nfs_share/influx
+   sudo mkdir -p /mnt/nfs_share/mongo
+   sudo mkdir -p /mnt/nfs_share/rabbit-1
+   sudo mkdir -p /mnt/nfs_share/roach-certs
+   sudo mkdir -p /mnt/nfs_share/roach-1
+   ```
+
+2. Install minikube.
+
+   <https://minikube.sigs.k8s.io/docs/start/>
+
+3. Create cluster.
+
+   ```bash
+   deployments/kubernetes/init_cluster.sh
+   ```
+
+4. Run:
 
    The `$(pwd)` is needed because script mounts its parent directory into docker container.
 
    ```bash
    deployments/compose/build.sh
-   stack/roach/init_ssl_local.sh $(pwd)/data/roach-certs
+   deployments/kubernetes/run.sh
    ```
 
 ## How to run on Nomad (in progress)

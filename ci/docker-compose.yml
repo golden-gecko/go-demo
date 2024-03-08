@@ -46,6 +46,7 @@ services:
     networks:
       main:
         ipv4_address: 192.168.200.60
+    restart: unless-stopped
     volumes:
       - portainer:/data
       - /var/lib/docker/volumes:/var/lib/docker/volumes
