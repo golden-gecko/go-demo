@@ -13,14 +13,29 @@ spec:
     - name: influx
       image: registry.com.gecko/influx
       imagePullPolicy: Always
+      env:
+        - name: DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+          value: "my-super-secret-auth-token"
+        - name: DOCKER_INFLUXDB_INIT_BUCKET
+          value: "house"
+        - name: DOCKER_INFLUXDB_INIT_MODE
+          value: "setup"
+        - name: DOCKER_INFLUXDB_INIT_ORG
+          value: "my-org"
+        - name: DOCKER_INFLUXDB_INIT_PASSWORD
+          value: "go_password"
+        - name: DOCKER_INFLUXDB_INIT_RETENTION
+          value: "1w"
+        - name: DOCKER_INFLUXDB_INIT_USERNAME
+          value: "go_user"
       ports:
         - containerPort: 8086
       resources:
         requests:
-          memory: "64Mi"
+          memory: "256Mi"
           cpu: "250m"
         limits:
-          memory: "128Mi"
+          memory: "512Mi"
           cpu: "500m"
       volumeMounts:
         - mountPath: "/var/lib/influxdb2"

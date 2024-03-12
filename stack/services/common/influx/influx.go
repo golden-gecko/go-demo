@@ -20,15 +20,17 @@ var (
 )
 
 func Connect() error {
-    log.Info("Connecting to InfluxDB...")
-
 	host := os.Getenv("INFLUX_HOST")
 	port := os.Getenv("INFLUX_PORT")
 	secret := os.Getenv("INFLUX_SECRET")
 	organization := os.Getenv("INFLUX_ORGANIZATION")
 	database := os.Getenv("INFLUX_DATABASE")
 
-	client = influxdb2.NewClientWithOptions(fmt.Sprintf("http://%s:%s", host, port), secret, influxdb2.DefaultOptions().SetBatchSize(10))
+	uri := fmt.Sprintf("http://%s:%s", host, port)
+
+    log.Info(fmt.Sprintf("Connecting to InfluxDB (%s)...", uri))
+
+	client := influxdb2.NewClientWithOptions(uri, secret, influxdb2.DefaultOptions().SetBatchSize(10))
 
 	if _, err := client.Health(context.Background()); err != nil {
 		return err

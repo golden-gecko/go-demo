@@ -2,17 +2,26 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
+	log "github.com/sirupsen/logrus"
+
 	"services/common/model"
 )
 
-func GetCars() (model.Cars, error) {
+func OpenFile(filePath string) (*os.File, error) {
+	log.Info(fmt.Sprintf("Opening file %s...", filePath))
+
+	return os.Open(filePath)
+}
+
+func GetCars(dataPath string) (model.Cars, error) {
 	var cars model.Cars
 
-	jsonFile, err := os.Open(filepath.Join("services", "producer", "data", "cars.json"))
+	jsonFile, err := OpenFile(filepath.Join(dataPath, "cars.json"))
 
 	if err != nil {
 		return cars, err
@@ -33,10 +42,10 @@ func GetCars() (model.Cars, error) {
 	return cars, nil
 }
 
-func GetNames() (model.Names, error) {
+func GetNames(dataPath string) (model.Names, error) {
 	var names model.Names
 
-	jsonFile, err := os.Open(filepath.Join("services", "producer", "data", "names.json"))
+	jsonFile, err := OpenFile(filepath.Join(dataPath, "names.json"))
 
 	if err != nil {
 		return names, err
@@ -57,10 +66,10 @@ func GetNames() (model.Names, error) {
 	return names, nil
 }
 
-func GetUsers() (model.Users, error) {
+func GetUsers(dataPath string) (model.Users, error) {
 	var users model.Users
 
-	jsonFile, err := os.Open(filepath.Join("services", "producer", "data", "users.json"))
+	jsonFile, err := OpenFile(filepath.Join(dataPath, "users.json"))
 
 	if err != nil {
 		return users, err

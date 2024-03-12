@@ -5,7 +5,7 @@ metadata:
   labels:
     app: consumer
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: consumer
@@ -19,6 +19,30 @@ spec:
           image: registry.com.gecko/consumer
           imagePullPolicy: Always
           env:
+            - name: MONGO_DATABASE
+              value: "go_demo"
+            - name: MONGO_HOST
+              value: "mongo"
+            - name: MONGO_PASSWORD
+              value: "go_password"
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONGO_USER
+              value: "go_user"
+            - name: INFLUX_DATABASE
+              value: "house"
+            - name: INFLUX_HOST
+              value: "192.168.0.215"
+            - name: INFLUX_ORGANIZATION
+              value: "my-org"
+            - name: INFLUX_PASSWORD
+              value: "go_password"
+            - name: INFLUX_PORT
+              value: "8086"
+            - name: INFLUX_SECRET
+              value: "my-super-secret-auth-token"
+            - name: INFLUX_USER
+              value: "go_user"
             - name: RABBIT_HOST
               value: "rabbit-1"
             - name: RABBIT_PASSWORD

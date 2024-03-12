@@ -5,6 +5,13 @@ metadata:
   labels:
     app: producer
 spec:
+  volumes:
+    - name: certs-claim
+      persistentVolumeClaim:
+        claimName: certs-claim
+    - name: producer-claim
+      persistentVolumeClaim:
+        claimName: producer-claim
   containers:
     - name: producer
       image: registry.com.gecko/producer
@@ -12,6 +19,10 @@ spec:
       env:
         - name: API_URL
           value: "https://api.com.gecko:4000"
+        - name: PRODUCER_DATA_PATH
+          value: "/app/services/producer/data"
+        - name: PRODUCER_SSL_CA
+          value: "/certs/ca-cert.pem"
         - name: RECEIVER_URL
           value: "https://receiver.com.gecko:4000"
       resources:
@@ -21,3 +32,8 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
+      volumeMounts:
+        - mountPath: "/certs"
+          name: certs-claim
+        - mountPath: "/data/db"
+          name: producer-claim

@@ -107,6 +107,7 @@ deployments/compose/init_service_cluster.sh
    sudo mkdir -p /mnt/nfs_share/certs
    sudo mkdir -p /mnt/nfs_share/influx
    sudo mkdir -p /mnt/nfs_share/mongo
+   sudo mkdir -p /mnt/nfs_share/producer
    sudo mkdir -p /mnt/nfs_share/rabbit-1
    sudo mkdir -p /mnt/nfs_share/roach-certs
    sudo mkdir -p /mnt/nfs_share/roach-1
