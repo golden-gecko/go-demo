@@ -1,18 +1,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: api
+  name: receiver
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: api.com.gecko
+    - host: receiver.com.gecko
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: api
+                name: receiver
                 port:
-                  number: 6000
+                  number: 7000

@@ -73,44 +73,8 @@ deployments/compose/init_service_cluster.sh
 
 1. Install NFS server.
 
-   Run:
-
    ```bash
-   sudo apt install -y nfs-kernel-server
-   sudo mkdir -p /mnt/nfs_share
-   sudo chown -R nobody:nogroup /mnt/nfs_share
-   ```
-
-   Add:
-
-   ```
-   /mnt/nfs_share *(rw,sync,no_subtree_check,no_root_squash,insecure)
-   ```
-
-   to:
-
-   ```
-   /etc/exports
-   ```
-
-   Run:
-
-   ```bash
-   sudo exportfs -a
-   sudo systemctl restart nfs-kernel-server
-   sudo exportfs -v
-   ```
-
-   Create directories for each volume:
-
-   ```bash
-   sudo mkdir -p /mnt/nfs_share/certs
-   sudo mkdir -p /mnt/nfs_share/influx
-   sudo mkdir -p /mnt/nfs_share/mongo
-   sudo mkdir -p /mnt/nfs_share/producer
-   sudo mkdir -p /mnt/nfs_share/rabbit-1
-   sudo mkdir -p /mnt/nfs_share/roach-certs
-   sudo mkdir -p /mnt/nfs_share/roach-1
+   deployments/kubernetes/init_nfs.sh
    ```
 
 2. Install minikube.
