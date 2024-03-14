@@ -3,18 +3,24 @@
 cd "$(dirname "$0")"
 
 # rabbit
-name=$(docker exec -it demo-stack_rabbit-1_1 hostname | tr -d '\n' | tr -d '\r')
+rabbit_name_1=$(docker compose --project-name demo-stack ps --quiet rabbit-1)
+rabbit_name_2=$(docker compose --project-name demo-stack ps --quiet rabbit-2)
+rabbit_name_3=$(docker compose --project-name demo-stack ps --quiet rabbit-3)
 
-docker exec -it demo-stack_rabbit-2_1 rabbitmqctl stop_app
-docker exec -it demo-stack_rabbit-2_1 rabbitmqctl reset
-docker exec -it demo-stack_rabbit-2_1 rabbitmqctl join_cluster rabbit@$name
-docker exec -it demo-stack_rabbit-2_1 rabbitmqctl start_app
+name=$(docker exec -it $rabbit_name_1 hostname | tr -d '\n' | tr -d '\r')
 
-docker exec -it demo-stack_rabbit-3_1 rabbitmqctl stop_app
-docker exec -it demo-stack_rabbit-3_1 rabbitmqctl reset
-docker exec -it demo-stack_rabbit-3_1 rabbitmqctl join_cluster rabbit@$name
-docker exec -it demo-stack_rabbit-3_1 rabbitmqctl start_app
+docker exec -it $rabbit_name_2 rabbitmqctl stop_app
+docker exec -it $rabbit_name_2 rabbitmqctl reset
+docker exec -it $rabbit_name_2 rabbitmqctl join_cluster rabbit@$name
+docker exec -it $rabbit_name_2 rabbitmqctl start_app
+
+docker exec -it $rabbit_name_3 rabbitmqctl stop_app
+docker exec -it $rabbit_name_3 rabbitmqctl reset
+docker exec -it $rabbit_name_3 rabbitmqctl join_cluster rabbit@$name
+docker exec -it $rabbit_name_3 rabbitmqctl start_app
 
 # roach
-# docker exec -i -t demo-stack_roach-1_1 cockroach init --certs-dir=/certs/node-1 --host=roach-1:26357
-# docker exec -i demo-stack_roach-1_1 cockroach sql --certs-dir=/certs/node-1 --host=roach-1:26257 < ../../stack/roach/init.sql
+roach_name=$(docker compose --project-name demo-stack ps --quiet roach-1)
+
+docker exec -it $roach_name sh -c "cockroach init --certs-dir=/certs/node-1 --host=roach-1:26357"
+docker exec -i $roach_name sh -c "cockroach sql --certs-dir=/certs/node-1 --host=roach-1:26257" < ../../stack/roach/init.sql

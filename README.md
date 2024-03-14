@@ -64,7 +64,7 @@ Add following entries to hosts file and points them to localhost or Docker netwo
 
 ```bash
 deployments/compose/build.sh
-stack/roach/init_ssl_docker.sh
+stack/roach/ssl/generate_docker.sh
 deployments/compose/run.sh
 deployments/compose/init_service_cluster.sh
 ```
