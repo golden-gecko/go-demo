@@ -216,6 +216,9 @@ services:
   rabbit-1:
     build:
       context: ../../stack/rabbit
+    environment:
+      - RABBITMQ_DEFAULT_PASS=go_password
+      - RABBITMQ_DEFAULT_USER=go_user
     image: registry.com.gecko/rabbit
     networks:
       - main
@@ -226,6 +229,9 @@ services:
   rabbit-2:
     build:
       context: ../../stack/rabbit
+    environment:
+      - RABBITMQ_DEFAULT_PASS=go_password
+      - RABBITMQ_DEFAULT_USER=go_user
     image: registry.com.gecko/rabbit
     networks:
       - main
@@ -236,6 +242,9 @@ services:
   rabbit-3:
     build:
       context: ../../stack/rabbit
+    environment:
+      - RABBITMQ_DEFAULT_PASS=go_password
+      - RABBITMQ_DEFAULT_USER=go_user
     image: registry.com.gecko/rabbit
     networks:
       - main
@@ -300,6 +309,8 @@ services:
   redis-insight:
     build:
       context: ../../stack/redis-insight
+    environment:
+      - RITRUSTEDORIGINS=https://redis.com.gecko:4000
     image: registry.com.gecko/redis-insight
     networks:
       - main

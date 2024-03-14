@@ -125,7 +125,3 @@ UI dashboards:
 - Prometheus - <https://prometheus.com.gecko:4000>
 - RabbitMQ - <https://rabbit.com.gecko:4000> (guest, guest)
 - RedisInsight - <https://redis.com.gecko:4000>
-
-## Bugs
-
-- RedisInsight is not working.

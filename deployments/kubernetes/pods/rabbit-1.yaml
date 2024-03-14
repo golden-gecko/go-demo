@@ -14,6 +14,10 @@ spec:
       image: registry.com.gecko/rabbit
       imagePullPolicy: Always
       env:
+        - name: RABBITMQ_DEFAULT_PASS
+          value: "go_password"
+        - name: RABBITMQ_DEFAULT_USER
+          value: "go_user"
         - name: RABBITMQ_NODE_PORT
           value: "5672"
       ports:
