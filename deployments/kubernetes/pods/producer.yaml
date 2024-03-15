@@ -35,5 +35,5 @@ spec:
       volumeMounts:
         - mountPath: "/certs"
           name: certs-claim
-        - mountPath: "/data/db"
+        - mountPath: "/data"
           name: producer-claim

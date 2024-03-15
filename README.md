@@ -7,22 +7,21 @@ Infrastructure and stack deployment.
 Add following entries to hosts file and points them to localhost or Docker network IP:
 
 ```text
+127.0.0.1 jenkins.com.gecko
+127.0.0.1 portainer.com.gecko
+127.0.0.1 registry.com.gecko
+127.0.0.1 registry-ui.com.gecko
+
 127.0.0.1 api.com.gecko
 127.0.0.1 consul.com.gecko
 127.0.0.1 grafana.com.gecko
 127.0.0.1 haproxy.com.gecko
 127.0.0.1 influx.com.gecko
-127.0.0.1 jenkins.com.gecko
 127.0.0.1 mongo.com.gecko
 127.0.0.1 nakama.com.gecko
-127.0.0.1 nomad.com.gecko
-127.0.0.1 portainer.com.gecko
-127.0.0.1 prometheus.com.gecko
 127.0.0.1 rabbit.com.gecko
 127.0.0.1 receiver.com.gecko
 127.0.0.1 redis.com.gecko
-127.0.0.1 registry.com.gecko
-127.0.0.1 registry-ui.com.gecko
 127.0.0.1 roach.com.gecko
 ```
 
