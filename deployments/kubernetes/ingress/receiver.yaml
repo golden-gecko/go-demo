@@ -5,6 +5,10 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  tls:
+    - hosts:
+      - receiver.com.gecko
+      secretName: stack-tls
   rules:
     - host: receiver.com.gecko
       http:
