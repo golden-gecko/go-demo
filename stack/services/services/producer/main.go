@@ -252,13 +252,13 @@ func main() {
 		panic(err)
     }
 
-    caCertPool := x509.NewCertPool()
+	caCertPool := x509.NewCertPool()
     caCertPool.AppendCertsFromPEM(caCert)
 
-    client := &http.Client{
+	client := &http.Client{
         Transport: &http.Transport{
             TLSClientConfig: &tls.Config{
-                RootCAs: caCertPool,
+                RootCAs:      caCertPool,
             },
         },
     }

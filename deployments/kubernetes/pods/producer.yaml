@@ -9,22 +9,19 @@ spec:
     - name: certs-claim
       persistentVolumeClaim:
         claimName: certs-claim
-    - name: producer-claim
-      persistentVolumeClaim:
-        claimName: producer-claim
   containers:
     - name: producer
       image: registry.com.gecko/producer
       imagePullPolicy: Always
       env:
         - name: API_URL
-          value: "https://api.com.gecko:4000"
+          value: "https://api.com.gecko"
         - name: PRODUCER_DATA_PATH
           value: "/app/services/producer/data"
         - name: PRODUCER_SSL_CA
           value: "/certs/ca-cert.pem"
         - name: RECEIVER_URL
-          value: "https://receiver.com.gecko:4000"
+          value: "https://receiver.com.gecko"
       resources:
         requests:
           memory: "64Mi"
@@ -35,5 +32,4 @@ spec:
       volumeMounts:
         - mountPath: "/certs"
           name: certs-claim
-        - mountPath: "/data"
-          name: producer-claim
+
