@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+  labels:
+    app: consumer
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      containers:
+        - name: consumer
+          image: registry.com.gecko/consumer
+          imagePullPolicy: Always
+          env:
+            - name: MONGO_DATABASE
+              value: "go_demo"
+            - name: MONGO_HOST
+              value: "mongo"
+            - name: MONGO_PASSWORD
+              value: "go_password"
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONGO_USER
+              value: "go_user"
+            - name: INFLUX_DATABASE
+              value: "house"
+            - name: INFLUX_HOST
+              value: "influx"
+            - name: INFLUX_ORGANIZATION
+              value: "my-org"
+            - name: INFLUX_PASSWORD
+              value: "go_password"
+            - name: INFLUX_PORT
+              value: "8086"
+            - name: INFLUX_SECRET
+              value: "my-super-secret-auth-token"
+            - name: INFLUX_USER
+              value: "go_user"
+            - name: RABBIT_HOST
+              value: "rabbit-1"
+            - name: RABBIT_PASSWORD
+              value: "guest"
+            - name: RABBIT_PORT
+              value: "5672"
+            - name: RABBIT_USER
+              value: "guest"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"

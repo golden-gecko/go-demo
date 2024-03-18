@@ -17,19 +17,39 @@ var (
 	connnection *pgx.Conn
 )
 
+func IsSslEnabled() bool {
+	_, p1 := os.LookupEnv("ROACH_SSL_CERTIFICATE")
+	_, p2 := os.LookupEnv("ROACH_SSL_KEY")
+	_, p3 := os.LookupEnv("ROACH_SSL_CA")
+
+	return p1 && p2 && p3
+}
+
 func Connect() error {
     log.Info("Connecting to CockroachDB...")
 
-	connectionString := fmt.Sprintf("host='%s' port='%s' dbname='%s' user='%s' password='%s,' sslmode='verify-full' sslcert='%s' sslkey='%s' sslrootcert='%s'",
-		os.Getenv("ROACH_HOST"),
-		os.Getenv("ROACH_PORT"),
-		os.Getenv("ROACH_DATABASE"),
-		os.Getenv("ROACH_USER"),
-		os.Getenv("ROACH_PASSWORD"),
-		os.Getenv("ROACH_SSL_CERTIFICATE"),
-		os.Getenv("ROACH_SSL_KEY"),
-		os.Getenv("ROACH_SSL_CA"),
-	)
+	var connectionString string
+
+	if IsSslEnabled() {
+		connectionString = fmt.Sprintf("host='%s' port='%s' dbname='%s' user='%s' password='%s,' sslmode='verify-full' sslcert='%s' sslkey='%s' sslrootcert='%s'",
+			os.Getenv("ROACH_HOST"),
+			os.Getenv("ROACH_PORT"),
+			os.Getenv("ROACH_DATABASE"),
+			os.Getenv("ROACH_USER"),
+			os.Getenv("ROACH_PASSWORD"),
+			os.Getenv("ROACH_SSL_CERTIFICATE"),
+			os.Getenv("ROACH_SSL_KEY"),
+			os.Getenv("ROACH_SSL_CA"),
+		)
+	} else {
+		connectionString = fmt.Sprintf("host='%s' port='%s' dbname='%s' user='%s' password='%s'",
+			os.Getenv("ROACH_HOST"),
+			os.Getenv("ROACH_PORT"),
+			os.Getenv("ROACH_DATABASE"),
+			os.Getenv("ROACH_USER"),
+			os.Getenv("ROACH_PASSWORD"),
+		)
+	}
 
 	config, err := pgx.ParseConfig(connectionString)
 

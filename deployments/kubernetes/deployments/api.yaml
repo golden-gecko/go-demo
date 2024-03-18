@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      volumes:
+        - name: roach-certs-claim
+          persistentVolumeClaim:
+            claimName: roach-certs-claim
+      containers:
+        - name: api
+          image: registry.com.gecko/api
+          imagePullPolicy: Always
+          env:
+            - name: ROACH_DATABASE
+              value: "go_demo"
+            - name: ROACH_HOST
+              value: "roach-1"
+            - name: ROACH_PASSWORD
+              value: "go_password"
+            - name: ROACH_PORT
+              value: "26257"
+            - name: ROACH_SSL_CERTIFICATE
+              value: "/roach-certs/client.go_user.crt"
+            - name: ROACH_SSL_KEY
+              value: "/roach-certs/client.go_user.key"
+            - name: ROACH_SSL_CA
+              value: "/roach-certs/ca.crt"
+            - name: ROACH_USER
+              value: "go_user"
+          ports:
+            - containerPort: 6000
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          volumeMounts:
+            - mountPath: "/roach-certs"
+              name: roach-certs-claim

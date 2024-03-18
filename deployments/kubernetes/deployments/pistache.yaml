@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pistache
+  labels:
+    app: pistache
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pistache
+  template:
+    metadata:
+      labels:
+        app: pistache
+    spec:
+      containers:
+        - name: pistache
+          image: registry.com.gecko/pistache
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9000
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"

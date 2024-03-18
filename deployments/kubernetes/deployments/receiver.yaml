@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: receiver
+  labels:
+    app: receiver
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: receiver
+  template:
+    metadata:
+      labels:
+        app: receiver
+    spec:
+      containers:
+        - name: receiver
+          image: registry.com.gecko/receiver
+          imagePullPolicy: Always
+          env:
+            - name: RABBIT_HOST
+              value: "rabbit-1"
+            - name: RABBIT_PASSWORD
+              value: "guest"
+            - name: RABBIT_PORT
+              value: "5672"
+            - name: RABBIT_USER
+              value: "guest"
+          ports:
+            - containerPort: 7000
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"

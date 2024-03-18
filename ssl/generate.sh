@@ -2,7 +2,8 @@
 
 cd "$(dirname "$0")"
 
-cd /certs
+mkdir -p data
+cd data
 
 # CA (gecko)
 openssl genrsa \

@@ -217,21 +217,22 @@ func ProcessVehicles(client *http.Client, apiUrl string, cars model.Cars, dataPr
 
 func main() {
     apiUrl := fmt.Sprintf("%s/v1", os.Getenv("API_URL"))
+	dataPath := os.Getenv("PRODUCER_DATA_PATH")
     receiverUrl := fmt.Sprintf("%s/v1/data", os.Getenv("RECEIVER_URL"))
 
-    cars, err := GetCars()
+    cars, err := GetCars(dataPath)
 
 	if err != nil {
 		panic(err)
 	}
 
-    names, err := GetNames()
+    names, err := GetNames(dataPath)
 
 	if err != nil {
 		panic(err)
 	}
 
-    users, err := GetUsers()
+    users, err := GetUsers(dataPath)
 
 	if err != nil {
 		panic(err)
@@ -251,13 +252,13 @@ func main() {
 		panic(err)
     }
 
-    caCertPool := x509.NewCertPool()
+	caCertPool := x509.NewCertPool()
     caCertPool.AppendCertsFromPEM(caCert)
 
-    client := &http.Client{
+	client := &http.Client{
         Transport: &http.Transport{
             TLSClientConfig: &tls.Config{
-                RootCAs: caCertPool,
+                RootCAs:      caCertPool,
             },
         },
     }

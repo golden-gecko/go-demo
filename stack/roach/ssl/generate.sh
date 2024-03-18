@@ -2,16 +2,17 @@
 
 cd "$(dirname "$0")"
 
-cd /certs
+mkdir -p $1
+cd $1
 
-rm -fr *.crt *.key
+rm -fr ca.crt ca.key
 
 cockroach cert create-ca \
     --certs-dir=/certs \
     --ca-key=/certs/ca.key
 
+rm -fr node-1 node-2 node-3
 mkdir -p node-1 node-2 node-3
-rm -fr node-*/*.crt node-*/*.key
 
 cp ca.crt node-1/
 cp ca.crt node-2/
@@ -29,6 +30,8 @@ cockroach cert create-node roach-3 \
     --certs-dir=/certs/node-3 \
     --ca-key=/certs/ca.key
 
+rm -fr client.root.crt client.root.key
+
 cockroach cert create-client root \
     --certs-dir=/certs \
     --ca-key=/certs/ca.key
@@ -40,6 +43,8 @@ cp client.root.crt node-3/
 cp client.root.key node-1/
 cp client.root.key node-2/
 cp client.root.key node-3/
+
+rm -fr client.go_user.crt client.go_user.key
 
 cockroach cert create-client go_user \
     --certs-dir=/certs \

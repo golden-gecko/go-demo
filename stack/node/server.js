@@ -8,7 +8,9 @@ const PORT = 2000;
 const app = express();
 
 app.get('/', (req, res) => {
-    res.send('Hello World');
+    console.log('GET /');
+
+    res.send('Hello World\n');
 });
 
 app.listen(PORT, HOST);

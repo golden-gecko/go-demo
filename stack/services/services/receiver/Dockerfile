@@ -14,4 +14,6 @@ COPY services services
 RUN cd services/receiver && \
     CGO_ENABLED=0 GOOS=linux go build -o /receiver
 
+EXPOSE 7000
+
 CMD [ "/receiver" ]

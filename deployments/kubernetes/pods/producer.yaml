@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: producer
+  labels:
+    app: producer
+spec:
+  volumes:
+    - name: certs-claim
+      persistentVolumeClaim:
+        claimName: certs-claim
+  containers:
+    - name: producer
+      image: registry.com.gecko/producer
+      imagePullPolicy: Always
+      env:
+        - name: API_URL
+          value: "https://api.com.gecko"
+        - name: PRODUCER_DATA_PATH
+          value: "/app/services/producer/data"
+        - name: PRODUCER_SSL_CA
+          value: "/certs/ca-cert.pem"
+        - name: RECEIVER_URL
+          value: "https://receiver.com.gecko"
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "100m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      volumeMounts:
+        - mountPath: "/certs"
+          name: certs-claim
+
