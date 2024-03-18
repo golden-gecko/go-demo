@@ -180,6 +180,16 @@ services:
       - main
     restart: unless-stopped
 
+  postgres:
+    build:
+      context: ../../stack/postgres
+    env_file:
+      - .env
+    image: registry.com.gecko/postgres
+    networks:
+      - main
+    restart: unless-stopped
+
   producer:
     build:
       context: ../../stack/services
