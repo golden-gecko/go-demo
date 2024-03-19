@@ -6,5 +6,9 @@ spec:
   selector:
     app: rabbit-1
   ports:
-    - protocol: TCP
+    - name: queue
+      protocol: TCP
       port: 5672
+    - name: dashboard
+      protocol: TCP
+      port: 15672

@@ -2,5 +2,6 @@
 *.crt
 *.key
 *.pem
+.terraform
 .vs
 node_modules

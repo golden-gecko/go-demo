@@ -110,7 +110,7 @@ deployments/compose/init_service_cluster.sh
 
 ## UI
 
-UI dashboards:
+UI dashboards. Replace 4000 with 443 when deploying on Kubernetes.
 
 - Jenkins - <https://jenkins.com.gecko> (admin, ...)
 - Docker Registry - <https://registry-ui.com.gecko>

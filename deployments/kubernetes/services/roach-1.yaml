@@ -6,5 +6,9 @@ spec:
   selector:
     app: roach-1
   ports:
-    - protocol: TCP
+    - name: dashboard
+      protocol: TCP
+      port: 8080
+    - name: sql
+      protocol: TCP
       port: 26257

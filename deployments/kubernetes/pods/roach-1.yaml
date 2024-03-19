@@ -19,6 +19,7 @@ spec:
       command: ["cockroach"]
       args: ["start-single-node", "--certs-dir=/certs/node-1"]
       ports:
+        - containerPort: 8080
         - containerPort: 26257
       resources:
         requests:

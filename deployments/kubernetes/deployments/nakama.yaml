@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nakama
+  labels:
+    app: nakama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nakama
+  template:
+    metadata:
+      labels:
+        app: nakama
+    spec:
+      volumes:
+        - name: roach-certs-claim
+          persistentVolumeClaim:
+            claimName: roach-certs-claim
+      containers:
+        - name: python
+          image: registry.com.gecko/nakama
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7351
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          volumeMounts:
+            - mountPath: "/certs"
+              name: roach-certs-claim
