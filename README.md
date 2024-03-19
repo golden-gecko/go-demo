@@ -76,9 +76,17 @@ deployments/compose/init_service_cluster.sh
    deployments/kubernetes/init_nfs.sh
    ```
 
-2. Install minikube.
+2. Install minikube nad krew.
 
-   <https://minikube.sigs.k8s.io/docs/start/>
+   - <https://minikube.sigs.k8s.io/docs/start/>
+   - <https://krew.sigs.k8s.io/docs/user-guide/setup/install/>
+
+    Run:
+
+    ```bash
+    kubectl krew install rabbitmq
+    kubectl rabbitmq install-cluster-operator
+    ```
 
 3. Create cluster.
 

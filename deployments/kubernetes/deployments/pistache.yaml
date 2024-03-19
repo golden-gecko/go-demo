@@ -6,6 +6,7 @@ metadata:
     app: pistache
 spec:
   replicas: 3
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: pistache

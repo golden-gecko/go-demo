@@ -6,6 +6,7 @@ metadata:
     app: consumer
 spec:
   replicas: 3
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: consumer
