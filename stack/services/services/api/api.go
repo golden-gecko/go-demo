@@ -60,8 +60,11 @@ func CreateUser(c *gin.Context) {
     }
 
     if err := roach.CreateUser(user); err != nil {
+		roach.Disconnect()
+		roach.Connect()
+
 		rest.ResponseError(c, err.Error())
-		panic(err)
+		return
     }
 
 	rest.ResponseNoBody(c, http.StatusCreated)
@@ -119,6 +122,9 @@ func GetUser(c *gin.Context) {
     user, err := roach.GetUser(userId)
 
     if err != nil {
+		roach.Disconnect()
+		roach.Connect()
+
 		rest.ResponseError(c, err.Error())
 		return
     }
@@ -155,8 +161,11 @@ func CreateVehicle(c *gin.Context) {
     }
 
     if err := roach.CreateVehicle(vehicle); err != nil {
+		roach.Disconnect()
+		roach.Connect()
+
 		rest.ResponseError(c, err.Error())
-		panic(err)
+		return
     }
 
 	rest.ResponseNoBody(c, http.StatusCreated)
