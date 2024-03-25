@@ -9,7 +9,7 @@ variable "subnet_count" {
   type        = map(number)
 
   default = {
-    public  = 1,
+    public  = 2,
     private = 2
   }
 }
@@ -20,7 +20,7 @@ variable "settings" {
 
   default = {
     "web_app" = {
-      count = 1
+      count = 2
     }
   }
 }
