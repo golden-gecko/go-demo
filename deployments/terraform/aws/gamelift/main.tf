@@ -1,22 +1,22 @@
-resource "aws_s3_bucket" "build" {
-  bucket = "my-tf-test-bucket"
+resource "aws_s3_bucket" "iwamori111_test_bucket" {
+  bucket = "iwamori111-test-bucket"
 }
 
-resource "aws_s3_object" "build" {
-  bucket = "build"
+resource "aws_s3_object" "test_build" {
+  bucket = aws_s3_bucket.iwamori111_test_bucket.id
   key    = "build-1-0-0"
   source = "data/server"
   etag   = filemd5("data/server")
 }
 
-resource "aws_iam_role" "test_role" {
-  name = "test_role"
+resource "aws_iam_role" "some_role" {
+  name = "my_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Action = "s3:GetObject"
+        Action = "sts:AssumeRole"
         Effect = "Allow"
         Sid    = ""
         Principal = {
@@ -29,17 +29,17 @@ resource "aws_iam_role" "test_role" {
 
 resource "aws_gamelift_build" "test" {
   name             = "example-build"
-  operating_system = "AMAZON_LINUX"
+  operating_system = "AMAZON_LINUX_2"
 
   storage_location {
-    bucket   = aws_s3_bucket.build.id
-    key      = aws_s3_object.build.key
-    role_arn = aws_iam_role.test_role.arn
+    bucket   = aws_s3_bucket.iwamori111_test_bucket.id
+    key      = aws_s3_object.test_build.key
+    role_arn = aws_iam_role.some_role.arn
   }
 }
 
 resource "aws_gamelift_fleet" "example" {
-  build_id          = "build-yourgame-abc1def"
+  build_id          = aws_gamelift_build.test.id
   ec2_instance_type = "t2.micro"
   fleet_type        = "ON_DEMAND"
   name              = "example-fleet-name"
