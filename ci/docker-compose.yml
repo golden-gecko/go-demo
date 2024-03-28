@@ -45,11 +45,16 @@ services:
     build:
       context: nfs
     environment:
-      - NFS_EXPORT_0='/nfs *(ro,no_subtree_check)'
+      - SHARED_DIRECTORY=/data
     networks:
       main:
         ipv4_address: 192.168.200.70
+    ports:
+      - 2049:2049
+    privileged: true
     restart: unless-stopped
+    volumes:
+      - /mnt/nfs_share:/data
 
   portainer:
     image: portainer/portainer-ce:2.19.4-alpine

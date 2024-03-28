@@ -70,33 +70,22 @@ deployments/compose/init_service_cluster.sh
 
 ## How to run on Kubernetes (minikube)
 
-1. Install NFS server.
-
-   ```bash
-   deployments/kubernetes/init_nfs.sh
-   ```
-
-2. Install minikube nad krew.
+1. Install minikube nad krew.
 
    - <https://minikube.sigs.k8s.io/docs/start/>
    - <https://krew.sigs.k8s.io/docs/user-guide/setup/install/>
 
-    Run:
+   Run:
 
-    ```bash
-    kubectl krew install rabbitmq
-    kubectl rabbitmq install-cluster-operator
-    ```
+   ```bash
+   kubectl krew install rabbitmq
+   kubectl rabbitmq install-cluster-operator
+   ```
 
-3. Create cluster.
+2. Run.
 
    ```bash
    deployments/kubernetes/init_cluster.sh
-   ```
-
-4. Run:
-
-   ```bash
    deployments/compose/build.sh
    deployments/kubernetes/run.sh
    ```

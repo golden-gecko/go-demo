@@ -11,5 +11,5 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server: 192.168.200.70
-    path: "/mnt/nfs_share/mongo"
+    server: nfs.com.gecko
+    path: "/mongo"
