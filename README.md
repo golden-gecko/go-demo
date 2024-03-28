@@ -132,3 +132,11 @@ UI dashboards. Replace 4000 with 443 when deploying on Kubernetes.
 - Prometheus - <https://prometheus.com.gecko:4000>
 - RabbitMQ - <https://rabbit.com.gecko:4000> (guest, guest)
 - RedisInsight - <https://redis.com.gecko:4000>
+
+## Roadmap
+
+- Add CockroachSQL to haproxy.
+
+  ```bash
+  docker exec -it $roach_name sh -c "cockroach gen haproxy --certs-dir=/certs/node-1 --host=roach-1:26357 && cat haproxy.cfg" > ../../stack/haproxy/haproxy_roach.cfg
+  ```
