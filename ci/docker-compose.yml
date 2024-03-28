@@ -41,6 +41,16 @@ services:
     volumes:
       - jenkins:/var/jenkins_home
 
+  nfs:
+    build:
+      context: nfs
+    environment:
+      - NFS_EXPORT_0='/nfs *(ro,no_subtree_check)'
+    networks:
+      main:
+        ipv4_address: 192.168.200.70
+    restart: unless-stopped
+
   portainer:
     image: portainer/portainer-ce:2.19.4-alpine
     networks:

@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")"
 
-kubectl delete secret stack-tls
+kubectl delete secret stack-tls | true
 
 kubectl create secret tls stack-tls \
     --key ../../ssl/data/client-key.pem \

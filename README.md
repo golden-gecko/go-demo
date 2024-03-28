@@ -68,7 +68,7 @@ deployments/compose/run.sh
 deployments/compose/init_service_cluster.sh
 ```
 
-## How to run on Kubernetes
+## How to run on Kubernetes (minikube)
 
 1. Install NFS server.
 
@@ -96,11 +96,17 @@ deployments/compose/init_service_cluster.sh
 
 4. Run:
 
-   The `$(pwd)` is needed because script mounts its parent directory into docker container.
-
    ```bash
    deployments/compose/build.sh
    deployments/kubernetes/run.sh
+   ```
+
+## How to run on Kubernetes (EKS)
+
+1. Run:
+
+   ```bash
+   deployments/aws/eks/run.sh
    ```
 
 ## How to run on Nomad (in progress)
@@ -116,9 +122,7 @@ deployments/compose/init_service_cluster.sh
    deployments/nomad/init_cluster.sh
    ```
 
-## UI
-
-UI dashboards. Replace 4000 with 443 when deploying on Kubernetes.
+## UI (valid with Docker Compose only)
 
 - Jenkins - <https://jenkins.com.gecko> (admin, ...)
 - Docker Registry - <https://registry-ui.com.gecko>
