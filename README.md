@@ -86,8 +86,8 @@ deployments/compose/init_service_cluster.sh
 2. Run.
 
    ```bash
-   stack/roach/generate_local.sh
-   stack/roach/install_kubernetes.sh
+   stack/roach/ssl/generate_local.sh
+   stack/roach/ssl/install_kubernetes.sh
    deployments/kubernetes/run_cluster.sh
    deployments/compose/build.sh
    deployments/kubernetes/run.sh
