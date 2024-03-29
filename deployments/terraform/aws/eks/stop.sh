@@ -2,4 +2,4 @@
 
 cd "$(dirname "$0")"
 
-terraform destroy -auto-approve -var-file="secrets.tfvars"
+terraform destroy -auto-approve

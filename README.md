@@ -114,6 +114,30 @@ deployments/compose/init_service_cluster.sh
    deployments/nomad/init_cluster.sh
    ```
 
+## How to run on Docker via Terraform
+
+1. Install Terraform.
+
+   <https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli>
+
+2. Run.
+
+   ```bash
+   deployments/terraform/docker/run.sh
+   ```
+
+## How to run on Amazon EKS via Terraform
+
+1. Install Terraform.
+
+   <https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli>
+
+2. Run.
+
+   ```bash
+   deployments/terraform/eks/run.sh
+   ```
+
 ## UI (valid with Docker Compose only)
 
 - Jenkins - <https://jenkins.com.gecko> (admin, ...)
@@ -131,7 +155,7 @@ deployments/compose/init_service_cluster.sh
 
 ## Roadmap
 
-- Add CockroachSQL to haproxy.
+- Add CockroachDB to haproxy.
 
   ```bash
   docker exec -it $roach_name sh -c "cockroach gen haproxy --certs-dir=/certs/node-1 --host=roach-1:26357 && cat haproxy.cfg" > ../../stack/haproxy/haproxy_roach.cfg
