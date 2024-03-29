@@ -8,6 +8,7 @@ Add following entries to hosts file and points them to localhost or Docker netwo
 
 ```text
 127.0.0.1 jenkins.com.gecko
+127.0.0.1 nfs.com.gecko
 127.0.0.1 portainer.com.gecko
 127.0.0.1 registry.com.gecko
 127.0.0.1 registry-ui.com.gecko
@@ -85,7 +86,9 @@ deployments/compose/init_service_cluster.sh
 2. Run.
 
    ```bash
-   deployments/kubernetes/init_cluster.sh
+   stack/roach/generate_local.sh
+   stack/roach/install_kubernetes.sh
+   deployments/kubernetes/run_cluster.sh
    deployments/compose/build.sh
    deployments/kubernetes/run.sh
    ```
