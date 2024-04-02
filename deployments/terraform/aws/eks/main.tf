@@ -71,3 +71,12 @@ module "eks" {
     }
   }
 }
+
+resource "aws_ecr_repository" "python" {
+  name                 = "python"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
