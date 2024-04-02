@@ -8,12 +8,17 @@ output "cluster_security_group_id" {
   value       = module.eks.cluster_security_group_id
 }
 
-output "cluster_name" {
-  description = "Kubernetes Cluster Name"
-  value       = module.eks.cluster_name
+output "account_id" {
+  description = "Caller ID"
+  value       = data.aws_caller_identity.current.account_id
 }
 
 output "region" {
   description = "AWS region"
   value       = var.region
+}
+
+output "cluster_name" {
+  description = "Kubernetes Cluster Name"
+  value       = module.eks.cluster_name
 }

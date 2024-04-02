@@ -1,15 +1,8 @@
 terraform {
-  required_version = "1.7.5"
-
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.40.0"
-    }
-
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "2.27.0"
+      version = "5.43.0"
     }
 
     random = {
@@ -21,11 +14,16 @@ terraform {
       source  = "hashicorp/tls"
       version = "4.0.5"
     }
+
+    cloudinit = {
+      source  = "hashicorp/cloudinit"
+      version = "2.3.3"
+    }
   }
+
+  required_version = "1.7.5"
 }
 
 provider "aws" {
-  region     = var.region
-  access_key = "AKIA3KK3GJL6YKC3QGHE"
-  secret_key = "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"
+  region = var.region
 }
