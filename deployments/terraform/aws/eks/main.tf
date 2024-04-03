@@ -1,20 +1,13 @@
 data "aws_caller_identity" "current" {
 }
 
-data "aws_availability_zones" "available" {
-  filter {
-    name   = "opt-in-status"
-    values = ["opt-in-not-required"]
-  }
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
 }
 
 locals {
   cluster_name = "education-eks-${random_string.suffix.result}"
-}
-
-resource "random_string" "suffix" {
-  length  = 8
-  special = false
 }
 
 module "eks" {
