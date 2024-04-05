@@ -86,27 +86,6 @@ deployments/compose/setup.sh
    deployments/minikube/setup.sh
    ```
 
-## How to run on Kubernetes (EKS)
-
-1. Run:
-
-   ```bash
-   deployments/aws/eks/run.sh
-   ```
-
-## How to run on Nomad (in progress)
-
-1. Install Nomad.
-
-   <https://developer.hashicorp.com/nomad/tutorials/get-started/gs-install>
-
-2. Create cluster.
-
-   ```bash
-   deployments/compose/build.sh
-   deployments/nomad/init_cluster.sh
-   ```
-
 ## How to run on Docker via Terraform
 
 1. Install Terraform.

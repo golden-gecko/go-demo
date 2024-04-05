@@ -9,9 +9,6 @@ terraform {
   }
 }
 
-provider "docker" {
-}
-
 resource "docker_image" "node" {
   name = "registry.com.gecko/node"
 }
