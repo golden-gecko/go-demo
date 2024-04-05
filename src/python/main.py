@@ -14,4 +14,4 @@ def get_companies():
 
 
 if __name__ == "__main__":
-    api.run(host="0.0.0.0", port=4000)
+    api.run(host="0.0.0.0", port=9500)

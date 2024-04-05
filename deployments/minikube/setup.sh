@@ -17,4 +17,4 @@ cd "$(dirname "$0")"
 
 # roach
 # kubectl exec --stdin --tty roach-1 -- cockroach init --certs-dir=/certs/node-1 --host=roach-1:26357
-kubectl exec --stdin roach-1 -- cockroach sql --certs-dir=/certs/node-1 --host=roach-1:26257 < ../../stack/roach/init.sql
+kubectl exec --stdin roach-1 -- cockroach sql --certs-dir=/certs/node-1 --host=roach-1:26257 < ../../src/roach/init.sql

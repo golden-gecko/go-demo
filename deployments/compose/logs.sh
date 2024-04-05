@@ -2,5 +2,5 @@
 
 cd "$(dirname "$0")"
 
-docker-compose --file docker-compose.yml  --project-name demo-stack \
+docker-compose --file docker-compose.yml  --project-name demo-src \
     logs --follow --tail=20 "$@"

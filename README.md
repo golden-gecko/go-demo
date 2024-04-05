@@ -1,10 +1,10 @@
 # Demo
 
-Infrastructure and stack deployment.
+Infrastructure deployment demo.
 
 ## How to setup DNS
 
-Add following entries to hosts file and points them to localhost or Docker network IP:
+Add following entries to hosts file and point them to correct IP.
 
 ```text
 127.0.0.1 jenkins.com.gecko
@@ -64,33 +64,26 @@ Add following entries to hosts file and points them to localhost or Docker netwo
 
 ```bash
 deployments/compose/build.sh
-stack/roach/ssl/generate_docker.sh
+src/roach/ssl/generate_docker.sh
 deployments/compose/run.sh
-deployments/compose/init_service_cluster.sh
+deployments/compose/setup.sh
 ```
 
 ## How to run on Kubernetes (minikube)
 
-1. Install minikube nad krew.
+1. Install minikube.
 
    - <https://minikube.sigs.k8s.io/docs/start/>
-   - <https://krew.sigs.k8s.io/docs/user-guide/setup/install/>
-
-   Run:
-
-   ```bash
-   kubectl krew install rabbitmq
-   kubectl rabbitmq install-cluster-operator
-   ```
 
 2. Run.
 
    ```bash
-   stack/roach/ssl/generate_local.sh
-   stack/roach/ssl/install_kubernetes.sh
-   deployments/kubernetes/run_cluster.sh
+   src/roach/ssl/generate_local.sh
+   src/roach/ssl/install_minikube.sh
+   deployments/minikube/run_cluster.sh
    deployments/compose/build.sh
-   deployments/kubernetes/run.sh
+   deployments/minikube/run.sh
+   deployments/minikube/setup.sh
    ```
 
 ## How to run on Kubernetes (EKS)
@@ -155,8 +148,10 @@ deployments/compose/init_service_cluster.sh
 
 ## Roadmap
 
+- Fix bind9 configuration.
+- Use Jenkins to deploy.
 - Add CockroachDB to haproxy.
 
   ```bash
-  docker exec -it $roach_name sh -c "cockroach gen haproxy --certs-dir=/certs/node-1 --host=roach-1:26357 && cat haproxy.cfg" > ../../stack/haproxy/haproxy_roach.cfg
+  docker exec -it $roach_name sh -c "cockroach gen haproxy --certs-dir=/certs/node-1 --host=roach-1:26357 && cat haproxy.cfg" > ../../src/haproxy/haproxy_roach.cfg
   ```

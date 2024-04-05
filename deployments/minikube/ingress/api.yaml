@@ -1,22 +1,22 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: rabbit
+  name: api
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   tls:
     - hosts:
-      - rabbit.com.gecko
-      secretName: stack-tls
+      - api.com.gecko
+      secretName: src-tls
   rules:
-    - host: rabbit.com.gecko
+    - host: api.com.gecko
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: rabbit-1
+                name: api
                 port:
-                  number: 15672
+                  number: 6000

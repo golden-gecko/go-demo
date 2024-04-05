@@ -8,7 +8,7 @@ spec:
   tls:
     - hosts:
       - roach.com.gecko
-      secretName: stack-tls
+      secretName: src-tls
   rules:
     - host: roach.com.gecko
       http:

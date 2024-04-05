@@ -31,7 +31,7 @@ services:
       - demo-certs:/certs
 
   jenkins:
-    image: jenkins/jenkins:2.426.3-jdk17
+    image: jenkins/jenkins:2.452-jdk21
     networks:
       main:
         ipv4_address: 192.168.200.30
@@ -42,10 +42,9 @@ services:
       - jenkins:/var/jenkins_home
 
   nfs:
-    build:
-      context: nfs
     environment:
       - SHARED_DIRECTORY=/data
+    image: itsthenetwork/nfs-server-alpine:12
     networks:
       main:
         ipv4_address: 192.168.200.70
@@ -57,7 +56,7 @@ services:
       - /mnt/nfs_share:/data
 
   portainer:
-    image: portainer/portainer-ce:2.19.4-alpine
+    image: portainer/portainer-ce:2.20.1-alpine
     networks:
       main:
         ipv4_address: 192.168.200.60

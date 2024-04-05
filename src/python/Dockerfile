@@ -6,6 +6,6 @@ COPY . .
 
 RUN pip install -r requirnments.txt
 
-EXPOSE 4000
+EXPOSE 9500
 
 CMD ["python3", "main.py"]

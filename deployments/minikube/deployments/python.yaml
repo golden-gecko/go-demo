@@ -20,7 +20,7 @@ spec:
           image: registry.com.gecko/python
           imagePullPolicy: Always
           ports:
-            - containerPort: 4000
+            - containerPort: 9500
           resources:
             requests:
               memory: "64Mi"

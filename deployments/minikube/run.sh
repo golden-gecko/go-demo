@@ -2,9 +2,9 @@
 
 cd "$(dirname "$0")"
 
-kubectl delete secret stack-tls | true
+kubectl delete secret src-tls | true
 
-kubectl create secret tls stack-tls \
+kubectl create secret tls src-tls \
     --key ../../ssl/data/client-key.pem \
     --cert ../../ssl/data/client-chain.pem
 

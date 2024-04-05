@@ -10,7 +10,7 @@ networks:
 services:
   aggregator:
     build:
-      context: ../../stack/services
+      context: ../../src/services
       dockerfile: services/aggregator/Dockerfile
     env_file:
       - .env
@@ -23,7 +23,7 @@ services:
 
   api:
     build:
-      context: ../../stack/services
+      context: ../../src/services
       dockerfile: services/api/Dockerfile
     deploy:
       replicas: 3
@@ -43,7 +43,7 @@ services:
 
   consumer:
     build:
-      context: ../../stack/services
+      context: ../../src/services
       dockerfile: services/consumer/Dockerfile
     deploy:
       replicas: 3
@@ -56,7 +56,7 @@ services:
 
   grafana:
     build:
-      context: ../../stack/grafana
+      context: ../../src/grafana
     image: registry.com.gecko/grafana
     networks:
       - main
@@ -67,7 +67,7 @@ services:
 
   haproxy:
     build:
-      context: ../../stack/haproxy
+      context: ../../src/haproxy
     image: registry.com.gecko/haproxy
     networks:
       - main
@@ -75,7 +75,7 @@ services:
 
   influx:
     build:
-      context: ../../stack/influx
+      context: ../../src/influx
     environment:
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
       - DOCKER_INFLUXDB_INIT_BUCKET=house
@@ -98,7 +98,7 @@ services:
 
   mongo:
     build:
-      context: ../../stack/mongo
+      context: ../../src/mongo
     environment:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
@@ -111,7 +111,7 @@ services:
 
   mongo-express:
     build:
-      context: ../../stack/mongo-express
+      context: ../../src/mongo-express
     environment:
       - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_BASICAUTH_USERNAME=${MONGO_USER}
@@ -125,7 +125,7 @@ services:
 
   nakama:
     build:
-      context: ../../stack/nakama
+      context: ../../src/nakama
     image: registry.com.gecko/nakama
     networks:
       - main
@@ -136,7 +136,7 @@ services:
 
   node:
     build:
-      context: ../../stack/node
+      context: ../../src/node
     deploy:
       replicas: 3
     env_file:
@@ -148,7 +148,7 @@ services:
 
   node-exporter:
     build:
-      context: ../../stack/node-exporter
+      context: ../../src/node-exporter
     image: registry.com.gecko/node-exporter
     networks:
       - main
@@ -156,7 +156,7 @@ services:
 
   nginx:
     build:
-      context: ../../stack/nginx
+      context: ../../src/nginx
     image: registry.com.gecko/nginx
     networks:
       - main
@@ -168,7 +168,7 @@ services:
 
   pistache:
     build:
-      context: ../../stack/pistache
+      context: ../../src/pistache
     deploy:
       replicas: 3
     env_file:
@@ -180,7 +180,7 @@ services:
 
   postgres:
     build:
-      context: ../../stack/postgres
+      context: ../../src/postgres
     env_file:
       - .env
     image: registry.com.gecko/postgres
@@ -190,7 +190,7 @@ services:
 
   producer:
     build:
-      context: ../../stack/services
+      context: ../../src/services
       dockerfile: services/producer/Dockerfile
     env_file:
       - .env
@@ -203,7 +203,7 @@ services:
 
   prometheus:
     build:
-      context: ../../stack/prometheus
+      context: ../../src/prometheus
     image: registry.com.gecko/prometheus
     networks:
       - main
@@ -211,7 +211,7 @@ services:
 
   python:
     build:
-      context: ../../stack/python
+      context: ../../src/python
     deploy:
       replicas: 3
     env_file:
@@ -223,7 +223,7 @@ services:
 
   rabbit-1:
     build:
-      context: ../../stack/rabbit
+      context: ../../src/rabbit
     environment:
       - RABBITMQ_DEFAULT_PASS=go_password
       - RABBITMQ_DEFAULT_USER=go_user
@@ -236,7 +236,7 @@ services:
 
   rabbit-2:
     build:
-      context: ../../stack/rabbit
+      context: ../../src/rabbit
     environment:
       - RABBITMQ_DEFAULT_PASS=go_password
       - RABBITMQ_DEFAULT_USER=go_user
@@ -249,7 +249,7 @@ services:
 
   rabbit-3:
     build:
-      context: ../../stack/rabbit
+      context: ../../src/rabbit
     environment:
       - RABBITMQ_DEFAULT_PASS=go_password
       - RABBITMQ_DEFAULT_USER=go_user
@@ -262,7 +262,7 @@ services:
 
   receiver:
     build:
-      context: ../../stack/services
+      context: ../../src/services
       dockerfile: services/receiver/Dockerfile
     deploy:
       replicas: 3
@@ -280,7 +280,7 @@ services:
 
   redis-1:
     build:
-      context: ../../stack/redis
+      context: ../../src/redis
     image: registry.com.gecko/redis
     networks:
       - main
@@ -290,7 +290,7 @@ services:
 
   redis-2:
     build:
-      context: ../../stack/redis
+      context: ../../src/redis
     environment:
       - MASTER_HOST=redis-1
       - MASTER_PORT=6379
@@ -303,7 +303,7 @@ services:
 
   redis-3:
     build:
-      context: ../../stack/redis
+      context: ../../src/redis
     environment:
       - MASTER_HOST=redis-1
       - MASTER_PORT=6379
@@ -316,7 +316,7 @@ services:
 
   redis-insight:
     build:
-      context: ../../stack/redis-insight
+      context: ../../src/redis-insight
     environment:
       - RITRUSTEDORIGINS=https://redis.com.gecko:4000
     image: registry.com.gecko/redis-insight
@@ -328,7 +328,7 @@ services:
 
   roach-1:
     build:
-      context: ../../stack/roach
+      context: ../../src/roach
     command: start --advertise-addr=roach-1:26357 --certs-dir=/certs/node-1 --http-addr=roach-1:8080 --listen-addr=roach-1:26357 --sql-addr=roach-1:26257 --join=roach-1:26357,roach-2:26357,roach-3:26357
     image: registry.com.gecko/roach
     networks:
@@ -340,7 +340,7 @@ services:
 
   roach-2:
     build:
-      context: ../../stack/roach
+      context: ../../src/roach
     command: start --advertise-addr=roach-2:26357 --certs-dir=/certs/node-2 --http-addr=roach-2:8081 --listen-addr=roach-2:26357 --sql-addr=roach-2:26258 --join=roach-1:26357,roach-2:26357,roach-3:26357
     image: registry.com.gecko/roach
     networks:
@@ -352,7 +352,7 @@ services:
 
   roach-3:
     build:
-      context: ../../stack/roach
+      context: ../../src/roach
     command: start --advertise-addr=roach-3:26357 --certs-dir=/certs/node-3 --http-addr=roach-3:8082 --listen-addr=roach-3:26357 --sql-addr=roach-3:26259 --join=roach-1:26357,roach-2:26357,roach-3:26357
     image: registry.com.gecko/roach
     networks:
@@ -364,7 +364,7 @@ services:
 
   statsd-exporter:
     build:
-      context: ../../stack/statsd-exporter
+      context: ../../src/statsd-exporter
     image: registry.com.gecko/statsd-exporter
     networks:
       - main

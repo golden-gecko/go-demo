@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")"
 
-kubectl delete secret stack-tls | true
+kubectl delete secret src-tls | true
 
 find deployments -name "*.yaml" | xargs -I{} basename {} ".yaml" | xargs kubectl delete --ignore-not-found=true deployment
 find ingress     -name "*.yaml" | xargs -I{} basename {} ".yaml" | xargs kubectl delete --ignore-not-found=true ingress
