@@ -43,19 +43,22 @@ func RandomPlate() string {
 	return RandomString(3, characters) + RandomString(6, digits)
 }
 
-func Send(body *bytes.Buffer) {
-	resp, err := http.Post("http://192.168.10.26:5000/api/v1/data", "application/json", body)
+func Send(body *bytes.Buffer) error {
+	resp, err := http.Post("http://haproxy:9000/api/v1/data", "application/json", body)
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
 	if resp.StatusCode != 200 {
 		log.Println(resp.StatusCode)
 	}
+
+	return nil
 }
 
-func CreateTemperature() {
+func CreateTemperature() error {
 	t := Temperature{
 		Location:  "Room",
 		Value:     rand.Float32() * 100,
@@ -65,15 +68,18 @@ func CreateTemperature() {
 	temperature, err := json.Marshal(t)
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
 	body := bytes.NewBuffer(temperature)
 
 	Send(body)
+
+	return nil
 }
 
-func CreateTransit() {
+func CreateTransit() error {
 	c := Coordinate{
 		Latitude:  14.0745211117 + rand.Float32()*(24.0299857927-14.0745211117),
 		Longitude: 49.0273953314 + rand.Float32()*(54.8515359564-49.0273953314),
@@ -88,12 +94,15 @@ func CreateTransit() {
 	transit, err := json.Marshal(t)
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
 	body := bytes.NewBuffer(transit)
 
 	Send(body)
+
+	return nil
 }
 
 func main() {

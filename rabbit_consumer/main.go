@@ -1,14 +1,37 @@
 package main
 
 import (
+	"context"
 	"log"
+	"math/rand"
+	"os"
+	"time"
+
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
 	"consumer/queue"
 )
 
 func main() {
-	queue.Init()
+	err := queue.Init()
+
+	if err != nil {
+		os.Exit(1)
+	}
+
 	defer queue.Deinit()
+
+	//
+	client := influxdb2.NewClient("http://influx:8086", "my-super-secret-auth-token")
+
+	if _, err := client.Health(context.Background()); err != nil {
+		os.Exit(1)
+	}
+
+	defer client.Close()
+
+	writeAPI := client.WriteAPIBlocking("my-org", "my-bucket")
+	//
 
 	msgs, err := queue.Channel.Consume(
 		queue.Queue.Name,
@@ -21,21 +44,29 @@ func main() {
 	)
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		os.Exit(1)
 	}
 
-	var forever chan struct{}
+	for d := range msgs {
+		log.Printf("Received a message: %s", d.Body)
 
-	go func() {
-		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
+		//
+		p := influxdb2.NewPointWithMeasurement("stat").
+			AddTag("unit", "temperature").
+			AddField("avg", rand.Float32()*10).
+			AddField("max", rand.Float32()*20).
+			SetTime(time.Now())
 
-			d.Ack(false)
-			// d.Nack(false, true)
+		if err := writeAPI.WritePoint(context.Background(), p); err != nil {
+			log.Panicln(err)
 		}
-	}()
+		//
 
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+		if err := d.Ack(false); err != nil {
+			os.Exit(1)
+		}
 
-	<-forever
+		// d.Nack(false, true)
+	}
 }

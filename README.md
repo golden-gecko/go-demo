@@ -22,7 +22,12 @@ docker-compose logs -f
 
 ### UI
 
+- Chronograf - http://192.168.0.213:8888/
+- Grafana - http://192.168.0.213:3000/
 - Kafka UI - http://192.168.0.213:8080/
+- Kibana - http://192.168.0.213:5601/
+- InfluxDB - http://192.168.0.213:8086/
 - Mongo Express - http://192.168.0.213:8081/
+- Prometheus - http://192.168.0.213:9090/
 - RabbitMQ - http://192.168.0.213:15672/
 - RedisInsight - http://192.168.0.213:8001/

@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"log"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -18,17 +19,19 @@ var (
 	KafkaClient *kafka.Conn
 )
 
-func InitRabbit() {
-	conn, err := amqp.Dial("amqp://guest:guest@192.168.10.23:5672/")
+func InitRabbit() error {
+	conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672/")
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
 	ch, err := conn.Channel()
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
 	q, err := ch.QueueDeclare(
@@ -41,7 +44,8 @@ func InitRabbit() {
 	)
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -52,40 +56,52 @@ func InitRabbit() {
 	Queue = q
 	Context = ctx
 	Cancel = cancel
+
+	return nil
 }
 
-func InitKafka() {
+func InitKafka() error {
 	topic := "my-topic"
 	partition := 0
 
 	connection, err := kafka.DialLeader(context.Background(), "tcp", "192.168.0.213:9092", topic, partition)
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
 	connection.SetReadDeadline(time.Now().Add(10 * time.Second))
 	connection.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
 	KafkaClient = connection
+
+	return nil
 }
 
-func DeinitKafka() {
+func DeinitKafka() error {
 	err := KafkaClient.Close()
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
+
+	return nil
 }
 
-func DeinitRabbit() {
+func DeinitRabbit() error {
 	Cancel()
 
 	if err := Channel.Close(); err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
 
 	if err := Client.Close(); err != nil {
-		panic(err)
+		log.Println(err)
+		return err
 	}
+
+	return nil
 }

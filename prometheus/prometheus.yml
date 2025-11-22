@@ -5,12 +5,15 @@ global:
     monitor: 'codelab-monitor'
 
 scrape_configs:
+  - job_name: 'haproxy'
+    static_configs:
+      - targets: ['haproxy:9103']
   - job_name: 'nodes'
     static_configs:
-    - targets: ['192.168.10.19:9100', '192.168.10.25:9102']
+    - targets: ['node_exporter:9100', 'statsd_exporter:9102']
   - job_name: 'prometheus'
     static_configs:
     - targets: ['localhost:9090']
   - job_name: 'rabbit'
     static_configs:
-      - targets: ['192.168.10.23:15692']
+      - targets: ['rabbit:15692']
