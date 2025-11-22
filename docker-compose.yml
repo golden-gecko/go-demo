@@ -12,6 +12,7 @@ services:
     build:
       context: services
       dockerfile: services/aggregator/Dockerfile
+    image: localhost:5000/aggregator
     networks:
       - main
     restart: unless-stopped
@@ -22,6 +23,7 @@ services:
       dockerfile: services/api/Dockerfile
     deploy:
       replicas: 3
+    image: localhost:5000/api
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:${API_PORT}/v1/healthcheck']
       interval: 10s
@@ -88,6 +90,7 @@ services:
       dockerfile: services/consumer/Dockerfile
     deploy:
       replicas: 3
+    image: localhost:5000/consumer
     networks:
       - main
     restart: unless-stopped
@@ -122,6 +125,7 @@ services:
   haproxy:
     build:
       context: haproxy
+    image: localhost:5000/haproxy
     networks:
       - main
     ports:
@@ -160,6 +164,7 @@ services:
     environment:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+    image: localhost:5000/mongo
     networks:
       - main
     ports:
@@ -185,6 +190,7 @@ services:
   nakama:
     build:
       context: nakama
+    image: localhost:5000/nakama
     networks:
       - main
     ports:
@@ -200,6 +206,7 @@ services:
       context: node
     deploy:
       replicas: 3
+    image: localhost:5000/node
     networks:
       - main
     restart: unless-stopped
@@ -216,6 +223,7 @@ services:
     build:
       context: services
       dockerfile: services/producer/Dockerfile
+    image: localhost:5000/producer
     networks:
       - main
     restart: unless-stopped
@@ -223,6 +231,7 @@ services:
   prometheus:
     build:
       context: prometheus
+    image: localhost:5000/prometheus
     networks:
       - main
     ports:
@@ -232,6 +241,7 @@ services:
   rabbit-1:
     build:
       context: rabbit
+    image: localhost:5000/rabbit
     networks:
       - main
     ports:
@@ -245,6 +255,7 @@ services:
   rabbit-2:
     build:
       context: rabbit
+    image: localhost:5000/rabbit
     networks:
       - main
     ports:
@@ -256,6 +267,7 @@ services:
   rabbit-3:
     build:
       context: rabbit
+    image: localhost:5000/rabbit
     networks:
       - main
     ports:
@@ -270,6 +282,7 @@ services:
       dockerfile: services/receiver/Dockerfile
     deploy:
       replicas: 3
+    image: localhost:5000/receiver
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/v1/healthcheck']
       interval: 10s
@@ -282,6 +295,7 @@ services:
   redis-1:
     build:
       context: redis
+    image: localhost:5000/redis
     networks:
       - main
     ports:
@@ -296,6 +310,7 @@ services:
     environment:
       - MASTER_HOST=redis-1
       - MASTER_PORT=6379
+    image: localhost:5000/redis
     networks:
       - main
     ports:
@@ -310,6 +325,7 @@ services:
     environment:
       - MASTER_HOST=redis-1
       - MASTER_PORT=6379
+    image: localhost:5000/redis
     networks:
       - main
     ports:
