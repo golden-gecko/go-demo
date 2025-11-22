@@ -21,14 +21,14 @@ func Connect() error {
     log.Info("Connecting to CockroachDB...")
 
 	connectionString := fmt.Sprintf("host='%s' port='%s' dbname='%s' user='%s' password='%s,' sslmode='verify-full' sslcert='%s' sslkey='%s' sslrootcert='%s'",
-		os.Getenv("COCKROACH_HOST"),
-		os.Getenv("COCKROACH_PORT"),
-		os.Getenv("COCKROACH_DATABASE"),
-		os.Getenv("COCKROACH_USER"),
-		os.Getenv("COCKROACH_PASSWORD"),
-		os.Getenv("COCKROACH_SSL_CERTIFICATE"),
-		os.Getenv("COCKROACH_SSL_KEY"),
-		os.Getenv("COCKROACH_SSL_CA"),
+		os.Getenv("ROACH_HOST"),
+		os.Getenv("ROACH_PORT"),
+		os.Getenv("ROACH_DATABASE"),
+		os.Getenv("ROACH_USER"),
+		os.Getenv("ROACH_PASSWORD"),
+		os.Getenv("ROACH_SSL_CERTIFICATE"),
+		os.Getenv("ROACH_SSL_KEY"),
+		os.Getenv("ROACH_SSL_CA"),
 	)
 
 	config, err := pgx.ParseConfig(connectionString)

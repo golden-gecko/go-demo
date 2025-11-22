@@ -1,0 +1,18 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                sh 'deployments/compose/build.sh'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'exit 0'
+                sh 'deployments/compose/run.sh'
+            }
+        }
+    }
+}
