@@ -6,68 +6,75 @@ import (
 )
 
 var (
-    Client  *amqp.Connection
-    Channel *amqp.Channel
-    Queue   amqp.Queue
+    Connection *amqp.Connection
+    Channel    *amqp.Channel
+    Queue       amqp.Queue
 )
 
 func Connect() error {
-    conn, err := amqp.Dial("amqp://guest:guest@rabbit-1:5672")
+    connection, err := amqp.Dial("amqp://guest:guest@rabbit-1:5672")
 
     if err != nil {
         return err
     }
+
+	Connection = connection
 
 	log.Info("Connected to RabbitMQ")
 
-    ch, err := conn.Channel()
+    channel, err := connection.Channel()
 
     if err != nil {
         return err
     }
 
-    err = ch.Qos(10, 0, true)
+    Channel = channel
+
+	if err = channel.Qos(10, 0, true); err != nil {
+        return err
+    }
 
     queues := []string{"items", "temperatures", "transits"}
 
     for _, queueName := range queues {
-        _, err := ch.QueueDeclare(
-            queueName, // name
-            true,      // durable
-            false,     // delete when unused
-            false,     // exclusive
-            false,     // no-wait
-            nil,       // arguments
-        )
-
-        if err != nil {
-            return err
-        }
+        if err := DeclareQueue(queueName); err != nil {
+			return err
+		}
     }
-
-    if err != nil {
-        return err
-    }
-
-    Client = conn
-    Channel = ch
 
     return nil
 }
 
 func Disconnect() error {
+    log.Info("Disconnecting from RabbitMQ...")
+
     if err := Channel.Close(); err != nil {
         return err
     }
 
-    if err := Client.Close(); err != nil {
+    if err := Connection.Close(); err != nil {
         return err
     }
+
+    log.Info("Disconnected from RabbitMQ")
 
     return nil
 }
 
-func CreateQueue(name string) (<-chan amqp.Delivery, error) {
+func DeclareQueue(name string) error {
+	_, err := Channel.QueueDeclare(
+		name,  // name
+		true,  // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+
+	return err
+}
+
+func ConsumeQueue(name string) (<-chan amqp.Delivery, error) {
 	return Channel.Consume(
 		name,  // name
 		"",    // consumer
