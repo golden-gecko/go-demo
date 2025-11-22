@@ -9,17 +9,17 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"services/common"
-	"services/common/sql"
+	"services/common/roach"
 )
 
 func ProcessVehicleCountByModel(client *redis.Client, interval int) {
-	if err := sql.Connect(); err != nil {
+	if err := roach.Connect(); err != nil {
 		panic(err)
     }
 
-    defer sql.Disconnect()
+    defer roach.Disconnect()
 
-    models, err := sql.GetVehicleCountByModel()
+    models, err := roach.GetVehicleCountByModel()
 
     if err != nil {
 		panic(err)
@@ -39,13 +39,13 @@ func ProcessVehicleCountByModel(client *redis.Client, interval int) {
 }
 
 func ProcessVehicleCountByYear(client *redis.Client, interval int) {
-	if err := sql.Connect(); err != nil {
+	if err := roach.Connect(); err != nil {
 		panic(err)
     }
 
-    defer sql.Disconnect()
+    defer roach.Disconnect()
 
-    years, err := sql.GetVehicleCountByYear()
+    years, err := roach.GetVehicleCountByYear()
 
     if err != nil {
 		panic(err)

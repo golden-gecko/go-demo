@@ -1,0 +1,61 @@
+version: '3.9'
+
+networks:
+  main:
+    enable_ipv6: false
+    ipam:
+      config:
+        - subnet: 192.168.100.0/24
+
+services:
+  mongo_1:
+    build:
+      context: mongo
+    command: ["--config", "/etc/mongo/mongod.conf", "--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+    networks:
+      - main
+    ports:
+      - 27017:27017
+    restart: unless-stopped
+    volumes:
+      - mongo_1:/data/db
+
+  mongo_2:
+    build:
+      context: mongo
+    command: ["--config", "/etc/mongo/mongod.conf", "--replSet", "rs0", "--bind_ip_all", "--port", "27018"]
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+    image: mongo:4.4.6
+    networks:
+      - main
+    ports:
+      - 27018:27018
+    restart: unless-stopped
+    volumes:
+      - mongo_2:/data/db
+
+  mongo_3:
+    build:
+      context: mongo
+    command: ["--config", "/etc/mongo/mongod.conf", "--replSet", "rs0", "--bind_ip_all", "--port", "27019"]
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+    image: mongo:4.4.6
+    networks:
+      - main
+    ports:
+      - 27019:27019
+    restart: unless-stopped
+    volumes:
+      - mongo_3:/data/db
+
+volumes:
+  mongo_1:
+  mongo_2:
+  mongo_3:

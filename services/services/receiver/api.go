@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -9,13 +10,13 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 
 	"services/common/model"
-	"services/common/queue"
+	"services/common/rabbit"
 	"services/common/rest"
 )
 
 func WriteToRabbit(queueName string, data []byte) error {
-    return queue.Channel.PublishWithContext(
-        queue.Context,
+    return rabbit.Channel.PublishWithContext(
+        context.Background(),
         "",
         queueName,
         false, // mandatory

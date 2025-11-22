@@ -1,18 +1,14 @@
-package queue
+package rabbit
 
 import (
-	"context"
-	"time"
-
 	amqp "github.com/rabbitmq/amqp091-go"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
     Client  *amqp.Connection
     Channel *amqp.Channel
     Queue   amqp.Queue
-    Context context.Context
-    Cancel  context.CancelFunc
 )
 
 func Connect() error {
@@ -21,6 +17,8 @@ func Connect() error {
     if err != nil {
         return err
     }
+
+	log.Info("Connected to RabbitMQ")
 
     ch, err := conn.Channel()
 
@@ -51,19 +49,13 @@ func Connect() error {
         return err
     }
 
-    ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
-
     Client = conn
     Channel = ch
-    Context = ctx
-    Cancel = cancel
 
     return nil
 }
 
 func Disconnect() error {
-    Cancel()
-
     if err := Channel.Close(); err != nil {
         return err
     }
