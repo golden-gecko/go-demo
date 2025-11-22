@@ -10,14 +10,16 @@ networks:
 services:
   aggregator:
     build:
-      context: aggregator
+      context: services
+      dockerfile: services/aggregator/Dockerfile
     networks:
       - main
     restart: unless-stopped
 
   api:
     build:
-      context: api
+      context: services
+      dockerfile: services/api/Dockerfile
     deploy:
       replicas: 2
     healthcheck:
@@ -94,9 +96,10 @@ services:
 
   consumer:
     build:
-      context: consumer
+      context: services
+      dockerfile: services/consumer/Dockerfile
     deploy:
-      replicas: 2
+      replicas: 3
     networks:
       - main
     restart: unless-stopped
@@ -216,7 +219,8 @@ services:
 
   producer:
     build:
-      context: producer
+      context: services
+      dockerfile: services/producer/Dockerfile
     networks:
       - main
     restart: unless-stopped
@@ -235,12 +239,14 @@ services:
     networks:
       - main
     ports:
+      - 5672:5672
       - 15672:15672
     restart: unless-stopped
 
   receiver:
     build:
-      context: receiver
+      context: services
+      dockerfile: services/receiver/Dockerfile
     deploy:
       replicas: 3
     healthcheck:
