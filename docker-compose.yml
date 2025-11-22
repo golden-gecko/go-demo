@@ -8,6 +8,13 @@ networks:
         - subnet: 192.168.100.0/24
 
 services:
+  aggregator:
+    build:
+      context: aggregator
+    networks:
+      - main
+    restart: unless-stopped
+
   api_1:
     build:
       context: api
@@ -32,8 +39,23 @@ services:
       - main
     restart: unless-stopped
 
+  chronograf:
+    image: chronograf:1.10.2-alpine
+    networks:
+      - main
+    ports:
+      - ${CHRONOGRAF_PORT}:${CHRONOGRAF_PORT}
+    restart: unless-stopped
+    volumes:
+      - chronograf:/var/lib/chronograf
+
   cockroach_1:
     command: start --advertise-addr=cockroach_1:26357 --http-addr=cockroach_1:8080 --listen-addr=cockroach_1:26357 --sql-addr=cockroach_1:26257 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://cockroach_1:8080/health?ready=1"]
+      interval: 10s
+      timeout: 2s
+      retries: 2
     image: cockroachdb/cockroach:v23.1.13
     networks:
       - main
@@ -46,6 +68,11 @@ services:
 
   cockroach_2:
     command: start --advertise-addr=cockroach_2:26357 --http-addr=cockroach_2:8081 --listen-addr=cockroach_2:26357 --sql-addr=cockroach_2:26258 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://cockroach_2:8081/health?ready=1"]
+      interval: 10s
+      timeout: 2s
+      retries: 2
     image: cockroachdb/cockroach:v23.1.13
     networks:
       - main
@@ -58,6 +85,11 @@ services:
 
   cockroach_3:
     command: start --advertise-addr=cockroach_3:26357 --http-addr=cockroach_3:8082 --listen-addr=cockroach_3:26357 --sql-addr=cockroach_3:26259 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://cockroach_3:8082/health?ready=1"]
+      interval: 10s
+      timeout: 2s
+      retries: 2
     image: cockroachdb/cockroach:v23.1.13
     networks:
       - main
@@ -136,16 +168,36 @@ services:
       - mongo:/data/db
 
   mongo_express:
+    depends_on:
+      - mongo
     environment:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
-      - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/
+      - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:${MONGO_PORT}/
     image: mongo-express:${MONGO_EXPRESS_VERSION}
     networks:
       - main
     ports:
       - 8880:${MONGO_EXPRESS_PORT}
     restart: unless-stopped
+
+  nakama:
+    build:
+      context: nakama
+    entrypoint:
+      - "/bin/sh"
+      - "-ecx"
+      - >
+          /nakama/nakama migrate up --database.address root@cockroach_1:26257 &&
+          exec /nakama/nakama --name nakama1 --database.address root@cockroach_1:26257 --logger.level DEBUG --session.token_expiry_sec 7200 --metrics.prometheus_port 9100  
+    networks:
+      - main
+    ports:
+      - 7350:7350
+      - 7351:7351
+    restart: unless-stopped
+    volumes:
+      - nakama:/nakama/data
 
   node_exporter:
     image: prom/node-exporter:v${NODE_EXPORTER_VERSION}
@@ -172,11 +224,6 @@ services:
     restart: unless-stopped
 
   prometheus:
-    depends_on:
-      - haproxy
-      - node_exporter
-      - rabbit
-      - statsd_exporter
     image: prom/prometheus:v${PROMETHEUS_VERSION}
     networks:
       - main
@@ -273,6 +320,7 @@ volumes:
   grafana_var_lib:
   influx:
   mongo:
+  nakama:
   postgres:
   redis:
   redis_insight:

@@ -1,12 +1,12 @@
 package api
 
 import (
-	"testing"
+    "testing"
 
-	"github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/assert"
 )
 
 func Test_CreateUser(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal(1, 1)
+    assert := assert.New(t)
+    assert.Equal(1, 1)
 }

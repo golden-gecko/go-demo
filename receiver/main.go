@@ -13,24 +13,23 @@ import (
 )
 
 func Run(host string, port int) {
-	router := gin.Default()
+    router := gin.Default()
 
-	router.GET("/v1/healthcheck", api.Healthcheck)
+    router.GET("/v1/healthcheck", api.Healthcheck)
+    router.POST("/v1/data/:type", api.CreateData)
 
-	router.POST("/v1/data/:type", api.CreateData)
-
-	router.Run(fmt.Sprintf("%s:%d", host, port))
+    router.Run(fmt.Sprintf("%s:%d", host, port))
 }
 
 func main() {
-	err := queue.InitRabbit()
+    err := queue.InitRabbit()
 
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
+    if err != nil {
+        log.Error(err)
+        os.Exit(1)
+    }
 
-	defer queue.DeinitRabbit()
+    defer queue.DeinitRabbit()
 
-	Run("0.0.0.0", 7000)
+    Run("0.0.0.0", 7000)
 }
