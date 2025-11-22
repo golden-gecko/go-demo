@@ -238,9 +238,11 @@ services:
       - ${PROMETHEUS_PORT}:${PROMETHEUS_PORT}
     restart: unless-stopped
 
-  rabbit:
+  rabbit-1:
     build:
       context: rabbit
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=rabbitcookie
     networks:
       - main
     ports:
@@ -248,7 +250,41 @@ services:
       - 15672:15672
     restart: unless-stopped
     volumes:
-      - rabbit:/var/lib/rabbitmq/mnesia
+      - rabbit-1:/var/lib/rabbitmq/mnesia
+
+  rabbit-2:
+    build:
+      context: rabbit
+    environment:
+      - JOIN_CLUSTER_HOST=rabbit-1
+      - RABBITMQ_ERLANG_COOKIE=rabbitcookie
+      - CLUSTERED=true
+      - CLUSTER_WITH=rabbit-1
+    networks:
+      - main
+    ports:
+      - 5673:5672
+      - 15673:15672
+    restart: unless-stopped
+    volumes:
+      - rabbit-2:/var/lib/rabbitmq/mnesia
+
+  rabbit-3:
+    build:
+      context: rabbit
+    environment:
+      - JOIN_CLUSTER_HOST=rabbit-1
+      - RABBITMQ_ERLANG_COOKIE=rabbitcookie
+      - CLUSTERED=true
+      - CLUSTER_WITH=rabbit-1
+    networks:
+      - main
+    ports:
+      - 5674:5672
+      - 15674:15672
+    restart: unless-stopped
+    volumes:
+      - rabbit-3:/var/lib/rabbitmq/mnesia
 
   receiver:
     build:
@@ -315,7 +351,9 @@ volumes:
   mongo:
   nakama:
   postgres:
-  rabbit:
+  rabbit-1:
+  rabbit-2:
+  rabbit-3:
   redis:
   redis_insight:
   redis_slave:

@@ -6,6 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func CreateRouter() *gin.Engine {
+	router := gin.Default()
+	router.ForwardedByClientIP = true
+	router.SetTrustedProxies([]string{"127.0.0.1"})
+
+	return router
+}
+
 func ResponseError(c *gin.Context, err string) {
 	c.JSON(http.StatusUnprocessableEntity, map[string]string{"message": err})
 }

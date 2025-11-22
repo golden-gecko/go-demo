@@ -16,9 +16,11 @@ import (
 func ProcessItem(body []byte) error {
     var item model.Item
 
-    err := json.Unmarshal(body, &item)
+    if err := json.Unmarshal(body, &item); err != nil {
+        return err
+    }
 
-    if err != nil {
+	if _, err := mongo.Add(mongo.ItemCollection, item); err != nil {
         return err
     }
 
