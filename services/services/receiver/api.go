@@ -8,25 +8,10 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 
+	"services/common/model"
 	"services/common/queue"
+	"services/common/rest"
 )
-
-type Coordinate struct {
-    Latitude  float32 `bson:"Latitude"`
-    Longitude float32 `bson:"Longitude"`
-}
-
-type Temperature struct {
-    Location  string  `bson:"Location"`
-    Value     float32 `bson:"Value"`
-    Timestamp string  `bson:"Timestamp"`
-}
-
-type Transit struct {
-    Plate     string     `bson:"Plate"`
-    Location  Coordinate `bson:"Location"`
-    Timestamp string     `bson:"Timestamp"`
-}
 
 /*
 func WriteToKafka(data []byte) error {
@@ -56,23 +41,15 @@ func WriteToRabbit(queueName string, data []byte) error {
 	return err
 }
 
-func ResponseNoBody(c *gin.Context, code int) {
-	c.JSON(code, nil)
-}
-
-func ResponseError(c *gin.Context, code int, err string) {
-	c.JSON(code, map[string]string{"message": err})
-}
-
 func Healthcheck(c *gin.Context) {
     c.IndentedJSON(http.StatusOK, nil)
 }
 
 func CreateDataTemperature(c *gin.Context) {
-	var temperatures []Temperature
+	var temperatures []model.Temperature
 
 	if err := c.ShouldBind(&temperatures); err != nil {
-		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+		rest.ResponseError(c, err.Error())
 		return
 	}
 
@@ -80,12 +57,12 @@ func CreateDataTemperature(c *gin.Context) {
 		data, err := json.Marshal(&temperature)
 
 		if err != nil {
-			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			rest.ResponseError(c, err.Error())
 			return
 		}
 
 		if err := WriteToRabbit("temperatures", data); err != nil {
-			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			rest.ResponseError(c, err.Error())
 			return
 		}
 	}
@@ -94,10 +71,10 @@ func CreateDataTemperature(c *gin.Context) {
 }
 
 func CreateDataTransit(c *gin.Context) {
-	var transits []Transit
+	var transits []model.Transit
 
 	if err := c.ShouldBind(&transits); err != nil {
-		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+		rest.ResponseError(c, err.Error())
 		return
 	}
 
@@ -105,12 +82,12 @@ func CreateDataTransit(c *gin.Context) {
 		data, err := json.Marshal(&transit)
 
 		if err != nil {
-			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			rest.ResponseError(c, err.Error())
 			return
 		}
 
 		if err := WriteToRabbit("transits", data); err != nil {
-			ResponseError(c, http.StatusUnprocessableEntity, err.Error())
+			rest.ResponseError(c, err.Error())
 			return
 		}
 	}
@@ -127,6 +104,7 @@ func CreateData(c *gin.Context) {
 			CreateDataTransit(c)
 
 		default:
+			rest.ResponseValidationError(c, "invalid value: type")
 			c.IndentedJSON(http.StatusBadRequest, nil)
     }
 }
