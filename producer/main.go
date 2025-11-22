@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -21,6 +22,156 @@ func RandomString(length int, charset string) string {
 	}
 
 	return string(b)
+}
+
+func RandomBrand() string {
+	brands := []string{
+		"Abarth",
+		"Alfa Romeo",
+		"Aston Martin",
+		"Audi",
+		"Bentley",
+		"BMW",
+		"Bugatti",
+		"Cadillac",
+		"Chevrolet",
+		"Chrysler",
+		"Citroën",
+		"Dacia",
+		"Daewoo",
+		"Daihatsu",
+		"Dodge",
+		"Donkervoort",
+		"DS",
+		"Ferrari",
+		"Fiat",
+		"Fisker",
+		"Ford",
+		"Honda",
+		"Hummer",
+		"Hyundai",
+		"Infiniti",
+		"Iveco",
+		"Jaguar",
+		"Jeep",
+		"Kia",
+		"KTM",
+		"Lada",
+		"Lamborghini",
+		"Lancia",
+		"Land Rover",
+		"Landwind",
+		"Lexus",
+		"Lotus",
+		"Maserati",
+		"Maybach",
+		"Mazda",
+		"McLaren",
+		"Mercedes-Benz",
+		"MG",
+		"Mini",
+		"Mitsubishi",
+		"Morgan",
+		"Nissan",
+		"Opel",
+		"Peugeot",
+		"Porsche",
+		"Renault",
+		"Rolls-Royce",
+		"Rover",
+		"Saab",
+		"Seat",
+		"Skoda",
+		"Smart",
+		"SsangYong",
+		"Subaru",
+		"Suzuki",
+		"Tesla",
+		"Toyota",
+		"Volkswagen",
+		"Volvo",
+	}
+
+	return brands[rand.Intn(len(brands))]
+}
+
+func RandomName() string {
+	names := []string{
+		"Alanh",
+		"Amanda",
+		"Amy",
+		"Betty",
+		"Bruce",
+		"Becky",
+		"Collins",
+		"Craig",
+		"Clark",
+		"Donald",
+		"David",
+		"Drew",
+		"Emily",
+		"Edward",
+		"Eric",
+		"Frank",
+		"Finch",
+		"Francis",
+		"Gary",
+		"Glen",
+		"George",
+		"Henry",
+		"Howard",
+		"Helen",
+		"Irene",
+		"Iris",
+		"Ivan",
+		"Jack",
+		"John",
+		"Jenny",
+		"Karen",
+		"Kim",
+		"Kenneth",
+		"Larry",
+		"Leslie",
+		"Lisa",
+		"Martin",
+		"Mary",
+		"Miller",
+		"Nick",
+		"Nancy",
+		"Nathan",
+		"Oliver",
+		"Octavio",
+		"Oscar",
+		"Peter",
+		"Paula",
+		"Pamela",
+		"Quin",
+		"Ronald",
+		"Ron",
+		"Randy",
+		"Samnuel",
+		"Scott",
+		"Sharon",
+		"Teresa",
+		"Terry",
+		"Thomas",
+		"Uriel",
+		"Usher",
+		"Victor",
+		"Virginia",
+		"Watson",
+		"Wendy",
+		"Wood",
+		"Xavier",
+		"Yasmin",
+		"Yvette",
+		"Yuri",
+		"Zack",
+		"Zelda",
+		"Zane",
+	}
+
+	return names[rand.Intn(len(names))]
 }
 
 func RandomPlate() string {
@@ -56,19 +207,22 @@ func Send(url string, data []byte) error {
 
 func CreateUser() models.User {
 	u := models.User{
-		Name:     RandomWord(10),
+		Name:     RandomName(),
 		Password: RandomWord(20),
 	}
 
 	return u
 }
 
-func CreateVehicle() models.Vehicle {
+func CreateVehicle(cars models.Cars) models.Vehicle {
+	car := cars.Cars[rand.Intn(len(cars.Cars))]
+
 	t := models.Vehicle{
-		Plate: RandomPlate(),
-		Brand: RandomWord(20),
-		Model: RandomWord(30),
-		Year:  1980 + rand.Intn(30),
+		Plate:    RandomPlate(),
+		Brand:    car.Brand,
+		Model:    car.Model,
+		Year:     1980 + rand.Intn(30),
+		Category: car.Category,
 	}
 
 	return t
@@ -99,12 +253,33 @@ func CreateTransit() models.Transit {
 	return t
 }
 
-func main() {
-	apiUrl := "http://haproxy:9020/api/v1"
-	receiverUrl := "http://haproxy:9050/api/v1/data"
+func GetCars() models.Cars {
+	jsonFile, err := os.Open("data/cars.json")
 
-	minInterval := 10
-	maxInterval := 50
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	defer jsonFile.Close()
+
+	var cars models.Cars
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	json.Unmarshal(byteValue, &cars)
+
+	return cars
+}
+
+func main() {
+	apiUrl := "http://haproxy:9020/v1"
+	receiverUrl := "http://haproxy:9050/v1/data"
+
+	cars := GetCars()
+
+	minInterval := 100
+	maxInterval := 500
 
 	for {
 		if true {
@@ -121,7 +296,7 @@ func main() {
 		}
 
 		if true {
-			v1 := CreateVehicle()
+			v1 := CreateVehicle(cars)
 
 			data, err := json.Marshal(v1)
 
