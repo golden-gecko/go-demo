@@ -6,11 +6,15 @@ import (
 	"time"
 
 	"services/common"
+	"services/common/metrics"
 	"services/common/redis"
 	"services/common/roach"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-func ProcessVehicleCountByModel(interval int) {
+func ProcessVehicleCountByModel(recordsProcessed prometheus.Counter, interval int) {
 	if err := roach.Connect(); err != nil {
 		panic(err)
     }
@@ -30,13 +34,15 @@ func ProcessVehicleCountByModel(interval int) {
 			if err != nil {
 				panic(err)
 			}
+
+			recordsProcessed.Inc()
 		}
 
 		common.Sleep(interval)
 	}
 }
 
-func ProcessVehicleCountByYear(interval int) {
+func ProcessVehicleCountByYear(recordsProcessed prometheus.Counter, interval int) {
 	if err := roach.Connect(); err != nil {
 		panic(err)
     }
@@ -56,6 +62,8 @@ func ProcessVehicleCountByYear(interval int) {
 			if err != nil {
 				panic(err)
 			}
+
+			recordsProcessed.Inc()
 		}
 
 		common.Sleep(interval)
@@ -69,10 +77,16 @@ func main() {
 
 	defer redis.Disconnect()
 
+	recordsProcessed := promauto.NewCounter(prometheus.CounterOpts{
+		Name: "aggregator_records_processed",
+	})
+
 	var forever chan struct {}
 
-	go ProcessVehicleCountByModel(3000)
-	go ProcessVehicleCountByYear(6000)
+	go metrics.Serve(9105)
+
+	go ProcessVehicleCountByModel(recordsProcessed, 3000)
+	go ProcessVehicleCountByYear(recordsProcessed, 6000)
 
 	<- forever
 }

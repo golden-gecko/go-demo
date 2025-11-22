@@ -8,9 +8,12 @@ import (
 	"math/rand"
 	"net/http"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	log "github.com/sirupsen/logrus"
 
 	"services/common"
+	"services/common/metrics"
 	"services/common/model"
 )
 
@@ -98,12 +101,14 @@ func CreateVehicle(cars model.Cars) model.Vehicle {
     }
 }
 
-func ProcessItems(receiverUrl string, names model.Names, minInterval int, maxInterval int) {
+func ProcessItems(receiverUrl string, names model.Names, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
 	for {
 		var items []model.Item
 
 		for i := 0; i < 1 + rand.Intn(9); i++ {
 			items = append(items, CreateItem(names))
+
+			dataProcessed.Inc()
 		}
 
 		data, err := json.Marshal(items)
@@ -120,11 +125,15 @@ func ProcessItems(receiverUrl string, names model.Names, minInterval int, maxInt
 	}
 }
 
-func ProcessTemperatures(receiverUrl string, minInterval int, maxInterval int) {
+func ProcessTemperatures(receiverUrl string, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
 	for {
 		t1 := CreateTemperature("Room #1")
 		t2 := CreateTemperature("Room #2")
 		t3 := CreateTemperature("Room #3")
+
+		dataProcessed.Inc()
+		dataProcessed.Inc()
+		dataProcessed.Inc()
 
 		data, err := json.Marshal([]model.Temperature{t1, t2, t3})
 
@@ -140,12 +149,14 @@ func ProcessTemperatures(receiverUrl string, minInterval int, maxInterval int) {
 	}
 }
 
-func ProcessTransits(receiverUrl string, minInterval int, maxInterval int) {
+func ProcessTransits(receiverUrl string, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
 	for {
 		var transits []model.Transit
 
 		for i := 0; i < 1 + rand.Intn(9); i++ {
 			transits = append(transits, CreateTransit())
+
+			dataProcessed.Inc()
 		}
 
 		data, err := json.Marshal(transits)
@@ -162,9 +173,11 @@ func ProcessTransits(receiverUrl string, minInterval int, maxInterval int) {
 	}
 }
 
-func ProcessUsers(apiUrl string, users model.Users, minInterval int, maxInterval int) {
+func ProcessUsers(apiUrl string, users model.Users, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
 	for {
 		data, err := json.Marshal(CreateUser(users))
+
+		dataProcessed.Inc()
 
 		if err != nil {
 			panic(err)
@@ -178,9 +191,11 @@ func ProcessUsers(apiUrl string, users model.Users, minInterval int, maxInterval
 	}
 }
 
-func ProcessVehicles(apiUrl string, cars model.Cars, minInterval int, maxInterval int) {
+func ProcessVehicles(apiUrl string, cars model.Cars, dataProcessed prometheus.Counter, minInterval int, maxInterval int) {
 	for {
 		data, err := json.Marshal(CreateVehicle(cars))
+
+		dataProcessed.Inc()
 
 		if err != nil {
 			panic(err)
@@ -216,13 +231,19 @@ func main() {
 		panic(err)
 	}
 
+	dataProduced := promauto.NewCounter(prometheus.CounterOpts{
+		Name: "producer_data_processed",
+	})
+
 	var forever chan struct {}
 
-	go ProcessItems(receiverUrl, names, 1000, 2000)
-	go ProcessTemperatures(receiverUrl, 1000, 2000)
-	go ProcessTransits(receiverUrl, 2000, 4000)
-	go ProcessUsers(apiUrl, users, 4000, 6000)
-	go ProcessVehicles(apiUrl, cars, 6000, 8000)
+	go metrics.Serve(9106)
+
+	go ProcessItems(receiverUrl, names, dataProduced, 1000, 2000)
+	go ProcessTemperatures(receiverUrl, dataProduced, 1000, 2000)
+	go ProcessTransits(receiverUrl, dataProduced, 2000, 4000)
+	go ProcessUsers(apiUrl, users, dataProduced, 4000, 6000)
+	go ProcessVehicles(apiUrl, cars, dataProduced, 6000, 8000)
 
 	<- forever
 }
