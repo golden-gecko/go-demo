@@ -15,6 +15,20 @@ services:
       - main
     restart: unless-stopped
 
+  api:
+    build:
+      context: api
+    deploy:
+      replicas: 2
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${API_PORT}/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
+    networks:
+      - main
+    restart: unless-stopped
+
   api_1:
     build:
       context: api
@@ -100,16 +114,11 @@ services:
     volumes:
       - cockroach_3:/data/db
 
-  consumer_1:
+  consumer:
     build:
       context: consumer
-    networks:
-      - main
-    restart: unless-stopped
-
-  consumer_2:
-    build:
-      context: consumer
+    deploy:
+      replicas: 2
     networks:
       - main
     restart: unless-stopped
@@ -132,6 +141,7 @@ services:
     networks:
       - main
     ports:
+      - 8404:8404
       - 9020:9020
       - 9050:9050
     restart: unless-stopped
@@ -243,6 +253,20 @@ services:
       - main
     ports:
       - 15672:15672
+    restart: unless-stopped
+
+  receiver:
+    build:
+      context: receiver
+    deploy:
+      replicas: 3
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/v1/healthcheck']
+      interval: 10s
+      timeout: 2s
+      retries: 2
+    networks:
+      - main
     restart: unless-stopped
 
   receiver_1:

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -53,11 +54,9 @@ func CreateTransit(c *gin.Context) {
 		return
     }
 
-    _, err := db.TransitCollection.InsertOne(context.TODO(), transit)
-
-    if err != nil {
+    if _, err := db.TransitCollection.InsertOne(context.TODO(), transit); err != nil {
 		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
-		return
+		os.Exit(1)
     }
 
 	ResponseNoBody(c, http.StatusCreated)
@@ -85,7 +84,7 @@ func CreateUser(c *gin.Context) {
 
     if err := roach.CreateUser(user); err != nil {
 		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
-		return
+		os.Exit(1)
     }
 
 	ResponseNoBody(c, http.StatusCreated)
@@ -174,7 +173,7 @@ func CreateVehicle(c *gin.Context) {
 
     if err := roach.CreateVehicle(vehicle); err != nil {
 		ResponseError(c, http.StatusUnprocessableEntity, err.Error())
-		return
+		os.Exit(1)
     }
 
 	ResponseNoBody(c, http.StatusCreated)

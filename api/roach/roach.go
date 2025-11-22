@@ -1,15 +1,15 @@
 package roach
 
 import (
-    "context"
+	"context"
 
-    "github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
-    "github.com/google/uuid"
-    "github.com/jackc/pgx/v4"
+	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v4"
 
-    log "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
-    "api/models"
+	"api/models"
 )
 
 var (
@@ -19,7 +19,7 @@ var (
 func Connect() error {
     log.Println("Connecting to database...")
 
-    config, err := pgx.ParseConfig("postgres://go_user:go_password@cockroach_1:26257/go_demo")
+    config, err := pgx.ParseConfig("postgres://go_user:go_password@haproxy:26257/go_demo")
 
     if err != nil {
         log.Error(err)

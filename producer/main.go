@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -67,7 +68,7 @@ func RandomPlate() string {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     const digits = "0123456789"
 
-    return RandomString(2, characters) + RandomString(3, digits)
+    return RandomString(4, characters) + RandomString(8, digits)
 }
 
 func RandomString(length int, charset string) string {
@@ -158,54 +159,110 @@ func CreateVehicle(cars models.Cars) models.Vehicle {
     return t
 }
 
-func ProcessTemperatues(receiverUrl string) error {
-    t1 := CreateTemperature("Room #1")
-    t2 := CreateTemperature("Room #2")
-    t3 := CreateTemperature("Room #3")
+func ProcessTemperatures(wg *sync.WaitGroup, receiverUrl string) error {
+	for {
+		t1 := CreateTemperature("Room #1")
+		t2 := CreateTemperature("Room #2")
+		t3 := CreateTemperature("Room #3")
 
-    data, err := json.Marshal([]models.Temperature{t1, t2, t3})
+		data, err := json.Marshal([]models.Temperature{t1, t2, t3})
 
-    if err != nil {
-		return err
-    }
+		if err != nil {
+			return err
+		}
 
-    return Send(receiverUrl + "/temperature", data)
+		if err := Send(receiverUrl + "/temperature", data); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+
+		minInterval := 1000
+		maxInterval := 2000
+
+        interval := minInterval + rand.Intn(maxInterval - minInterval)
+
+        log.Info("Sleeping for ", interval, " ms")
+
+        time.Sleep(time.Duration(interval) * time.Millisecond)
+	}
 }
 
-func ProcessTransits(receiverUrl string) error {
-    var transits []models.Transit
+func ProcessTransits(wg *sync.WaitGroup, receiverUrl string) error {
+	for {
+		var transits []models.Transit
 
-    for i := 0; i < 1 + rand.Intn(9); i++ {
-        transits = append(transits, CreateTransit())
-    }
+		for i := 0; i < 1 + rand.Intn(9); i++ {
+			transits = append(transits, CreateTransit())
+		}
 
-    data, err := json.Marshal(transits)
+		data, err := json.Marshal(transits)
 
-    if err != nil {
-		return err
-    }
+		if err != nil {
+			return err
+		}
 
-    return Send(receiverUrl + "/transit", data)
+		if err := Send(receiverUrl + "/transit", data); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+
+		minInterval := 1000
+		maxInterval := 2000
+
+        interval := minInterval + rand.Intn(maxInterval - minInterval)
+
+        log.Info("Sleeping for ", interval, " ms")
+
+        time.Sleep(time.Duration(interval) * time.Millisecond)
+	}
 }
 
-func ProcessUsers(apiUrl string, names models.Names) error {
-    data, err := json.Marshal(CreateUser(names))
+func ProcessUsers(wg *sync.WaitGroup, apiUrl string, names models.Names) error {
+	for {
+		data, err := json.Marshal(CreateUser(names))
 
-    if err != nil {
-        return err
-    }
+		if err != nil {
+			return err
+		}
 
-    return Send(apiUrl + "/users", data)
+		if err := Send(apiUrl + "/users", data); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+
+		minInterval := 1000
+		maxInterval := 2000
+
+        interval := minInterval + rand.Intn(maxInterval - minInterval)
+
+        log.Info("Sleeping for ", interval, " ms")
+
+        time.Sleep(time.Duration(interval) * time.Millisecond)
+	}
 }
 
-func ProcessVehicles(apiUrl string, cars models.Cars) error {
-    data, err := json.Marshal(CreateVehicle(cars))
+func ProcessVehicles(wg *sync.WaitGroup, apiUrl string, cars models.Cars) error {
+	for {
+		data, err := json.Marshal(CreateVehicle(cars))
 
-    if err != nil {
-        return err
-    }
+		if err != nil {
+			return err
+		}
 
-    return Send(apiUrl + "/vehicles", data)
+		if err := Send(apiUrl + "/vehicles", data); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+
+		minInterval := 1000
+		maxInterval := 2000
+
+        interval := minInterval + rand.Intn(maxInterval - minInterval)
+
+        log.Info("Sleeping for ", interval, " ms")
+
+        time.Sleep(time.Duration(interval) * time.Millisecond)
+	}
 }
 
 func main() {
@@ -226,34 +283,14 @@ func main() {
 		os.Exit(1)
 	}
 
-    for {
-        if err := ProcessTemperatues(receiverUrl); err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
+	var wg sync.WaitGroup
 
-        if err := ProcessTransits(receiverUrl); err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
+	wg.Add(4)
 
-        if err := ProcessUsers(apiUrl, names); err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
+	go ProcessTemperatures(&wg, receiverUrl)
+	go ProcessTransits(&wg, receiverUrl)
+	go ProcessUsers(&wg, apiUrl, names)
+	go ProcessVehicles(&wg, apiUrl, cars)
 
-        if err := ProcessVehicles(apiUrl, cars); err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
-
-		minInterval := 100
-		maxInterval := 500
-
-        interval := minInterval + rand.Intn(maxInterval - minInterval)
-
-        log.Info("Sleeping for ", interval, " ms")
-
-        time.Sleep(time.Duration(interval) * time.Millisecond)
-    }
+	wg.Wait()
 }
