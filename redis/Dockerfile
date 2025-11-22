@@ -1,4 +1,4 @@
-FROM heroiclabs/nakama:3.20.0
+FROM redis:7.2.4-alpine3.19
 
 WORKDIR /app
 

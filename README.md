@@ -27,7 +27,7 @@
 - Grafana - http://localhost:3000/ (admin, admin)
 - HAProxy - http://localhost:8404/stats
 - InfluxDB - http://localhost:8086/ (go_user, go_password)
-- Mongo Express - http://localhost:8880/
+- Mongo Express - http://localhost:8881/
 - Nakama - http://localhost:7351/ (admin, password)
 - Prometheus - http://localhost:9090/
 - RabbitMQ - http://localhost:15672/ (guest, guest)
