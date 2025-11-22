@@ -112,3 +112,21 @@ func GetUser(userId uuid.UUID) (models.User, error) {
 
 	return user, nil
 }
+
+type VehicleCountByYear struct {
+	Year  int `bson:"Year"`
+	Count int `bson:"Count"`
+}
+
+func GetVehicleCountByYear() ([]VehicleCountByYear, error) {
+	rows, err := Connnection.Query(context.Background(), "SELECT year, COUNT(*) FROM vehicles GROUP BY year")
+
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	return years, nil
+}
