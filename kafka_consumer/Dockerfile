@@ -1,0 +1,10 @@
+FROM golang:1.19.3-alpine3.16
+
+WORKDIR /go/src/app
+
+COPY . .
+
+RUN go get -d -v ./...
+RUN go install -v ./...
+
+ENTRYPOINT [ "consumer" ]

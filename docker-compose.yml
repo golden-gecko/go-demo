@@ -1,0 +1,306 @@
+version: '3.8'
+
+networks:
+
+  main:
+    ipam:
+      config:
+        - subnet: 192.168.10.0/24
+
+services:
+
+  api:
+    build:
+      context: api
+    networks:
+      main:
+        ipv4_address: ${API_HOST}
+    ports:
+      - ${API_PORT}:${API_PORT}
+    restart: unless-stopped
+
+  chronograf:
+    depends_on:
+      - influx
+    image: chronograf:${CHRONOGRAF_VERSION}-alpine
+    networks:
+      main:
+        ipv4_address: ${CHRONOGRAF_HOST}
+    ports:
+      - ${CHRONOGRAF_PORT}:${CHRONOGRAF_PORT}
+    restart: unless-stopped
+    volumes:
+      - chronograf:/var/lib/chronograf
+
+  cockroach:
+    command: start-single-node --insecure
+    image: cockroachdb/cockroach:v${COCKROACH_VERSION}
+    networks:
+      main:
+        ipv4_address: ${COCKROACH_HOST}
+    ports:
+      - ${COCKROACH_PORT}:${COCKROACH_PORT}
+    restart: unless-stopped
+    volumes:
+      - cockroach:/data/db
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_HOST=${ELASTIC_HOST}
+      - ELASTIC_PORT=${ELASTIC_PORT}
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://${ELASTIC_HOST}:${ELASTIC_PORT}']
+      interval: 10s
+      timeout: 2s
+      retries: 2
+    networks:
+      main:
+        ipv4_address: ${ELASTIC_HOST}
+    restart: unless-stopped
+    volumes:
+      - elastic:/usr/share/elasticsearch/data
+
+  grafana:
+    build:
+      context: grafana
+    networks:
+      main:
+        ipv4_address: ${GRAFANA_HOST}
+    ports:
+      - ${GRAFANA_PORT}:${GRAFANA_PORT}
+    restart: unless-stopped
+    volumes:
+      - grafana_etc:/etc/grafana
+      - grafana_var_lib:/var/lib/grafana
+
+  influx:
+    image: influxdb:${INFLUX_VERSION}-alpine
+    networks:
+      main:
+        ipv4_address: ${INFLUX_HOST}
+    restart: unless-stopped
+    volumes:
+      - influx:/var/lib/influxdb
+
+  kafka:
+    depends_on:
+      - zookeeper
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://192.168.0.213:${KAFKA_PORT}
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:${KAFKA_PORT}
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:${ZOOKEEPER_PORT}
+    image: bitnami/kafka:${KAFKA_VERSION}
+    ports:
+      - ${KAFKA_PORT}:${KAFKA_PORT}
+    restart: unless-stopped
+
+  kafka_ui:
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=192.168.0.213:${KAFKA_PORT}
+    image: provectuslabs/kafka-ui:${KAFKA_UI_VERSION}
+    ports:
+      - ${KAFKA_UI_PORT}:${KAFKA_UI_PORT}
+    restart: unless-stopped
+
+  kibana:
+    depends_on:
+      - elastic
+    image: docker.elastic.co/kibana/kibana:${KIBANA_VERSION}
+    environment:
+      - ELASTICSEARCH_HOSTS=http://${ELASTIC_HOST}:${ELASTIC_PORT}
+    networks:
+      main:
+        ipv4_address: ${KIBANA_HOST}
+    ports:
+      - ${KIBANA_PORT}:${KIBANA_PORT}
+    restart: unless-stopped
+    volumes:
+      - kibana:/usr/share/kibana/config
+
+  logstash:
+    depends_on:
+      - elastic
+    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION}
+    networks:
+      main:
+        ipv4_address: ${LOGSTASH_HOST}
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./logstash/config/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      - type: bind
+        source: ./logstash/pipeline
+        target: /usr/share/logstash/pipeline
+        read_only: true
+
+  mongo:
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+    image: mongo:${MONGO_VERSION}
+    networks:
+      main:
+        ipv4_address: ${MONGO_HOST}
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}    
+    restart: unless-stopped
+    volumes:
+      - mongo:/data/db
+
+  mongo_express:
+    environment:
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD}
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
+      - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/
+    image: mongo-express:${MONGO_EXPRESS_VERSION}
+    networks:
+      main:
+        ipv4_address: ${MONGO_EXPRESS_HOST}
+    ports:
+      - ${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}
+    restart: unless-stopped
+
+  node_exporter:
+    image: prom/node-exporter:v${NODE_EXPORTER_VERSION}
+    networks:
+      main:
+        ipv4_address: ${NODE_EXPORTER_HOST}
+    restart: unless-stopped
+
+  node:
+    build:
+      context: node
+    networks:
+      main:
+        ipv4_address: ${NODE_HOST}
+    ports:
+      - ${NODE_PORT}:${NODE_PORT}
+    restart: unless-stopped
+
+  postgres:
+    build:
+      context: postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    healthcheck:
+      test: ["CMD", "psql", "-d", "${POSTGRES_DATABASE}", "-U", "${POSTGRES_USER}", "-c", "select 1"]
+      interval: 10s
+      timeout: 2s
+      retries: 2
+    networks:
+      main:
+        ipv4_address: ${POSTGRES_HOST}
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    restart: unless-stopped
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  producer:
+    build:
+      context: producer
+    networks:
+      main:
+        ipv4_address: ${PRODUCER_HOST}
+    restart: unless-stopped
+
+  prometheus:
+    depends_on:
+      - node_exporter
+      - statsd_exporter
+    image: prom/prometheus:v${PROMETHEUS_VERSION}
+    networks:
+      main:
+        ipv4_address: ${PROMETHEUS_HOST}
+    ports:
+      - ${PROMETHEUS_PORT}:${PROMETHEUS_PORT}
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./prometheus/prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+        read_only: true
+
+  rabbit:
+    build:
+      context: rabbit
+    networks:
+      main:
+        ipv4_address: ${RABBIT_HOST}
+    ports:
+      - ${RABBIT_PORT}:${RABBIT_PORT}
+    restart: unless-stopped
+
+  rabbit_consumer:
+    build:
+      context: rabbit_consumer
+    networks:
+      main:
+        ipv4_address: ${RABBIT_CONSUMER_HOST}
+    restart: unless-stopped
+
+  redis:
+    image: redis:${REDIS_VERSION}-alpine
+    networks:
+      main:
+        ipv4_address: ${REDIS_HOST}
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+
+  redis_insight:
+    depends_on:
+      - redis
+    image: redislabs/redisinsight:${REDIS_INSIGHT_VERSION}
+    networks:
+      main:
+        ipv4_address: ${REDIS_INSIGHT_HOST}
+    ports:
+      - ${REDIS_INSIGHT_PORT}:${REDIS_INSIGHT_PORT}
+    restart: unless-stopped
+    volumes:
+      - redis_insight:/db
+
+  statsd_exporter:
+    image: prom/statsd-exporter:v${STATSD_EXPORTER_VERSION}
+    networks:
+      main:
+        ipv4_address: ${STATSD_EXPORTER_HOST}
+    restart: unless-stopped
+
+  zookeeper:
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    image: bitnami/zookeeper:${ZOOKEEPER_VERSION}
+    ports:
+      - ${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}
+    restart: unless-stopped
+
+volumes:
+  chronograf:
+  cockroach:
+  elastic:
+  grafana_etc:
+  grafana_var_lib:
+  influx:
+  kafka:
+  kibana:
+  mongo:
+  postgres:
+  redis:
+  redis_insight:
