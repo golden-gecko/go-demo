@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+
+	log "github.com/sirupsen/logrus"
 
 	"api/db"
 	"api/models"
@@ -21,12 +23,14 @@ func CreateTransit(c *gin.Context) {
 	transit.Plate = c.Param("plate")
 
 	if err := c.BindJSON(&transit); err != nil {
+		log.Error(err)
 		panic(err)
 	}
 
 	_, err := db.TransitCollection.InsertOne(context.TODO(), transit)
 
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 
@@ -39,12 +43,12 @@ func CreateUser(c *gin.Context) {
 	var user models.User
 
 	if err := c.BindJSON(&user); err != nil {
-		log.Fatalln(err)
+		log.Error(err)
 		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
 	}
 
 	if err := roach.CreateUser(user); err != nil {
-		log.Fatalln(err)
+		log.Error(err)
 		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
 	}
 
@@ -72,16 +76,19 @@ func GetUsers(c *gin.Context) {
 		var user3 models.User
 
 		if err := cursor.Decode(&user1); err != nil {
+			log.Error(err)
 			panic(err)
 		}
 
 		user2, err := bson.Marshal(user1)
 
 		if err != nil {
+			log.Error(err)
 			panic(err)
 		}
 
 		if err := bson.Unmarshal(user2, &user3); err != nil {
+			log.Error(err)
 			panic(err)
 		}
 
@@ -92,7 +99,23 @@ func GetUsers(c *gin.Context) {
 }
 
 func GetUser(c *gin.Context) {
-	// userID := c.Param("userID")
+	userId, err := uuid.Parse(c.Param("userId"))
+
+	if err != nil {
+		log.Error(err)
+		c.IndentedJSON(http.StatusBadRequest, err)
+		return
+	}
+
+	user, err := roach.GetUser(userId)
+
+	if err != nil {
+		log.Error(err)
+		c.IndentedJSON(http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	c.IndentedJSON(http.StatusUnprocessableEntity, user)
 }
 
 // ---------------------------------------------------------------------------
@@ -101,16 +124,16 @@ func CreateVehicle(c *gin.Context) {
 	var vehicle models.Vehicle
 
 	if err := c.BindJSON(&vehicle); err != nil {
-		panic(err)
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
 	}
 
-	_, err := db.VehicleCollection.InsertOne(context.TODO(), vehicle)
-
-	if err != nil {
-		panic(err)
+	if err := roach.CreateVehicle(vehicle); err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
 	}
 
-	c.IndentedJSON(http.StatusCreated, nil)
+	c.JSON(http.StatusCreated, map[string]error{})
 }
 
 func GetVehicles(c *gin.Context) {
@@ -124,16 +147,19 @@ func GetVehicles(c *gin.Context) {
 		var vehicle3 models.Vehicle
 
 		if err := cursor.Decode(&vehicle1); err != nil {
+			log.Error(err)
 			panic(err)
 		}
 
 		vehicle2, err := bson.Marshal(vehicle1)
 
 		if err != nil {
+			log.Error(err)
 			panic(err)
 		}
 
 		if err := bson.Unmarshal(vehicle2, &vehicle3); err != nil {
+			log.Error(err)
 			panic(err)
 		}
 

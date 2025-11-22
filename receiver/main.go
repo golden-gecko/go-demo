@@ -6,6 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	log "github.com/sirupsen/logrus"
+
 	"receiver/api"
 	"receiver/queue"
 )
@@ -22,6 +24,7 @@ func main() {
 	err := queue.InitRabbit()
 
 	if err != nil {
+		log.Error(err)
 		os.Exit(1)
 	}
 

@@ -2,7 +2,8 @@ package models
 
 import (
 	"encoding/json"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // ---------------------------------------------------------------------------
@@ -26,6 +27,7 @@ func (transit Transit) ToJSON() []byte {
 	b, err := json.Marshal(transit)
 
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 
@@ -51,6 +53,7 @@ func (user User) ToJSON() []byte {
 	b, err := json.Marshal(user)
 
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 
@@ -78,6 +81,7 @@ func (vehicle Vehicle) ToJSON() []byte {
 	b, err := json.Marshal(vehicle)
 
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 

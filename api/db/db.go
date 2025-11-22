@@ -2,13 +2,14 @@ package db
 
 import (
 	"context"
-	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -31,6 +32,7 @@ func Deinit() {
 	err := Client.Disconnect(context.TODO())
 
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 }
@@ -39,10 +41,12 @@ func Connect(uri string) *mongo.Client {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 
 	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+		log.Error(err)
 		panic(err)
 	}
 
@@ -69,6 +73,7 @@ func Add(collection *mongo.Collection, document interface{}) primitive.ObjectID 
 	id, err := collection.InsertOne(context.TODO(), document)
 
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 
@@ -80,6 +85,7 @@ func Delete(collection *mongo.Collection, id primitive.ObjectID) *mongo.DeleteRe
 	result, err := collection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 
@@ -92,6 +98,7 @@ func Find(collection *mongo.Collection) *mongo.Cursor {
 	result, err := collection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 

@@ -3,34 +3,15 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+
+	"producer/models"
 )
-
-type Coordinate struct {
-	Latitude  float32 `bson:"Latitude"`
-	Longitude float32 `bson:"Longitude"`
-}
-
-type Temperature struct {
-	Location  string  `bson:"Location"`
-	Value     float32 `bson:"Value"`
-	Timestamp string  `bson:"Timestamp"`
-}
-
-type Transit struct {
-	Plate     string     `bson:"Plate"`
-	Location  Coordinate `bson:"Location"`
-	Timestamp string     `bson:"Timestamp"`
-}
-
-type User struct {
-	Name     string `bson:"Name"`
-	Password string `bson:"Password"`
-}
 
 func RandomString(length int, charset string) string {
 	b := make([]byte, length)
@@ -60,7 +41,7 @@ func Send(url string, data []byte) error {
 	resp, err := http.Post(url, "application/json", body)
 
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return err
 	}
 
@@ -71,17 +52,28 @@ func Send(url string, data []byte) error {
 	return nil
 }
 
-func CreateUser() User {
-	t := User{
+func CreateUser() models.User {
+	u := models.User{
 		Name:     RandomWord(10),
 		Password: RandomWord(20),
+	}
+
+	return u
+}
+
+func CreateVehicle() models.Vehicle {
+	t := models.Vehicle{
+		Plate: RandomPlate(),
+		Brand: RandomWord(20),
+		Model: RandomWord(30),
+		Year:  1980 + rand.Intn(30),
 	}
 
 	return t
 }
 
-func CreateTemperature(location string) Temperature {
-	t := Temperature{
+func CreateTemperature(location string) models.Temperature {
+	t := models.Temperature{
 		Location:  location,
 		Value:     rand.Float32() * 100,
 		Timestamp: time.Now().Format(time.RFC3339),
@@ -90,13 +82,13 @@ func CreateTemperature(location string) Temperature {
 	return t
 }
 
-func CreateTransit() Transit {
-	c := Coordinate{
+func CreateTransit() models.Transit {
+	c := models.Coordinate{
 		Latitude:  14.0745211117 + rand.Float32()*(24.0299857927-14.0745211117),
 		Longitude: 49.0273953314 + rand.Float32()*(54.8515359564-49.0273953314),
 	}
 
-	t := Transit{
+	t := models.Transit{
 		Plate:     RandomPlate(),
 		Location:  c,
 		Timestamp: time.Now().Format(time.RFC3339),
@@ -119,6 +111,7 @@ func main() {
 			data, err := json.Marshal(u1)
 
 			if err != nil {
+				log.Error(err)
 				os.Exit(1)
 			}
 
@@ -126,13 +119,27 @@ func main() {
 		}
 
 		if true {
+			v1 := CreateVehicle()
+
+			data, err := json.Marshal(v1)
+
+			if err != nil {
+				log.Error(err)
+				os.Exit(1)
+			}
+
+			Send(apiUrl+"/vehicles", data)
+		}
+
+		if true {
 			t1 := CreateTemperature("Room #1")
 			t2 := CreateTemperature("Room #2")
 			t3 := CreateTemperature("Room #3")
 
-			data, err := json.Marshal([]Temperature{t1, t2, t3})
+			data, err := json.Marshal([]models.Temperature{t1, t2, t3})
 
 			if err != nil {
+				log.Error(err)
 				os.Exit(1)
 			}
 
@@ -140,7 +147,7 @@ func main() {
 		}
 
 		if true {
-			var transits []Transit
+			var transits []models.Transit
 
 			for i := 0; i < 1+rand.Intn(9); i++ {
 				transits = append(transits, CreateTransit())
@@ -149,6 +156,7 @@ func main() {
 			data, err := json.Marshal(transits)
 
 			if err != nil {
+				log.Error(err)
 				os.Exit(1)
 			}
 
@@ -157,7 +165,7 @@ func main() {
 
 		sleep := minInterval + rand.Intn(maxInterval-minInterval)
 
-		log.Println("Sleeping for", sleep, "ms")
+		log.Debug("Sleeping for", sleep, "ms")
 
 		time.Sleep(time.Duration(sleep) * time.Millisecond)
 	}
