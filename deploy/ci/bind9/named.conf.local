@@ -1,0 +1,4 @@
+zone "com.gecko" {
+    type master;
+    file "/etc/bind/db.com.gecko.local";
+};
