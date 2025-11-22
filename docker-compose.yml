@@ -8,6 +8,13 @@ networks:
         - subnet: 192.168.100.0/24
 
 services:
+  aggregator:
+    build:
+      context: aggregator
+    networks:
+      - main
+    restart: unless-stopped
+
   api_1:
     build:
       context: api
@@ -139,7 +146,7 @@ services:
     environment:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
-      - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/
+      - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:${MONGO_PORT}/
     image: mongo-express:${MONGO_EXPRESS_VERSION}
     networks:
       - main
