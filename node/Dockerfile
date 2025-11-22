@@ -1,6 +1,6 @@
 FROM node:21.6.0-alpine3.18
 
-WORKDIR /usr/local/app
+WORKDIR /app
 
 RUN npm install express
 

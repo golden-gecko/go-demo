@@ -22,6 +22,11 @@ type Coordinate struct {
     Longitude float32 `bson:"Longitude"`
 }
 
+type Item struct {
+	Name       string         `bson:"Name"`
+    Attributes map[string]int `bson:"Attributes"`
+}
+
 type Names struct {
     Names []string `json:"names"`
 }
@@ -41,6 +46,10 @@ type Transit struct {
 type User struct {
     Name     string `bson:"Name"`
     Password string `bson:"Password"`
+}
+
+type Users struct {
+    Users []string `json:"users"`
 }
 
 type Vehicle struct {
