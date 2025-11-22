@@ -28,7 +28,6 @@ services:
       main:
         ipv4_address: 192.168.200.20
     ports:
-      - 80:80
       - 443:443
     restart: unless-stopped
 
@@ -45,11 +44,7 @@ services:
   registry:
     environment:
       - REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin=[https://registry-ui.com.gecko]
-      - REGISTRY_HTTP_HEADERS_Access-Control-Allow-Methods=[HEAD,GET,OPTIONS,DELETE]
-      - REGISTRY_HTTP_HEADERS_Access-Control-Allow-Credentials=[true]
-      - REGISTRY_HTTP_HEADERS_Access-Control-Allow-Headers=[Authorization,Accept,Cache-Control]
-      - REGISTRY_HTTP_HEADERS_Access-Control-Expose-Header=[Docker-Content-Digest]
-      - REGISTRY_STORAGE_DELETE_ENABLED='true'
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
     image: registry:2.8.3
     networks:
       main:
