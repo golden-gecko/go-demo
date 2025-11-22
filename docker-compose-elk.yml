@@ -51,25 +51,6 @@ services:
     volumes:
       - kibana:/usr/share/kibana/config
 
-  logstash:
-    depends_on:
-      - elastic
-    environment:
-      - LS_JAVA_OPTS=-Xms1g -Xmx1g
-    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION}
-    networks:
-      - simple
-    restart: unless-stopped
-    volumes:
-      - type: bind
-        source: ./logstash/config/logstash.yml
-        target: /usr/share/logstash/config/logstash.yml
-        read_only: true
-      - type: bind
-        source: ./logstash/pipeline
-        target: /usr/share/logstash/pipeline
-        read_only: true
-
 volumes:
   chronograf:
   cockroach:

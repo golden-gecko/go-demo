@@ -1,0 +1,40 @@
+
+  logstash:
+    depends_on:
+      - elastic
+    environment:
+      - LS_JAVA_OPTS=-Xms1g -Xmx1g
+    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION}
+    networks:
+      - simple
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./logstash/config/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      - type: bind
+        source: ./logstash/pipeline
+        target: /usr/share/logstash/pipeline
+        read_only: true
+
+
+   <store>
+      @type elasticsearch
+
+      host elastic
+      port 9200
+      logstash_format true
+      logstash_prefix fluentd
+      logstash_dateformat %Y%m%d
+      include_tag_key true
+      type_name access_log
+      tag_key @log_name
+      flush_interval 1s
+   </store>
+
+
+       logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: ${FLUENT_HOST}:${FLUENT_PORT}

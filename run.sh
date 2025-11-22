@@ -2,5 +2,5 @@
 
 cd "$(dirname "$0")"
 
-docker-compose --file docker-compose.yml \
+docker-compose --file docker-compose.yml --file docker-compose-elk.yml \
     up --build --detach --remove-orphans "$@"

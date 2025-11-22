@@ -17,7 +17,7 @@
 ### How to view logs
 
 ```bash
-docker-compose logs -f
+./logs.sh
 ```
 
 ### UI
