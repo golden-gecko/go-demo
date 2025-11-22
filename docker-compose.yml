@@ -14,7 +14,7 @@ services:
       dockerfile: services/aggregator/Dockerfile
     env_file:
       - .env
-    image: registry.com.gecko:5000/aggregator
+    image: registry.com.gecko/aggregator
     networks:
       - main
     restart: unless-stopped
@@ -27,7 +27,7 @@ services:
       replicas: 3
     env_file:
       - .env
-    image: registry.com.gecko:5000/api
+    image: registry.com.gecko/api
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:6000/v1/healthcheck']
       interval: 10s
@@ -96,7 +96,7 @@ services:
       replicas: 3
     env_file:
       - .env
-    image: registry.com.gecko:5000/consumer
+    image: registry.com.gecko/consumer
     networks:
       - main
     restart: unless-stopped
@@ -131,7 +131,7 @@ services:
   haproxy:
     build:
       context: haproxy
-    image: registry.com.gecko:5000/haproxy
+    image: registry.com.gecko/haproxy
     networks:
       - main
     ports:
@@ -170,7 +170,7 @@ services:
     environment:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-    image: registry.com.gecko:5000/mongo
+    image: registry.com.gecko/mongo
     networks:
       - main
     ports:
@@ -196,7 +196,7 @@ services:
   nakama:
     build:
       context: nakama
-    image: registry.com.gecko:5000/nakama
+    image: registry.com.gecko/nakama
     networks:
       - main
     ports:
@@ -214,7 +214,7 @@ services:
       replicas: 3
     env_file:
       - .env
-    image: registry.com.gecko:5000/node
+    image: registry.com.gecko/node
     networks:
       - main
     restart: unless-stopped
@@ -233,7 +233,7 @@ services:
       dockerfile: services/producer/Dockerfile
     env_file:
       - .env
-    image: registry.com.gecko:5000/producer
+    image: registry.com.gecko/producer
     networks:
       - main
     restart: unless-stopped
@@ -241,7 +241,7 @@ services:
   prometheus:
     build:
       context: prometheus
-    image: registry.com.gecko:5000/prometheus
+    image: registry.com.gecko/prometheus
     networks:
       - main
     ports:
@@ -251,7 +251,7 @@ services:
   rabbit-1:
     build:
       context: rabbit
-    image: registry.com.gecko:5000/rabbit
+    image: registry.com.gecko/rabbit
     networks:
       - main
     ports:
@@ -265,7 +265,7 @@ services:
   rabbit-2:
     build:
       context: rabbit
-    image: registry.com.gecko:5000/rabbit
+    image: registry.com.gecko/rabbit
     networks:
       - main
     ports:
@@ -277,7 +277,7 @@ services:
   rabbit-3:
     build:
       context: rabbit
-    image: registry.com.gecko:5000/rabbit
+    image: registry.com.gecko/rabbit
     networks:
       - main
     ports:
@@ -294,7 +294,7 @@ services:
       replicas: 3
     env_file:
       - .env
-    image: registry.com.gecko:5000/receiver
+    image: registry.com.gecko/receiver
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:7000/v1/healthcheck']
       interval: 10s
@@ -307,7 +307,7 @@ services:
   redis-1:
     build:
       context: redis
-    image: registry.com.gecko:5000/redis
+    image: registry.com.gecko/redis
     networks:
       - main
     ports:
@@ -322,7 +322,7 @@ services:
     environment:
       - MASTER_HOST=redis-1
       - MASTER_PORT=6379
-    image: registry.com.gecko:5000/redis
+    image: registry.com.gecko/redis
     networks:
       - main
     ports:
@@ -337,7 +337,7 @@ services:
     environment:
       - MASTER_HOST=redis-1
       - MASTER_PORT=6379
-    image: registry.com.gecko:5000/redis
+    image: registry.com.gecko/redis
     networks:
       - main
     ports:
