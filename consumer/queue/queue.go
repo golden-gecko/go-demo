@@ -1,11 +1,11 @@
 package queue
 
 import (
-    "context"
-    "log"
-    "time"
+	"context"
+	"log"
+	"time"
 
-    amqp "github.com/rabbitmq/amqp091-go"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 var (
@@ -31,6 +31,8 @@ func Init() error {
         return err
     }
 
+    err = ch.Qos(10, 0, true)
+
     queues := []string{"temperatures", "transits"}
 
     for _, queueName := range queues {
@@ -48,8 +50,6 @@ func Init() error {
             return err
         }
     }
-
-    err = ch.Qos(10, 0, true)
 
     if err != nil {
         log.Println(err)

@@ -159,7 +159,15 @@ func CreateVehicle(cars models.Cars) models.Vehicle {
     return t
 }
 
-func ProcessTemperatures(wg *sync.WaitGroup, receiverUrl string) error {
+func Sleep(minInterval int, maxInterval int) {
+	interval := minInterval + rand.Intn(maxInterval - minInterval)
+
+	log.Info("Sleeping for ", interval, " ms")
+
+	time.Sleep(time.Duration(interval) * time.Millisecond)
+}
+
+func ProcessTemperatures(wg *sync.WaitGroup, minInterval int, maxInterval int, receiverUrl string) error {
 	for {
 		t1 := CreateTemperature("Room #1")
 		t2 := CreateTemperature("Room #2")
@@ -176,18 +184,11 @@ func ProcessTemperatures(wg *sync.WaitGroup, receiverUrl string) error {
 			os.Exit(1)
 		}
 
-		minInterval := 1000
-		maxInterval := 2000
-
-        interval := minInterval + rand.Intn(maxInterval - minInterval)
-
-        log.Info("Sleeping for ", interval, " ms")
-
-        time.Sleep(time.Duration(interval) * time.Millisecond)
+		Sleep(minInterval, maxInterval)
 	}
 }
 
-func ProcessTransits(wg *sync.WaitGroup, receiverUrl string) error {
+func ProcessTransits(wg *sync.WaitGroup, minInterval int, maxInterval int, receiverUrl string) error {
 	for {
 		var transits []models.Transit
 
@@ -206,18 +207,11 @@ func ProcessTransits(wg *sync.WaitGroup, receiverUrl string) error {
 			os.Exit(1)
 		}
 
-		minInterval := 1000
-		maxInterval := 2000
-
-        interval := minInterval + rand.Intn(maxInterval - minInterval)
-
-        log.Info("Sleeping for ", interval, " ms")
-
-        time.Sleep(time.Duration(interval) * time.Millisecond)
+		Sleep(minInterval, maxInterval)
 	}
 }
 
-func ProcessUsers(wg *sync.WaitGroup, apiUrl string, names models.Names) error {
+func ProcessUsers(wg *sync.WaitGroup, minInterval int, maxInterval int, apiUrl string, names models.Names) error {
 	for {
 		data, err := json.Marshal(CreateUser(names))
 
@@ -230,18 +224,11 @@ func ProcessUsers(wg *sync.WaitGroup, apiUrl string, names models.Names) error {
 			os.Exit(1)
 		}
 
-		minInterval := 1000
-		maxInterval := 2000
-
-        interval := minInterval + rand.Intn(maxInterval - minInterval)
-
-        log.Info("Sleeping for ", interval, " ms")
-
-        time.Sleep(time.Duration(interval) * time.Millisecond)
+		Sleep(minInterval, maxInterval)
 	}
 }
 
-func ProcessVehicles(wg *sync.WaitGroup, apiUrl string, cars models.Cars) error {
+func ProcessVehicles(wg *sync.WaitGroup, minInterval int, maxInterval int, apiUrl string, cars models.Cars) error {
 	for {
 		data, err := json.Marshal(CreateVehicle(cars))
 
@@ -254,14 +241,7 @@ func ProcessVehicles(wg *sync.WaitGroup, apiUrl string, cars models.Cars) error 
 			os.Exit(1)
 		}
 
-		minInterval := 1000
-		maxInterval := 2000
-
-        interval := minInterval + rand.Intn(maxInterval - minInterval)
-
-        log.Info("Sleeping for ", interval, " ms")
-
-        time.Sleep(time.Duration(interval) * time.Millisecond)
+		Sleep(minInterval, maxInterval)
 	}
 }
 
@@ -287,10 +267,10 @@ func main() {
 
 	wg.Add(4)
 
-	go ProcessTemperatures(&wg, receiverUrl)
-	go ProcessTransits(&wg, receiverUrl)
-	go ProcessUsers(&wg, apiUrl, names)
-	go ProcessVehicles(&wg, apiUrl, cars)
+	go ProcessTemperatures(&wg, 10, 20, receiverUrl)
+	go ProcessTransits(&wg, 3000, 6000, receiverUrl)
+	go ProcessUsers(&wg, 2000, 4000, apiUrl, names)
+	go ProcessVehicles(&wg, 2000, 4000, apiUrl, cars)
 
 	wg.Wait()
 }
