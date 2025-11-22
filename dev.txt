@@ -112,3 +112,16 @@
     restart: unless-stopped
     volumes:
       - postgres:/var/lib/postgresql/data
+
+  chronograf:
+    depends_on:
+      - influx
+    image: chronograf:${CHRONOGRAF_VERSION}
+    logging: *default-logging
+    networks:
+      - simple
+    ports:
+      - ${CHRONOGRAF_PORT}:${CHRONOGRAF_PORT}
+    restart: unless-stopped
+    volumes:
+      - chronograf:/var/lib/chronograf

@@ -32,21 +32,8 @@ services:
       - 5001:${API_PORT}
     restart: unless-stopped
 
-  chronograf:
-    depends_on:
-      - influx
-    image: chronograf:${CHRONOGRAF_VERSION}
-    logging: *default-logging
-    networks:
-      - simple
-    ports:
-      - ${CHRONOGRAF_PORT}:${CHRONOGRAF_PORT}
-    restart: unless-stopped
-    volumes:
-      - chronograf:/var/lib/chronograf
-
-  cockroach:
-    command: start-single-node --insecure
+  cockroach_1:
+    command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
     image: cockroachdb/cockroach:v${COCKROACH_VERSION}
     logging: *default-logging
     networks:
@@ -56,7 +43,33 @@ services:
       - 7681:8080
     restart: unless-stopped
     volumes:
-      - cockroach:/data/db
+      - cockroach_1:/data/db
+
+  cockroach_2:
+    command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
+    image: cockroachdb/cockroach:v${COCKROACH_VERSION}
+    logging: *default-logging
+    networks:
+      - simple
+    ports:
+      - 26258:${COCKROACH_PORT}
+      - 7682:8080
+    restart: unless-stopped
+    volumes:
+      - cockroach_2:/data/db
+
+  cockroach_3:
+    command: start --insecure --join=cockroach_1,cockroach_2,cockroach_3
+    image: cockroachdb/cockroach:v${COCKROACH_VERSION}
+    logging: *default-logging
+    networks:
+      - simple
+    ports:
+      - 26259:${COCKROACH_PORT}
+      - 7683:8080
+    restart: unless-stopped
+    volumes:
+      - cockroach_3:/data/db
 
   consumer_1:
     build:
@@ -259,7 +272,9 @@ services:
 
 volumes:
   chronograf:
-  cockroach:
+  cockroach_1:
+  cockroach_2:
+  cockroach_3:
   elastic:
   grafana_etc:
   grafana_var_lib:
