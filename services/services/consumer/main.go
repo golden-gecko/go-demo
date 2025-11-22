@@ -49,18 +49,6 @@ func ProcessTransit(body []byte) error {
     return nil
 }
 
-func CreateQueue(name string) (<-chan amqp091.Delivery, error) {
-	return queue.Channel.Consume(
-		name,
-		"",    // consumer
-		false, // auto-ack
-		false, // exclusive
-		false, // no-local
-		false, // no-wait
-		nil,   // args
-	)
-}
-
 func ProcessTemperatureQueue(writeAPI api.WriteAPIBlocking, msgs <-chan amqp091.Delivery) {
 	for d := range msgs {
 		// log.Info("Received a message: %s", d.Body)
@@ -96,11 +84,11 @@ func ProcessTransitQueue(writeAPI api.WriteAPIBlocking, msgs <-chan amqp091.Deli
 }
 
 func main() {
-    if err := queue.Init(); err != nil {
+    if err := queue.Connect(); err != nil {
 		panic(err)
     }
 
-    defer queue.Deinit()
+    defer queue.Disconnect()
 
 	log.Info("Connected to RabbitMQ")
 
@@ -119,7 +107,7 @@ func main() {
 
     writeAPI := client.WriteAPIBlocking("my-org", "house")
 
-	msgs1, err := CreateQueue("temperatures")
+	msgs1, err := queue.CreateQueue("temperatures")
 
     if err != nil {
 		panic(err)
@@ -127,7 +115,7 @@ func main() {
 
 	log.Info("Queue temperatures created")
 
-	msgs2, err := CreateQueue("transits")
+	msgs2, err := queue.CreateQueue("transits")
 
     if err != nil {
 		panic(err)

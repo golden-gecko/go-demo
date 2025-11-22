@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	kafka "github.com/segmentio/kafka-go"
 
 	"services/common/queue"
 )
@@ -29,6 +28,7 @@ type Transit struct {
     Timestamp string     `bson:"Timestamp"`
 }
 
+/*
 func WriteToKafka(data []byte) error {
     _, err := queue.KafkaClient.WriteMessages(
         kafka.Message{
@@ -38,6 +38,7 @@ func WriteToKafka(data []byte) error {
 
 	return err
 }
+*/
 
 func WriteToRabbit(queueName string, data []byte) error {
     err := queue.Channel.PublishWithContext(
