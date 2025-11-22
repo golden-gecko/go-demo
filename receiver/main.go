@@ -1,22 +1,21 @@
 package main
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
 
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 
-    log "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
-    "receiver/api"
-    "receiver/queue"
+	"receiver/api"
+	"receiver/queue"
 )
 
 func Run(host string, port int) {
     router := gin.Default()
 
     router.GET("/v1/healthcheck", api.Healthcheck)
-
     router.POST("/v1/data/:type", api.CreateData)
 
     router.Run(fmt.Sprintf("%s:%d", host, port))

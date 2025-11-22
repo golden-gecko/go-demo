@@ -1,9 +1,9 @@
 package models
 
 import (
-    "encoding/json"
+	"encoding/json"
 
-    log "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // ---------------------------------------------------------------------------
@@ -23,19 +23,26 @@ func NewTransit(plate string, latitude float32, longitude float32, timestamp str
     return Transit{plate, Coordinate{latitude, longitude}, timestamp}
 }
 
-func (transit Transit) ToJSON() []byte {
+func (transit Transit) ToJSON() ([]byte, error) {
     b, err := json.Marshal(transit)
 
     if err != nil {
-        log.Error(err)
-        panic(err)
+		return nil, err
     }
 
-    return b
+    return b, nil
 }
 
-func (transit Transit) Print() {
-    log.Println(string(transit.ToJSON()))
+func (transit Transit) Print() error {
+	json, err := transit.ToJSON()
+
+	if err != nil {
+		return err
+	}
+
+    log.Println(json)
+
+	return nil
 }
 
 // ---------------------------------------------------------------------------
@@ -49,19 +56,26 @@ func NewUser(name string, password string) User {
     return User{name, password}
 }
 
-func (user User) ToJSON() []byte {
+func (user User) ToJSON() ([]byte, error) {
     b, err := json.Marshal(user)
 
     if err != nil {
-        log.Error(err)
-        panic(err)
+		return nil, err
     }
 
-    return b
+    return b, nil
 }
 
-func (user User) Print() {
-    log.Println(string(user.ToJSON()))
+func (user User) Print() error {
+	json, err := user.ToJSON()
+
+	if err != nil {
+		return err
+	}
+
+    log.Println(json)
+
+	return nil
 }
 
 // ---------------------------------------------------------------------------
@@ -78,17 +92,24 @@ func NewVehicle(plate string, brand string, model string, year int, category str
     return Vehicle{plate, brand, model, year, category}
 }
 
-func (vehicle Vehicle) ToJSON() []byte {
+func (vehicle Vehicle) ToJSON() ([]byte, error) {
     b, err := json.Marshal(vehicle)
 
     if err != nil {
-        log.Error(err)
-        panic(err)
+		return nil, err
     }
 
-    return b
+    return b, nil
 }
 
-func (vehicle Vehicle) Print() {
-    log.Println(string(vehicle.ToJSON()))
+func (vehicle Vehicle) Print() error {
+	json, err := vehicle.ToJSON()
+
+	if err != nil {
+		return err
+	}
+
+    log.Println(json)
+
+	return nil
 }

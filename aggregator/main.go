@@ -26,8 +26,8 @@ func ProcessVehicleCountByModel(client *redis.Client) {
         err := client.Set(context.Background(), fmt.Sprintf("%s %s", model.Brand, model.Model), strconv.Itoa(model.Count), 0).Err()
 
         if err != nil {
-        	log.Error(err)
-			os.Exit(1)
+            log.Error(err)
+            os.Exit(1)
         }
     }
 }
@@ -44,8 +44,8 @@ func ProcessVehicleCountByYear(client *redis.Client) {
         err := client.Set(context.Background(), strconv.Itoa(year.Year), strconv.Itoa(year.Count), 0).Err()
 
         if err != nil {
-        	log.Error(err)
-			os.Exit(1)
+            log.Error(err)
+            os.Exit(1)
         }
     }
 }
@@ -58,19 +58,23 @@ func main() {
 
     defer roach.Disconnect()
 
-    client := redis.NewClient(&redis.Options{
+	options := redis.Options{
         Addr:     "redis:6379",
-        Password: "", // no password set
-        DB:       0,  // use default DB
-    })
+        Password: "",
+        DB:       0,
+    }
 
-    interval := 3000
+    client := redis.NewClient(&options)
+
+	defer client.Close()
 
     for {
         ProcessVehicleCountByModel(client)
         ProcessVehicleCountByYear(client)
 
-        log.Debug("Sleeping for", interval, "ms")
+		interval := 3000
+
+        log.Info("Sleeping for ", interval, " ms")
 
         time.Sleep(time.Duration(interval) * time.Millisecond)
     }
