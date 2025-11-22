@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +10,7 @@ import (
 
 	"api/db"
 	"api/models"
+	"api/roach"
 )
 
 // ---------------------------------------------------------------------------
@@ -37,16 +39,26 @@ func CreateUser(c *gin.Context) {
 	var user models.User
 
 	if err := c.BindJSON(&user); err != nil {
-		panic(err)
+		log.Fatalln(err)
+		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
 	}
 
-	_, err := db.UserCollection.InsertOne(context.TODO(), user)
+	if err := roach.CreateUser(user); err != nil {
+		log.Fatalln(err)
+		c.JSON(http.StatusInternalServerError, map[string]error{"message": err})
+	}
+
+	/*_, err := db.UserCollection.InsertOne(context.TODO(), user)
 
 	if err != nil {
-		panic(err)
-	}
+		log.Fatalln(err)
+	}*/
 
-	c.IndentedJSON(http.StatusCreated, nil)
+	c.JSON(http.StatusCreated, map[string]error{})
+}
+
+func DeleteUser(c *gin.Context) {
+	c.JSON(http.StatusOK, map[string]error{})
 }
 
 func GetUsers(c *gin.Context) {

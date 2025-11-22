@@ -39,11 +39,12 @@ func (transit Transit) Print() {
 // ---------------------------------------------------------------------------
 
 type User struct {
-	Name string `bson:"Name"`
+	Name     string `bson:"Name"`
+	Password string `bson:"Password"`
 }
 
-func NewUser(name string) User {
-	return User{name}
+func NewUser(name string, password string) User {
+	return User{name, password}
 }
 
 func (user User) ToJSON() []byte {

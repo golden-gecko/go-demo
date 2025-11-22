@@ -1,0 +1,7 @@
+CREATE DATABASE go_demo;
+
+CREATE USER go_user; -- WITH LOGIN PASSWORD 'go_password';
+
+GRANT ALL ON DATABASE go_demo TO go_user WITH GRANT OPTION;
+
+GRANT ALL ON TABLE go_demo.public.* TO go_user WITH GRANT OPTION;

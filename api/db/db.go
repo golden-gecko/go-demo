@@ -20,7 +20,7 @@ var (
 )
 
 func Init(uri string) {
-	Client = Connect("mongodb://mongo_user:mongo_password@192.168.10.17:27017")
+	Client = Connect("mongodb://mongo_user:mongo_password@192.168.0.213:27017")
 
 	TransitCollection = CreateCollection(Client, "traffic", "transits")
 	UserCollection = CreateCollection(Client, "traffic", "users")
@@ -51,6 +51,12 @@ func Connect(uri string) *mongo.Client {
 	return client
 }
 
+func Disconnect(client *mongo.Client) {
+	client.Disconnect(context.TODO())
+
+	log.Println("Disconnected from database")
+}
+
 func CreateCollection(client *mongo.Client, database string, collection string) *mongo.Collection {
 	mongoCollection := client.Database(database).Collection(collection)
 
@@ -69,16 +75,6 @@ func Add(collection *mongo.Collection, document interface{}) primitive.ObjectID 
 	return id.InsertedID.(primitive.ObjectID)
 }
 
-func Find(collection *mongo.Collection) *mongo.Cursor {
-	result, err := collection.Find(context.TODO(), bson.M{})
-
-	if err != nil {
-		panic(err)
-	}
-
-	return result
-}
-
 func Delete(collection *mongo.Collection, id primitive.ObjectID) *mongo.DeleteResult {
 	filter := bson.M{"_id": id}
 	result, err := collection.DeleteOne(context.TODO(), filter)
@@ -92,8 +88,12 @@ func Delete(collection *mongo.Collection, id primitive.ObjectID) *mongo.DeleteRe
 	return result
 }
 
-func Disconnect(client *mongo.Client) {
-	client.Disconnect(context.TODO())
+func Find(collection *mongo.Collection) *mongo.Cursor {
+	result, err := collection.Find(context.TODO(), bson.M{})
 
-	log.Println("Disconnected from database")
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }
