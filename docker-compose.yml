@@ -39,6 +39,16 @@ services:
       - main
     restart: unless-stopped
 
+  chronograf:
+    image: chronograf:1.10.2-alpine
+    networks:
+      - main
+    ports:
+      - ${CHRONOGRAF_PORT}:${CHRONOGRAF_PORT}
+    restart: unless-stopped
+    volumes:
+      - chronograf:/var/lib/chronograf
+
   cockroach_1:
     command: start --advertise-addr=cockroach_1:26357 --http-addr=cockroach_1:8080 --listen-addr=cockroach_1:26357 --sql-addr=cockroach_1:26257 --insecure --join=cockroach_1:26357,cockroach_2:26357,cockroach_3:26357
     image: cockroachdb/cockroach:v23.1.13
@@ -143,6 +153,8 @@ services:
       - mongo:/data/db
 
   mongo_express:
+    depends_on:
+      - mongo
     environment:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
@@ -179,11 +191,6 @@ services:
     restart: unless-stopped
 
   prometheus:
-    depends_on:
-      - haproxy
-      - node_exporter
-      - rabbit
-      - statsd_exporter
     image: prom/prometheus:v${PROMETHEUS_VERSION}
     networks:
       - main

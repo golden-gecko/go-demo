@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -15,335 +15,214 @@ import (
 )
 
 func RandomString(length int, charset string) string {
-	b := make([]byte, length)
+    b := make([]byte, length)
 
-	for i := range b {
-		b[i] = charset[rand.Intn(len(charset))]
-	}
+    for i := range b {
+        b[i] = charset[rand.Intn(len(charset))]
+    }
 
-	return string(b)
-}
-
-func RandomBrand() string {
-	brands := []string{
-		"Abarth",
-		"Alfa Romeo",
-		"Aston Martin",
-		"Audi",
-		"Bentley",
-		"BMW",
-		"Bugatti",
-		"Cadillac",
-		"Chevrolet",
-		"Chrysler",
-		"Citroën",
-		"Dacia",
-		"Daewoo",
-		"Daihatsu",
-		"Dodge",
-		"Donkervoort",
-		"DS",
-		"Ferrari",
-		"Fiat",
-		"Fisker",
-		"Ford",
-		"Honda",
-		"Hummer",
-		"Hyundai",
-		"Infiniti",
-		"Iveco",
-		"Jaguar",
-		"Jeep",
-		"Kia",
-		"KTM",
-		"Lada",
-		"Lamborghini",
-		"Lancia",
-		"Land Rover",
-		"Landwind",
-		"Lexus",
-		"Lotus",
-		"Maserati",
-		"Maybach",
-		"Mazda",
-		"McLaren",
-		"Mercedes-Benz",
-		"MG",
-		"Mini",
-		"Mitsubishi",
-		"Morgan",
-		"Nissan",
-		"Opel",
-		"Peugeot",
-		"Porsche",
-		"Renault",
-		"Rolls-Royce",
-		"Rover",
-		"Saab",
-		"Seat",
-		"Skoda",
-		"Smart",
-		"SsangYong",
-		"Subaru",
-		"Suzuki",
-		"Tesla",
-		"Toyota",
-		"Volkswagen",
-		"Volvo",
-	}
-
-	return brands[rand.Intn(len(brands))]
-}
-
-func RandomName() string {
-	names := []string{
-		"Alanh",
-		"Amanda",
-		"Amy",
-		"Betty",
-		"Bruce",
-		"Becky",
-		"Collins",
-		"Craig",
-		"Clark",
-		"Donald",
-		"David",
-		"Drew",
-		"Emily",
-		"Edward",
-		"Eric",
-		"Frank",
-		"Finch",
-		"Francis",
-		"Gary",
-		"Glen",
-		"George",
-		"Henry",
-		"Howard",
-		"Helen",
-		"Irene",
-		"Iris",
-		"Ivan",
-		"Jack",
-		"John",
-		"Jenny",
-		"Karen",
-		"Kim",
-		"Kenneth",
-		"Larry",
-		"Leslie",
-		"Lisa",
-		"Martin",
-		"Mary",
-		"Miller",
-		"Nick",
-		"Nancy",
-		"Nathan",
-		"Oliver",
-		"Octavio",
-		"Oscar",
-		"Peter",
-		"Paula",
-		"Pamela",
-		"Quin",
-		"Ronald",
-		"Ron",
-		"Randy",
-		"Samnuel",
-		"Scott",
-		"Sharon",
-		"Teresa",
-		"Terry",
-		"Thomas",
-		"Uriel",
-		"Usher",
-		"Victor",
-		"Virginia",
-		"Watson",
-		"Wendy",
-		"Wood",
-		"Xavier",
-		"Yasmin",
-		"Yvette",
-		"Yuri",
-		"Zack",
-		"Zelda",
-		"Zane",
-	}
-
-	return names[rand.Intn(len(names))]
+    return string(b)
 }
 
 func RandomPlate() string {
-	const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	const digits = "0123456789"
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    const digits = "0123456789"
 
-	return RandomString(2, characters) + RandomString(3, digits)
+    return RandomString(2, characters) + RandomString(3, digits)
 }
 
 func RandomWord(length int) string {
-	const characters = "abcdefghijklmnopqrstuvwxyz"
+    const characters = "abcdefghijklmnopqrstuvwxyz"
 
-	return RandomString(length, characters)
+    return RandomString(length, characters)
+}
+
+func is_success(response *http.Response) bool {
+	return response.StatusCode >= 200 && response.StatusCode < 300;
 }
 
 func Send(url string, data []byte) error {
-	body := bytes.NewBuffer(data)
-	resp, err := http.Post(url, "application/json", body)
+    body := bytes.NewBuffer(data)
+    response, err := http.Post(url, "application/json", body)
 
-	if err != nil {
-		log.Error(err)
-		return err
-	}
+    if err != nil {
+        log.Error(err)
+        return err
+    }
 
-	if resp.StatusCode == 200 || resp.StatusCode == 201 || resp.StatusCode == 202 {
-		log.Println(resp.StatusCode)
-	} else {
-		log.Error(resp.StatusCode)
-	}
+    if is_success(response) {
+        log.Println(response.StatusCode)
+    } else {
+        log.Error(response.StatusCode)
+    }
 
-	return nil
+    return nil
 }
 
-func CreateUser() models.User {
-	u := models.User{
-		Name:     RandomName(),
-		Password: RandomWord(20),
-	}
+func CreateUser(names models.Names) models.User {
+    u := models.User{
+        Name:     names.Names[rand.Intn(len(names.Names))],
+        Password: RandomWord(20),
+    }
 
-	return u
+    return u
 }
 
 func CreateVehicle(cars models.Cars) models.Vehicle {
-	car := cars.Cars[rand.Intn(len(cars.Cars))]
+    car := cars.Cars[rand.Intn(len(cars.Cars))]
 
-	t := models.Vehicle{
-		Plate:    RandomPlate(),
-		Brand:    car.Brand,
-		Model:    car.Model,
-		Year:     1980 + rand.Intn(30),
-		Category: car.Category,
-	}
+    t := models.Vehicle{
+        Plate:    RandomPlate(),
+        Brand:    car.Brand,
+        Model:    car.Model,
+        Year:     1980 + rand.Intn(30),
+        Category: car.Category,
+    }
 
-	return t
+    return t
 }
 
 func CreateTemperature(location string) models.Temperature {
-	t := models.Temperature{
-		Location:  location,
-		Value:     rand.Float32() * 100,
-		Timestamp: time.Now().Format(time.RFC3339),
-	}
+    t := models.Temperature{
+        Location:  location,
+        Value:     rand.Float32() * 100,
+        Timestamp: time.Now().Format(time.RFC3339),
+    }
 
-	return t
+    return t
 }
 
 func CreateTransit() models.Transit {
-	c := models.Coordinate{
-		Latitude:  14.0745211117 + rand.Float32()*(24.0299857927-14.0745211117),
-		Longitude: 49.0273953314 + rand.Float32()*(54.8515359564-49.0273953314),
-	}
+    c := models.Coordinate{
+        Latitude:  14.0745211117 + rand.Float32() * (24.0299857927-14.0745211117),
+        Longitude: 49.0273953314 + rand.Float32() * (54.8515359564-49.0273953314),
+    }
 
-	t := models.Transit{
-		Plate:     RandomPlate(),
-		Location:  c,
-		Timestamp: time.Now().Format(time.RFC3339),
-	}
+    t := models.Transit{
+        Plate:     RandomPlate(),
+        Location:  c,
+        Timestamp: time.Now().Format(time.RFC3339),
+    }
 
-	return t
+    return t
 }
 
 func GetCars() models.Cars {
-	jsonFile, err := os.Open("data/cars.json")
+    jsonFile, err := os.Open("data/cars.json")
+
+    if err != nil {
+        log.Error(err)
+        os.Exit(1)
+    }
+
+    defer jsonFile.Close()
+
+    var cars models.Cars
+
+    byteValue, _ := io.ReadAll(jsonFile)
+
+    json.Unmarshal(byteValue, &cars)
+
+    return cars
+}
+
+func GetNames() models.Names {
+    jsonFile, err := os.Open("data/names.json")
+
+    if err != nil {
+        log.Error(err)
+        os.Exit(1)
+    }
+
+    defer jsonFile.Close()
+
+    var names models.Names
+
+    byteValue, _ := io.ReadAll(jsonFile)
+
+    json.Unmarshal(byteValue, &names)
+
+    return names
+}
+
+func ProcessUsers(apiUrl string, names models.Names) {
+	u1 := CreateUser(names)
+
+	data, err := json.Marshal(u1)
 
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
 	}
 
-	defer jsonFile.Close()
+	Send(apiUrl + "/users", data)
+}
 
-	var cars models.Cars
+func ProcessVehicles(apiUrl string, cars models.Cars) {
+	v1 := CreateVehicle(cars)
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	data, err := json.Marshal(v1)
 
-	json.Unmarshal(byteValue, &cars)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 
-	return cars
+	Send(apiUrl+"/vehicles", data)
+}
+
+func ProcessTemperatues(receiverUrl string) {
+	t1 := CreateTemperature("Room #1")
+	t2 := CreateTemperature("Room #2")
+	t3 := CreateTemperature("Room #3")
+
+	data, err := json.Marshal([]models.Temperature{t1, t2, t3})
+
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	Send(receiverUrl + "/temperature", data)
+}
+
+func ProcessTransits(receiverUrl string) {
+	var transits []models.Transit
+
+	for i := 0; i < 1+rand.Intn(9); i++ {
+		transits = append(transits, CreateTransit())
+	}
+
+	data, err := json.Marshal(transits)
+
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	Send(receiverUrl + "/transit", data)
 }
 
 func main() {
-	apiUrl := "http://haproxy:9020/v1"
-	receiverUrl := "http://haproxy:9050/v1/data"
+    apiUrl := "http://haproxy:9020/v1"
+    receiverUrl := "http://haproxy:9050/v1/data"
 
-	cars := GetCars()
+    cars := GetCars()
+    names := GetNames()
 
-	minInterval := 100
-	maxInterval := 500
+    minInterval := 100
+    maxInterval := 500
 
-	for {
-		if true {
-			u1 := CreateUser()
+    for {
+		ProcessTemperatues(receiverUrl)
+		ProcessTransits(receiverUrl)
+		ProcessUsers(apiUrl, names)
+		ProcessVehicles(apiUrl, cars)
 
-			data, err := json.Marshal(u1)
+        sleep := minInterval + rand.Intn(maxInterval-minInterval)
 
-			if err != nil {
-				log.Error(err)
-				os.Exit(1)
-			}
+        log.Debug("Sleeping for", sleep, "ms")
 
-			Send(apiUrl+"/users", data)
-		}
-
-		if true {
-			v1 := CreateVehicle(cars)
-
-			data, err := json.Marshal(v1)
-
-			if err != nil {
-				log.Error(err)
-				os.Exit(1)
-			}
-
-			Send(apiUrl+"/vehicles", data)
-		}
-
-		if true {
-			t1 := CreateTemperature("Room #1")
-			t2 := CreateTemperature("Room #2")
-			t3 := CreateTemperature("Room #3")
-
-			data, err := json.Marshal([]models.Temperature{t1, t2, t3})
-
-			if err != nil {
-				log.Error(err)
-				os.Exit(1)
-			}
-
-			Send(receiverUrl+"/temperature", data)
-		}
-
-		if true {
-			var transits []models.Transit
-
-			for i := 0; i < 1+rand.Intn(9); i++ {
-				transits = append(transits, CreateTransit())
-			}
-
-			data, err := json.Marshal(transits)
-
-			if err != nil {
-				log.Error(err)
-				os.Exit(1)
-			}
-
-			Send(receiverUrl+"/transit", data)
-		}
-
-		sleep := minInterval + rand.Intn(maxInterval-minInterval)
-
-		log.Debug("Sleeping for", sleep, "ms")
-
-		time.Sleep(time.Duration(sleep) * time.Millisecond)
-	}
+        time.Sleep(time.Duration(sleep) * time.Millisecond)
+    }
 }

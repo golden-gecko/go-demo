@@ -1,114 +1,114 @@
 package roach
 
 import (
-	"context"
+    "context"
 
-	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v4"
+    "github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
+    "github.com/google/uuid"
+    "github.com/jackc/pgx/v4"
 
-	log "github.com/sirupsen/logrus"
+    log "github.com/sirupsen/logrus"
 
-	"api/models"
+    "api/models"
 )
 
 var (
-	Connnection *pgx.Conn
+    Connnection *pgx.Conn
 )
 
 func Connect() error {
-	log.Println("Connecting to database...")
+    log.Println("Connecting to database...")
 
-	config, err := pgx.ParseConfig("postgres://go_user:go_password@cockroach_1:26257/go_demo")
+    config, err := pgx.ParseConfig("postgres://go_user:go_password@cockroach_1:26257/go_demo")
 
-	if err != nil {
-		log.Error(err)
-		return err
-	}
+    if err != nil {
+        log.Error(err)
+        return err
+    }
 
-	conn, err := pgx.ConnectConfig(context.Background(), config)
+    conn, err := pgx.ConnectConfig(context.Background(), config)
 
-	if err != nil {
-		log.Error(err)
-		return err
-	}
+    if err != nil {
+        log.Error(err)
+        return err
+    }
 
-	Connnection = conn
+    Connnection = conn
 
-	return nil
+    return nil
 }
 
 func Disconnect() error {
-	log.Println("Disconnecting to database...")
+    log.Println("Disconnecting to database...")
 
-	err := Connnection.Close(context.Background())
+    err := Connnection.Close(context.Background())
 
-	if err != nil {
-		log.Error(err)
-		return err
-	}
+    if err != nil {
+        log.Error(err)
+        return err
+    }
 
-	return nil
+    return nil
 }
 
 func CreateUser(user models.User) error {
-	err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		_, err := tx.Exec(context.Background(), "INSERT INTO users (id, name, password) VALUES ($1, $2, $3)", uuid.New(), user.Name, user.Password)
+    err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
+        _, err := tx.Exec(context.Background(), "INSERT INTO users (id, name, password) VALUES ($1, $2, $3)", uuid.New(), user.Name, user.Password)
 
-		if err != nil {
-			log.Error(err)
-			return err
-		}
+        if err != nil {
+            log.Error(err)
+            return err
+        }
 
-		return nil
-	})
+        return nil
+    })
 
-	if err != nil {
-		log.Error(err)
-		return err
-	}
+    if err != nil {
+        log.Error(err)
+        return err
+    }
 
-	return nil
+    return nil
 }
 
 func CreateVehicle(vehicle models.Vehicle) error {
-	err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		_, err := tx.Exec(context.Background(), "INSERT INTO vehicles (plate, brand, model, year, category) VALUES ($1, $2, $3, $4, $5)", vehicle.Plate, vehicle.Brand, vehicle.Model, vehicle.Year, vehicle.Category)
+    err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
+        _, err := tx.Exec(context.Background(), "INSERT INTO vehicles (plate, brand, model, year, category) VALUES ($1, $2, $3, $4, $5)", vehicle.Plate, vehicle.Brand, vehicle.Model, vehicle.Year, vehicle.Category)
 
-		if err != nil {
-			log.Error(err)
-			return err
-		}
+        if err != nil {
+            log.Error(err)
+            return err
+        }
 
-		return nil
-	})
+        return nil
+    })
 
-	if err != nil {
-		log.Error(err)
-		return err
-	}
+    if err != nil {
+        log.Error(err)
+        return err
+    }
 
-	return nil
+    return nil
 }
 
 func GetUser(userId uuid.UUID) (models.User, error) {
-	var user models.User
+    var user models.User
 
-	err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		err := tx.QueryRow(context.Background(), "SELECT * FROM users WHERE id = $1", userId).Scan(&user)
+    err := crdbpgx.ExecuteTx(context.Background(), Connnection, pgx.TxOptions{}, func(tx pgx.Tx) error {
+        err := tx.QueryRow(context.Background(), "SELECT * FROM users WHERE id = $1", userId).Scan(&user)
 
-		if err != nil {
-			log.Error(err)
-			return err
-		}
+        if err != nil {
+            log.Error(err)
+            return err
+        }
 
-		return nil
-	})
+        return nil
+    })
 
-	if err != nil {
-		log.Error(err)
-		return user, err
-	}
+    if err != nil {
+        log.Error(err)
+        return user, err
+    }
 
-	return user, nil
+    return user, nil
 }
