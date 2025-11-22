@@ -20,7 +20,7 @@ var (
 )
 
 func InitRabbit() error {
-	conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672/")
+	conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672")
 
 	if err != nil {
 		log.Println(err)

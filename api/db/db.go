@@ -21,7 +21,7 @@ var (
 )
 
 func Init(uri string) {
-	Client = Connect("mongodb://mongo_user:mongo_password@192.168.0.213:27017")
+	Client = Connect("mongodb://mongo_user:mongo_password@mongo:27017")
 
 	TransitCollection = CreateCollection(Client, "traffic", "transits")
 	UserCollection = CreateCollection(Client, "traffic", "users")
