@@ -3,4 +3,7 @@
 cd "$(dirname "$0")"
 
 docker-compose --file docker-compose.yml \
-    restart "$@"
+    pull "$@"
+
+docker-compose --file docker-compose.yml \
+    build "$@"

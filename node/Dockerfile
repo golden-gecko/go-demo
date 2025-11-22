@@ -1,4 +1,4 @@
-FROM node:19.1.0-alpine3.16
+FROM node:21.5.0-alpine3.18
 
 WORKDIR /usr/local/app
 
@@ -8,6 +8,4 @@ COPY . .
 
 EXPOSE 2000
 
-ENTRYPOINT ["node"]
-
-CMD ["server.js"]
+CMD ["node", "server.js"]

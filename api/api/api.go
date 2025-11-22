@@ -17,6 +17,12 @@ import (
 
 // ---------------------------------------------------------------------------
 
+func Healthcheck(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, nil)
+}
+
+// ---------------------------------------------------------------------------
+
 func CreateTransit(c *gin.Context) {
 	var transit models.Transit
 
