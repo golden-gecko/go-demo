@@ -1,10 +1,11 @@
 package main
 
 import (
-    "context"
-    "log"
+	"context"
+	"fmt"
+	"log"
 
-    kafka "github.com/segmentio/kafka-go"
+	kafka "github.com/segmentio/kafka-go"
 )
 
 func main() {
@@ -30,6 +31,6 @@ func main() {
             break
         }
 
-        log.Printf("message at offset %d: %s = %s\n", m.Offset, string(m.Key), string(m.Value))
+        log.Info(fmt.Sprintf("message at offset %d: %s = %s\n", m.Offset, m.Key, m.Value))
     }
 }
