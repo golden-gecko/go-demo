@@ -1,8 +1,19 @@
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: nginx
+  name: producer
+  labels:
+    app: producer
 spec:
-  containers:
-	- name: nginx
-	  image: producer:latest
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producer
+  template:
+    metadata:
+      labels:
+        app: producer
+    spec:
+      containers:
+      - name: producer
+        image: localhost:5000/producer

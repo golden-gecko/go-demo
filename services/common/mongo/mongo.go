@@ -2,6 +2,8 @@ package mongo
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -13,21 +15,26 @@ import (
 )
 
 var (
-    Client *mongo.Client
-
+    client         *mongo.Client
     ItemCollection *mongo.Collection
 )
 
 func Connect() error {
     log.Info("Connecting to MongoDB...")
 
-    client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://mongo_user:mongo_password@mongo:27017"))
+	user := os.Getenv("MONGO_USER")
+	password := os.Getenv("MONGO_PASSWORD")
+	host := os.Getenv("MONGO_HOST")
+	port := os.Getenv("MONGO_PORT")
+	database := os.Getenv("MONGO_DATABASE")
+
+    client_, err := mongo.Connect(context.Background(), options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%s", user, password, host, port)))
 
     if err != nil {
 		return  err
     }
 
-	Client = client
+	client = client_
 
     if err := client.Ping(context.Background(), readpref.Primary()); err != nil {
 		return  err
@@ -35,7 +42,7 @@ func Connect() error {
 
     log.Info("Connected to MongoDB")
 
-    ItemCollection = CreateCollection(Client, "go_demo", "items")
+    ItemCollection = CreateCollection(database, "items")
 
     return nil
 }
@@ -43,14 +50,14 @@ func Connect() error {
 func Disconnect() error {
     log.Info("Disconnecting from MongoDB...")
 
-    err := Client.Disconnect(context.Background())
+    err := client.Disconnect(context.Background())
 
     log.Info("Disconnected from MongoDB")
 
 	return err
 }
 
-func CreateCollection(client *mongo.Client, database string, collection string) *mongo.Collection {
+func CreateCollection(database string, collection string) *mongo.Collection {
     mongoCollection := client.Database(database).Collection(collection)
 
     log.Info("Created collection")
@@ -62,8 +69,7 @@ func Add(collection *mongo.Collection, document interface{}) (primitive.ObjectID
     id, err := collection.InsertOne(context.Background(), document)
 
     if err != nil {
-		// TODO: Fix.
-		// return nil, err
+		return primitive.ObjectID{}, err
     }
 
     return id.InsertedID.(primitive.ObjectID), nil

@@ -1,33 +1,15 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	amqp "github.com/rabbitmq/amqp091-go"
-
 	"services/common/model"
 	"services/common/rabbit"
 	"services/common/rest"
 )
-
-func WriteToRabbit(queueName string, data []byte) error {
-    return rabbit.Channel.PublishWithContext(
-        context.Background(),
-        "",
-        queueName,
-        false, // mandatory
-        false, // immediate
-        amqp.Publishing{
-            ContentType:  "text/plain",
-            Body:         data,
-			DeliveryMode: 2,
-        },
-    )
-}
 
 func Healthcheck(c *gin.Context) {
     c.IndentedJSON(http.StatusOK, nil)
@@ -49,7 +31,7 @@ func CreateDataItem(c *gin.Context) {
 			return
 		}
 
-		if err := WriteToRabbit("items", data); err != nil {
+		if err := rabbit.Write("items", data); err != nil {
 			rest.ResponseError(c, err.Error())
 			return
 		}
@@ -74,7 +56,7 @@ func CreateDataTemperature(c *gin.Context) {
 			return
 		}
 
-		if err := WriteToRabbit("temperatures", data); err != nil {
+		if err := rabbit.Write("temperatures", data); err != nil {
 			rest.ResponseError(c, err.Error())
 			return
 		}
@@ -99,7 +81,7 @@ func CreateDataTransit(c *gin.Context) {
 			return
 		}
 
-		if err := WriteToRabbit("transits", data); err != nil {
+		if err := rabbit.Write("transits", data); err != nil {
 			rest.ResponseError(c, err.Error())
 			return
 		}

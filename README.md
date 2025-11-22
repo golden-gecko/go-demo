@@ -32,6 +32,11 @@ Open Jenkins http://localhost:8888/.
 
 Add SSH key to Jenkins and Git repository.
 
+### How to deploy using Kubernetes
+
+```bash
+```
+
 ### UI
 
 - Chronograf - http://localhost:8888/

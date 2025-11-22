@@ -12,6 +12,8 @@ services:
     build:
       context: services
       dockerfile: services/aggregator/Dockerfile
+    env_file:
+      - .env
     image: localhost:5000/aggregator
     networks:
       - main
@@ -23,9 +25,11 @@ services:
       dockerfile: services/api/Dockerfile
     deploy:
       replicas: 3
+    env_file:
+      - .env
     image: localhost:5000/api
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:${API_PORT}/v1/healthcheck']
+      test: ['CMD', 'curl', '-f', 'http://localhost:6000/v1/healthcheck']
       interval: 10s
       timeout: 2s
       retries: 2
@@ -90,6 +94,8 @@ services:
       dockerfile: services/consumer/Dockerfile
     deploy:
       replicas: 3
+    env_file:
+      - .env
     image: localhost:5000/consumer
     networks:
       - main
@@ -206,6 +212,8 @@ services:
       context: node
     deploy:
       replicas: 3
+    env_file:
+      - .env
     image: localhost:5000/node
     networks:
       - main
@@ -223,6 +231,8 @@ services:
     build:
       context: services
       dockerfile: services/producer/Dockerfile
+    env_file:
+      - .env
     image: localhost:5000/producer
     networks:
       - main
@@ -282,9 +292,11 @@ services:
       dockerfile: services/receiver/Dockerfile
     deploy:
       replicas: 3
+    env_file:
+      - .env
     image: localhost:5000/receiver
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:${RECEIVER_PORT}/v1/healthcheck']
+      test: ['CMD', 'curl', '-f', 'http://localhost:7000/v1/healthcheck']
       interval: 10s
       timeout: 2s
       retries: 2
@@ -339,7 +351,7 @@ services:
     networks:
       - main
     ports:
-      - ${REDIS_INSIGHT_PORT}:${REDIS_INSIGHT_PORT}
+      - 8001:8001
     restart: unless-stopped
     volumes:
       - redis-insight:/db

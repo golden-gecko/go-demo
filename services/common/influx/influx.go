@@ -2,38 +2,55 @@ package influx
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	log "github.com/sirupsen/logrus"
 
 	"services/common"
 )
 
 var (
-	Client   influxdb2.Client
-	WriteAPI api.WriteAPIBlocking
+	client   influxdb2.Client
+	writeAPI api.WriteAPIBlocking
 )
 
 func Connect() error {
-	Client = influxdb2.NewClientWithOptions("http://influx:8086", "my-super-secret-auth-token", influxdb2.DefaultOptions().SetBatchSize(10))
+    log.Info("Connecting to InfluxDB...")
 
-	if _, err := Client.Health(context.Background()); err != nil {
+	host := os.Getenv("INFLUX_HOST")
+	port := os.Getenv("INFLUX_PORT")
+	secret := os.Getenv("INFLUX_SECRET")
+	organization := os.Getenv("INFLUX_ORGANIZATION")
+	database := os.Getenv("INFLUX_DATABASE")
+
+	client = influxdb2.NewClientWithOptions(fmt.Sprintf("http://%s:%s", host, port), secret, influxdb2.DefaultOptions().SetBatchSize(10))
+
+	if _, err := client.Health(context.Background()); err != nil {
 		return err
 	}
 
-	WriteAPI = Client.WriteAPIBlocking("my-org", "house")
+    log.Info("Connected to InfluxDB")
+
+	writeAPI = client.WriteAPIBlocking(organization, database)
 
 	return nil
 }
 
 func Disconnect() {
-	Client.Close()
+    log.Info("Disonnecting from InfluxDB...")
+
+	client.Close()
+
+    log.Info("Disonnected from InfluxDB")
 }
 
 func WritePoint(point *write.Point) error {
-	return WriteAPI.WritePoint(context.Background(), point);
+	return writeAPI.WritePoint(context.Background(), point);
 }
 
 func WriteTemperature(location string, value float32, timestamp string) error {
