@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -43,43 +44,31 @@ func RandomPlate() string {
 	return RandomString(3, characters) + RandomString(6, digits)
 }
 
-func Send(body *bytes.Buffer) error {
-	resp, err := http.Post("http://haproxy:9000/api/v1/data", "application/json", body)
+func Send(url string, data []byte) error {
+	body := bytes.NewBuffer(data)
+	resp, err := http.Post(url, "application/json", body)
 
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	if resp.StatusCode != 200 {
-		log.Println(resp.StatusCode)
-	}
+	log.Println(resp.StatusCode)
 
 	return nil
 }
 
-func CreateTemperature() error {
+func CreateTemperature(location string) Temperature {
 	t := Temperature{
-		Location:  "Room",
+		Location:  location,
 		Value:     rand.Float32() * 100,
 		Timestamp: time.Now().Format(time.RFC3339),
 	}
 
-	temperature, err := json.Marshal(t)
-
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	body := bytes.NewBuffer(temperature)
-
-	Send(body)
-
-	return nil
+	return t
 }
 
-func CreateTransit() error {
+func CreateTransit() Transit {
 	c := Coordinate{
 		Latitude:  14.0745211117 + rand.Float32()*(24.0299857927-14.0745211117),
 		Longitude: 49.0273953314 + rand.Float32()*(54.8515359564-49.0273953314),
@@ -91,30 +80,45 @@ func CreateTransit() error {
 		Timestamp: time.Now().Format(time.RFC3339),
 	}
 
-	transit, err := json.Marshal(t)
-
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	body := bytes.NewBuffer(transit)
-
-	Send(body)
-
-	return nil
+	return t
 }
 
 func main() {
 	for {
-		if rand.Intn(2) == 0 {
-			CreateTemperature()
+		if true {
+			t1 := CreateTemperature("Room #1")
+			t2 := CreateTemperature("Room #2")
+			t3 := CreateTemperature("Room #3")
+
+			data, err := json.Marshal([]Temperature{t1, t2, t3})
+
+			if err != nil {
+				os.Exit(1)
+			}
+
+			Send("http://haproxy:9000/api/v1/data/temperature", data)
 		}
 
-		if rand.Intn(2) == 0 {
-			CreateTransit()
+		if true {
+			var transits []Transit
+
+			for i := 0; i < 1+rand.Intn(9); i++ {
+				transits = append(transits, CreateTransit())
+			}
+
+			data, err := json.Marshal(transits)
+
+			if err != nil {
+				os.Exit(1)
+			}
+
+			Send("http://haproxy:9000/api/v1/data/transit", data)
 		}
 
-		time.Sleep(time.Duration(rand.Intn(2)) * time.Second)
+		sleep := (1 + rand.Intn(5)) * 100
+
+		log.Println("Sleeping for", sleep, "ms")
+
+		time.Sleep(time.Duration((1+rand.Intn(9))*100) * time.Millisecond)
 	}
 }

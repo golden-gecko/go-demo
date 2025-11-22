@@ -24,15 +24,6 @@ services:
       - 5001:${API_PORT}
     restart: unless-stopped
 
-  api_3:
-    build:
-      context: api
-    networks:
-      - simple
-    ports:
-      - 5002:${API_PORT}
-    restart: unless-stopped
-
   chronograf:
     depends_on:
       - influx
@@ -56,6 +47,20 @@ services:
     volumes:
       - cockroach:/data/db
 
+  consumer_1:
+    build:
+      context: consumer
+    networks:
+      - simple
+    restart: unless-stopped
+
+  consumer_2:
+    build:
+      context: consumer
+    networks:
+      - simple
+    restart: unless-stopped
+
   grafana:
     build:
       context: grafana
@@ -74,6 +79,7 @@ services:
       - simple
     ports:
       - ${HAPROXY_PORT}:${HAPROXY_PORT}
+      - 9010:9010
       - 9103:9103
     restart: unless-stopped
     volumes:
@@ -84,7 +90,7 @@ services:
   influx:
     environment:
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
-      - DOCKER_INFLUXDB_INIT_BUCKET=my-bucket
+      - DOCKER_INFLUXDB_INIT_BUCKET=house
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_ORG=my-org
       - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_PASSWORD}
@@ -232,11 +238,31 @@ services:
       - ${RABBIT_PORT}:${RABBIT_PORT}
     restart: unless-stopped
 
-  rabbit_consumer:
+  receiver_1:
     build:
-      context: rabbit_consumer
+      context: receiver
     networks:
       - simple
+    ports:
+      - ${RECEIVER_PORT}:${RECEIVER_PORT}
+    restart: unless-stopped
+
+  receiver_2:
+    build:
+      context: receiver
+    networks:
+      - simple
+    ports:
+      - 7001:${RECEIVER_PORT}
+    restart: unless-stopped
+
+  receiver_3:
+    build:
+      context: receiver
+    networks:
+      - simple
+    ports:
+      - 7002:${RECEIVER_PORT}
     restart: unless-stopped
 
   redis:

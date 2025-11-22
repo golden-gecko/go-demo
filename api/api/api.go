@@ -2,81 +2,14 @@ package api
 
 import (
 	"context"
-	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 
-	amqp "github.com/rabbitmq/amqp091-go"
-	kafka "github.com/segmentio/kafka-go"
-
 	"api/db"
 	"api/models"
-	"api/queue"
 )
-
-// ---------------------------------------------------------------------------
-
-func WriteToKafka(data []byte) {
-	_, err := queue.KafkaClient.WriteMessages(
-		kafka.Message{
-			Value: data,
-		},
-	)
-
-	if err != nil {
-		panic(err)
-	}
-}
-
-func WriteToRabbit(data []byte) {
-	maxRetries := 3
-
-	for i := 0; i < maxRetries; i++ {
-		err := queue.Channel.PublishWithContext(
-			queue.Context,
-			"",
-			queue.Queue.Name,
-			false, // mandatory
-			false, // immediate
-			amqp.Publishing{
-				ContentType: "text/plain",
-				Body:        data,
-			},
-		)
-
-		if err != nil {
-			log.Println("Failed to send message. Waiting 3 seconds...")
-
-			time.Sleep(3 * time.Second)
-
-			queue.InitRabbit()
-		} else {
-			return
-		}
-	}
-
-	log.Println("Failed to send message 3 times. Exiting...")
-
-	os.Exit(1)
-}
-
-func CreateData(c *gin.Context) {
-	data, err := ioutil.ReadAll(c.Request.Body)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	// WriteToKafka(data)
-	WriteToRabbit(data)
-
-	c.IndentedJSON(http.StatusCreated, nil)
-}
 
 // ---------------------------------------------------------------------------
 
