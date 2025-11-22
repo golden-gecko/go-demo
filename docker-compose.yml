@@ -181,13 +181,15 @@ services:
       - mongo:/data/db
 
   mongo-express:
+    build:
+      context: mongo-express
     environment:
       - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_BASICAUTH_USERNAME=${MONGO_USER}
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD}
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_USER}
       - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017
-    image: mongo-express:1.0.2-20-alpine3.19
+    image: 
     networks:
       - main
     ports:
@@ -221,7 +223,9 @@ services:
     restart: unless-stopped
 
   node-exporter:
-    image: prom/node-exporter:v1.7.0
+    build:
+      context: node-exporter
+    image: registry.com.gecko/node-exporter
     networks:
       - main
     ports: 
@@ -348,7 +352,8 @@ services:
       - redis-3:/data
 
   redis-insight:
-    image: redislabs/redisinsight:1.14.0
+    build:
+      context: redis-insight
     networks:
       - main
     ports:
@@ -358,7 +363,9 @@ services:
       - redis-insight:/db
 
   statsd-exporter:
-    image: prom/statsd-exporter:v0.26.0
+    build:
+      context: statsd-exporter
+    image: registry.com.gecko/statsd-exporter
     networks:
       - main
     ports:
@@ -366,7 +373,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  chronograf:
   cockroach-1:
   cockroach-2:
   cockroach-3:
@@ -376,7 +382,6 @@ volumes:
   influx:
   mongo:
   nakama:
-  postgres:
   rabbit-1:
   rabbit-2:
   rabbit-3:
