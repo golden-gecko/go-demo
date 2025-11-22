@@ -62,6 +62,10 @@ func WriteToRabbit(queueName string, data []byte) {
 	}
 }
 
+func Healthcheck(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, nil)
+}
+
 func CreateData(c *gin.Context) {
 	switch c.Param("type") {
 	case "temperature":

@@ -2,4 +2,5 @@
 
 cd "$(dirname "$0")"
 
-docker-compose --file docker-compose.yml --file docker-compose-elk.yml logs --tail=10 -f "$@"
+docker-compose --file docker-compose.yml \
+    logs --follow --tail=20 "$@"

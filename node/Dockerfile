@@ -8,6 +8,4 @@ COPY . .
 
 EXPOSE 2000
 
-ENTRYPOINT ["node"]
-
-CMD ["server.js"]
+CMD ["node", "server.js"]

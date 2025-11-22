@@ -38,6 +38,8 @@ func Deinit() {
 }
 
 func Connect(uri string) *mongo.Client {
+	log.Println("Connecting to database...")
+
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 
 	if err != nil {
@@ -56,6 +58,8 @@ func Connect(uri string) *mongo.Client {
 }
 
 func Disconnect(client *mongo.Client) {
+	log.Println("Disconnecting to database...")
+
 	client.Disconnect(context.TODO())
 
 	log.Println("Disconnected from database")

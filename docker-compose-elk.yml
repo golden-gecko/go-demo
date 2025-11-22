@@ -1,7 +1,7 @@
 version: '3.9'
 
 networks:
-  simple:
+  main:
 
 services:
   elastic:
@@ -19,7 +19,7 @@ services:
       timeout: 2s
       retries: 2
     networks:
-      - simple
+      - main
     restart: unless-stopped
     volumes:
       - elastic:/usr/share/elasticsearch/data
@@ -32,7 +32,7 @@ services:
       - output.elasticsearch.hosts=["${ELASTIC_HOST}:${ELASTIC_PORT}"]
       - setup.kibana.host=${KIBANA_HOST}:${KIBANA_PORT}
     networks:
-      - simple
+      - main
     restart: unless-stopped
 
   kibana:
@@ -42,7 +42,7 @@ services:
     environment:
       - ELASTICSEARCH_HOSTS=http://${ELASTIC_HOST}:${ELASTIC_PORT}
     networks:
-      - simple
+      - main
     ports:
       - ${KIBANA_PORT}:${KIBANA_PORT}
     restart: unless-stopped
@@ -50,15 +50,5 @@ services:
       - kibana:/usr/share/kibana/config
 
 volumes:
-  chronograf:
-  cockroach:
   elastic:
-  grafana_etc:
-  grafana_var_lib:
-  influx:
-  kafka:
   kibana:
-  mongo:
-  postgres:
-  redis:
-  redis_insight:
